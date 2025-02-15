@@ -17,6 +17,8 @@ namespace IRepositories.Entity
         public string Location { get; set; }
         public string ContactNumber { get; set; }
         public string Email { get; set; }
+        public string Status { get; set; }
+
 
         // Navigation properties
         public virtual ICollection<VaccineBatch> VaccineBatches { get; set; }
