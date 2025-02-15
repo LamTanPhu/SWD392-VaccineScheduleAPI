@@ -14,7 +14,7 @@ namespace IRepositories.Entity
         public DateTime PurchaseDate { get; set; }
         public int TotalAmount { get; set; }
         public int TotalOrderPrice { get; set; }
-        public int Status { get; set; }
+        public string Status { get; set; }
 
         // Navigation properties
         [ForeignKey("FeedbackId")]
