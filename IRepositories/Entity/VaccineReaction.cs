@@ -13,7 +13,7 @@ namespace IRepositories.Entity
     {
         public string VaccineScheduleId { get; set; }
         public string Reaction { get; set; }
-        public int Severity { get; set; }
+        public string Severity { get; set; }
         public int ReactionTime { get; set; }
         public int? ResolvedTime { get; set; }
 
