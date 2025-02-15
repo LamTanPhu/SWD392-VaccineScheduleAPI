@@ -1,16 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace PRN222_Group_Project.Models.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Core.Base;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace IRepositories.Entity
 {
-    public class VaccineReaction
+
+
+    public class VaccineReaction : BaseEntity
     {
-        [Key]
-        public Guid VaccineReactionId { get; set; }
-        public Guid FKVaccineScheduleId { get; set; }
-        public VaccinationSchedule VaccineSchedule { get; set; }
+        public string VaccineScheduleId { get; set; }
         public string Reaction { get; set; }
         public int Severity { get; set; }
         public int ReactionTime { get; set; }
-        public int ResolvedTime { get; set; }
+        public int? ResolvedTime { get; set; }
+
+        // Navigation property
+        [ForeignKey("VaccineScheduleId")]
+        public virtual VaccinationSchedule VaccineSchedule { get; set; }
     }
+
 }

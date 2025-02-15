@@ -1,6 +1,6 @@
-﻿using XuongMay.Core.Constants;
+﻿using Core.Constants;
 
-namespace XuongMay.Core.Base
+namespace Core.Base
 {
     public class BaseException : Exception
     {

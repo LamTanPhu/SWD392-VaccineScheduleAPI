@@ -1,15 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace PRN222_Group_Project.Models.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using Core.Base;
+namespace IRepositories.Entity
 {
-    public class Manufacturer
+
+
+    public class Manufacturer : BaseEntity
     {
-        [Key]
-        public int ManufacturerId { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public string CountryName { get; set; }
         public string CountryCode { get; set; }
         public string ActiveStatus { get; set; }
+
+        // Navigation property
+        public virtual ICollection<VaccineBatch> VaccineBatches { get; set; }
     }
+
 }

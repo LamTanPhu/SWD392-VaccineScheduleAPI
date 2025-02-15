@@ -1,4 +1,4 @@
-﻿namespace XuongMay.Core
+﻿namespace Core
 {
     public class BasePaginatedList<T>
     {

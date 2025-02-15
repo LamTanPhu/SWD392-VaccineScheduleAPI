@@ -1,23 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Core.Base;
 
-namespace PRN222_Group_Project.Models.Entities
+namespace IRepositories.Entity
 {
-    public class VaccineHistory
+
+    public class VaccineHistory : BaseEntity
     {
-        [Key]
-        public Guid VacineHistoryId { get; set; }
-        public int FKVaccineId { get; set; }
-        public Vaccine Vaccine { get; set; }
-        public Guid FKProfileId { get; set; }
-        public ChildrenProfile Profile { get; set; }
-        public Guid FKAccountId { get; set; }
-        public Account Account { get; set; }
-        public int FKCenterId { get; set; }
-        public VaccineCenter Center { get; set; }
+        public string VaccineId { get; set; }
+        public string ProfileId { get; set; }
+        public string AccountId { get; set; }
+        public string CenterId { get; set; }
         public DateTime AdministeredDate { get; set; }
         public string AdministeredBy { get; set; }
         public string DocumentationProvided { get; set; }
         public string Notes { get; set; }
         public int VerifiedStatus { get; set; }
+
+        // Navigation properties
+        public virtual Vaccine Vaccine { get; set; }
+        public virtual ChildrenProfile Profile { get; set; }
+        public virtual Account Account { get; set; }
+        public virtual VaccineCenter Center { get; set; }
     }
+
 }

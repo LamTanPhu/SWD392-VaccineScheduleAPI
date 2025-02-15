@@ -1,6 +1,6 @@
-﻿using XuongMay.Core.Utils;
+﻿using Core.Utils;
 
-namespace XuongMay.Core.Constants
+namespace Core.Constants
 {
     public enum StatusCodeHelper
     {

@@ -1,15 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Security.Principal;
+using Core.Base;
 
-namespace PRN222_Group_Project.Models.Entities
+
+namespace IRepositories.Entity
 {
-    public class VaccineCenter
+
+    public class VaccineCenter : BaseEntity
     {
-        [Key]
-        public int VacineCenterId { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
-        public int ContactNumber { get; set; }
+        public string ContactNumber { get; set; }
         public string Email { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<VaccineBatch> VaccineBatches { get; set; }
+        public virtual ICollection<Account> Accounts { get; set; }
+        public virtual ICollection<VaccinationSchedule> VaccinationSchedules { get; set; }
     }
+
 
 }

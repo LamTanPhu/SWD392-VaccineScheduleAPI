@@ -1,21 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace PRN222_Group_Project.Models.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Core.Base;
+namespace IRepositories.Entity
 {
-    public class Account
+
+
+    public class Account : BaseEntity
     {
-        [Key]
-        public Guid AccountId { get; set; }
-        public int FKCenterId { get; set; }
-        public VaccineCenter Center { get; set; }
-        public string UserName { get; set; }
-        public string Password { get; set; }
-        public int PhoneNumber { get; set; }
+        public string CenterId { get; set; }
+        public string Username { get; set; }
+        public string PasswordHash { get; set; }
         public string Email { get; set; }
-        public string AccountRole { get; set; }
-        public string ProfileImage { get; set; }
-        public int Salary { get; set; }
-        public string Status { get; set; }
+        public string Role { get; set; } // e.g., Admin, Parent, Doctor
+
+        // Navigation properties
+        public virtual VaccineCenter Center { get; set; }
+        public virtual ICollection<ChildrenProfile> ChildrenProfiles { get; set; }
     }
 
 }

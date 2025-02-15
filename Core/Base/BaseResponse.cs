@@ -1,7 +1,7 @@
-﻿using XuongMay.Core.Constants;
-using XuongMay.Core.Utils;
+﻿using Core.Constants;
+using Core.Utils;
 
-namespace XuongMay.Core.Base
+namespace Core.Base
 {
     public class BaseResponse<T>
     {

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using XuongMay.Core.Utils;
+using Core.Utils;
 
-namespace XuongMay.Core.Base
+namespace Core.Base
 {
     public abstract class BaseEntity
     {

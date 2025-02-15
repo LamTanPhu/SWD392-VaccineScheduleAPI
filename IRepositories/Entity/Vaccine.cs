@@ -1,25 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace PRN222_Group_Project.Models.Entities
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Core.Base;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace IRepositories.Entity
 {
-    public class Vaccine
+
+
+    public class Vaccine : BaseEntity
     {
-        [Key]
-        public int VaccineId { get; set; }
-        public int FKCategoryId { get; set; }
-        public VaccineCategory Category { get; set; }
-        public int FKBatchId { get; set; }
-        public VaccineBatch Batch { get; set; }
+        public string CategoryId { get; set; }
+        public string BatchId { get; set; }
         public string Name { get; set; }
         public int QuantityAvailable { get; set; }
         public int UnitOfVolume { get; set; }
-        public string IngredientsDescription { get; set; }
+        public string? IngredientsDescription { get; set; }
         public int MinAge { get; set; }
         public int MaxAge { get; set; }
         public DateTime BetweenPeriod { get; set; }
         public int Price { get; set; }
         public DateTime ProductionDate { get; set; }
         public DateTime ExpirationDate { get; set; }
+
+        // Navigation properties
+        [ForeignKey("CategoryId")]
+        public virtual VaccineCategory Category { get; set; }
+
+        [ForeignKey("BatchId")]
+        public virtual VaccineBatch Batch { get; set; }
     }
 
 }
