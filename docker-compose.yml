@@ -23,7 +23,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       ConnectionStrings__DefaultConnection: "Server=mysql;Database=vaccineschedule;Uid=sa;Pwd=1234567890;"
     ports:
-      - "8080:80"
+      - "8080:8080"
     depends_on:
       - mysql
 
