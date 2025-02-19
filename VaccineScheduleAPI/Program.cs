@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Repositories.Context;
+using VaccineScheduleAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ builder.Services.AddControllers();
 // Get the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Register DbContext with Pomelo MySQL provider
+// Register DbContext with MySQL provider (Pomelo)
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseMySql(
         connectionString,
@@ -19,6 +20,9 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configuring DI for other services (repositories and API services)
+builder.Services.AddConfig(builder.Configuration);  // Registers services and repositories
 
 var app = builder.Build();
 
