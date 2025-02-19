@@ -7,7 +7,6 @@ using System.Reflection.PortableExecutable;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using IRepositories.Entity;
 
 namespace Repositories.Context
@@ -35,6 +34,16 @@ namespace Repositories.Context
         public DbSet<VaccineHistory> VaccineHistories { get; set; }
         public DbSet<VaccinationSchedule> VaccinationSchedules { get; set; }
         public DbSet<VaccineReaction> VaccineReactions { get; set; }
+
+        // Configure the DbContext to use MySQL
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    // Specify the connection string here (adjust as needed)
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        optionsBuilder.UseMySQL("Server=localhost;Database=vaccineschedule;Uid=sa;Pwd=1234567890;");
+        //    }
+        //}
 
         // Configuration for relationships and database constraints
         protected override void OnModelCreating(ModelBuilder modelBuilder)
