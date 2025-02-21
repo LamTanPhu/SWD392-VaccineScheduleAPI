@@ -9,20 +9,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace IRepositories.Entity
 {
 
-
     public class OrderPackageDetails : BaseEntity
     {
-        public string OrderId { get; set; }
-        public string VaccinePackageId { get; set; }
+        [ForeignKey("Order")]
+        public string OrderId { get; set; }  // Foreign key to the Order table
+
+        [ForeignKey("VaccinePackage")]
+        public string VaccinePackageId { get; set; }  // Foreign key to the VaccinePackage table
+
         public int Quantity { get; set; }
         public int TotalPrice { get; set; }
 
-        // Navigation properties
-        [ForeignKey("OrderId")]
-        public virtual Order Order { get; set; }
+        // Navigation properties: No need for [ForeignKey] here
+        public virtual Order Order { get; set; }  // Navigation property to Order
 
-        [ForeignKey("VaccinePackageId")]
-        public virtual VaccinePackage VaccinePackage { get; set; }
+        public virtual VaccinePackage VaccinePackage { get; set; }  // Navigation property to VaccinePackage
     }
+
 
 }

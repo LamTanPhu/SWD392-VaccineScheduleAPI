@@ -61,6 +61,10 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -84,9 +88,6 @@ namespace Repositories.Migrations
 
                     b.Property<string>("AccountId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("AccountId1")
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedBy")
@@ -118,11 +119,13 @@ namespace Repositories.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("AccountId1");
 
                     b.ToTable("ChildrenProfiles");
                 });
@@ -155,18 +158,19 @@ namespace Repositories.Migrations
 
                     b.Property<string>("OrderId")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("OrderId1")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId1");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("Feedbacks");
                 });
@@ -213,6 +217,10 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.HasKey("Id");
 
                     b.ToTable("Manufacturers");
@@ -237,9 +245,6 @@ namespace Repositories.Migrations
 
                     b.Property<DateTimeOffset?>("DeletedTime")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("FeedbackId")
-                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("longtext");
@@ -267,8 +272,6 @@ namespace Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ChildrenProfileId");
-
-                    b.HasIndex("FeedbackId");
 
                     b.HasIndex("ProfileId");
 
@@ -348,9 +351,6 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("OrderId1")
-                        .HasColumnType("varchar(255)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -364,8 +364,6 @@ namespace Repositories.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
-
-                    b.HasIndex("OrderId1");
 
                     b.HasIndex("VaccineId");
 
@@ -558,6 +556,10 @@ namespace Repositories.Migrations
                     b.Property<int>("QuantityAvailable")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<int>("UnitOfVolume")
                         .HasColumnType("int");
 
@@ -610,9 +612,6 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("ManufacturerId1")
-                        .HasColumnType("varchar(255)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -624,8 +623,6 @@ namespace Repositories.Migrations
                     b.HasIndex("CenterId");
 
                     b.HasIndex("ManufacturerId");
-
-                    b.HasIndex("ManufacturerId1");
 
                     b.HasIndex("VaccineCenterId");
 
@@ -867,16 +864,11 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("VaccinePackageId1")
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("VaccineId");
 
                     b.HasIndex("VaccinePackageId");
-
-                    b.HasIndex("VaccinePackageId1");
 
                     b.ToTable("VaccinePackageDetails");
                 });
@@ -952,14 +944,10 @@ namespace Repositories.Migrations
             modelBuilder.Entity("IRepositories.Entity.ChildrenProfile", b =>
                 {
                     b.HasOne("IRepositories.Entity.Account", "Account")
-                        .WithMany()
+                        .WithMany("ChildrenProfiles")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.Account", null)
-                        .WithMany("ChildrenProfiles")
-                        .HasForeignKey("AccountId1");
 
                     b.Navigation("Account");
                 });
@@ -967,9 +955,9 @@ namespace Repositories.Migrations
             modelBuilder.Entity("IRepositories.Entity.Feedback", b =>
                 {
                     b.HasOne("IRepositories.Entity.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne("Feedback")
+                        .HasForeignKey("IRepositories.Entity.Feedback", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -981,18 +969,11 @@ namespace Repositories.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("ChildrenProfileId");
 
-                    b.HasOne("IRepositories.Entity.Feedback", "Feedback")
-                        .WithMany()
-                        .HasForeignKey("FeedbackId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("IRepositories.Entity.ChildrenProfile", "Profile")
                         .WithMany()
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Feedback");
 
                     b.Navigation("Profile");
                 });
@@ -1019,14 +1000,10 @@ namespace Repositories.Migrations
             modelBuilder.Entity("IRepositories.Entity.OrderVaccineDetails", b =>
                 {
                     b.HasOne("IRepositories.Entity.Order", "Order")
-                        .WithMany()
+                        .WithMany("OrderVaccineDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.Order", null)
-                        .WithMany("OrderVaccineDetails")
-                        .HasForeignKey("OrderId1");
 
                     b.HasOne("IRepositories.Entity.Vaccine", "Vaccine")
                         .WithMany()
@@ -1123,14 +1100,10 @@ namespace Repositories.Migrations
                         .IsRequired();
 
                     b.HasOne("IRepositories.Entity.Manufacturer", "Manufacturer")
-                        .WithMany()
+                        .WithMany("VaccineBatches")
                         .HasForeignKey("ManufacturerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.Manufacturer", null)
-                        .WithMany("VaccineBatches")
-                        .HasForeignKey("ManufacturerId1");
 
                     b.HasOne("IRepositories.Entity.VaccineCenter", null)
                         .WithMany("VaccineBatches")
@@ -1194,14 +1167,10 @@ namespace Repositories.Migrations
                         .IsRequired();
 
                     b.HasOne("IRepositories.Entity.VaccinePackage", "VaccinePackage")
-                        .WithMany()
+                        .WithMany("PackageDetails")
                         .HasForeignKey("VaccinePackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.VaccinePackage", null)
-                        .WithMany("PackageDetails")
-                        .HasForeignKey("VaccinePackageId1");
 
                     b.Navigation("Vaccine");
 
@@ -1242,6 +1211,9 @@ namespace Repositories.Migrations
 
             modelBuilder.Entity("IRepositories.Entity.Order", b =>
                 {
+                    b.Navigation("Feedback")
+                        .IsRequired();
+
                     b.Navigation("OrderPackageDetails");
 
                     b.Navigation("OrderVaccineDetails");

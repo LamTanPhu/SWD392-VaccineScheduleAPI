@@ -56,8 +56,8 @@ namespace Repositories.Context
 
             // VaccineBatch -> Manufacturer relationship
             modelBuilder.Entity<VaccineBatch>()
-                .HasOne(vb => vb.Manufacturer)  // VaccineBatch has ONE Manufacturer
-                .WithMany()                     // Manufacturer has MANY VaccineBatches
+                .HasOne(vb => vb.Manufacturer) // VaccineBatch has ONE Manufacturer
+                .WithMany(m => m.VaccineBatches) // Manufacturer has MANY VaccineBatches
                 .HasForeignKey(vb => vb.ManufacturerId) // Foreign key is ManufacturerId
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -89,7 +89,7 @@ namespace Repositories.Context
             // VaccinePackageDetail -> VaccinePackage relationship
             modelBuilder.Entity<VaccinePackageDetail>()
                 .HasOne(vpd => vpd.VaccinePackage)
-                .WithMany()
+                .WithMany(vp => vp.PackageDetails)
                 .HasForeignKey(vpd => vpd.VaccinePackageId);
 
             // Account -> VaccineCenter relationship
@@ -101,14 +101,14 @@ namespace Repositories.Context
             // ChildrenProfile -> Account relationship
             modelBuilder.Entity<ChildrenProfile>()
                 .HasOne(cp => cp.Account)
-                .WithMany()
+                .WithMany(a => a.ChildrenProfiles)  // Specify the collection navigation property
                 .HasForeignKey(cp => cp.AccountId);
 
             // Order -> Feedback relationship
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Feedback)
-                .WithMany()
-                .HasForeignKey(o => o.FeedbackId)
+                .WithOne(f => f.Order)
+                .HasForeignKey<Feedback>(f => f.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Order -> ChildrenProfile relationship
@@ -126,7 +126,7 @@ namespace Repositories.Context
             // OrderVaccineDetail -> Order relationship
             modelBuilder.Entity<OrderVaccineDetails>()
                 .HasOne(ovd => ovd.Order)
-                .WithMany()
+                .WithMany(o => o.OrderVaccineDetails)
                 .HasForeignKey(ovd => ovd.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 

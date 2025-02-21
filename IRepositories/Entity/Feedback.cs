@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Base;
 namespace IRepositories.Entity
 {
-
-
     public class Feedback : BaseEntity
     {
+        [ForeignKey("Order")]
         public string OrderId { get; set; }
         public int Rating { get; set; }
         public string? Comment { get; set; }
-
-        // Navigation properties
+        public string Status { get; set; }
+        // Navigation property
         public virtual Order Order { get; set; }
     }
-
 }

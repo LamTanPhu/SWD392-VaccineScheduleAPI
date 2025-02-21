@@ -17,6 +17,7 @@ namespace IRepositories.Entity
         public string CountryName { get; set; }
         public string CountryCode { get; set; }
         public string ActiveStatus { get; set; }
+        public string Status { get; set; }
 
         // Navigation property
         public virtual ICollection<VaccineBatch> VaccineBatches { get; set; }

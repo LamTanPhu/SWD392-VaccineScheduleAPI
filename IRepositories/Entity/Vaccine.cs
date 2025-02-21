@@ -23,6 +23,8 @@ namespace IRepositories.Entity
         public int Price { get; set; }
         public DateTime ProductionDate { get; set; }
         public DateTime ExpirationDate { get; set; }
+        public string Status { get; set; }
+
 
         // Navigation properties
         [ForeignKey("CategoryId")]

@@ -8,21 +8,16 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace IRepositories.Entity
 {
- 
-
     public class OrderVaccineDetails : BaseEntity
     {
+        [ForeignKey("Order")]
         public string OrderId { get; set; }
+        [ForeignKey("Vaccine")]
         public string VaccineId { get; set; }
         public int Quantity { get; set; }
         public int TotalPrice { get; set; }
-
         // Navigation properties
-        [ForeignKey("OrderId")]
         public virtual Order Order { get; set; }
-
-        [ForeignKey("VaccineId")]
         public virtual Vaccine Vaccine { get; set; }
     }
-
 }
