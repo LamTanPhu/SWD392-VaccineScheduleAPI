@@ -9,20 +9,16 @@ namespace IRepositories.Entity
 {
     public class Order : BaseEntity
     {
-        public string? FeedbackId { get; set; }
+        [ForeignKey("Profile")]
         public string ProfileId { get; set; }
         public DateTime PurchaseDate { get; set; }
         public int TotalAmount { get; set; }
         public int TotalOrderPrice { get; set; }
         public string Status { get; set; }
-
         // Navigation properties
-        [ForeignKey("FeedbackId")]
         public virtual Feedback Feedback { get; set; }
-
         [ForeignKey("ProfileId")]
         public virtual ChildrenProfile Profile { get; set; }
-
         public virtual ICollection<OrderVaccineDetails> OrderVaccineDetails { get; set; }
         public virtual ICollection<OrderPackageDetails> OrderPackageDetails { get; set; }
     }

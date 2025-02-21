@@ -30,6 +30,8 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ActiveStatus = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -156,6 +158,8 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Role = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -198,8 +202,6 @@ namespace Repositories.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     ActiveStatus = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ManufacturerId1 = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -221,11 +223,6 @@ namespace Repositories.Migrations
                         principalTable: "Manufacturers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_VaccineBatches_Manufacturers_ManufacturerId1",
-                        column: x => x.ManufacturerId1,
-                        principalTable: "Manufacturers",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_VaccineBatches_VaccineCenters_CenterId",
                         column: x => x.CenterId,
@@ -253,7 +250,7 @@ namespace Repositories.Migrations
                     DateOfBirth = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Gender = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    AccountId1 = table.Column<string>(type: "varchar(255)", nullable: true)
+                    Status = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -274,11 +271,6 @@ namespace Repositories.Migrations
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChildrenProfiles_Accounts_AccountId1",
-                        column: x => x.AccountId1,
-                        principalTable: "Accounts",
-                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -304,6 +296,8 @@ namespace Repositories.Migrations
                     Price = table.Column<int>(type: "int", nullable: false),
                     ProductionDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     ExpirationDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     VaccineCategoryId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -336,6 +330,48 @@ namespace Repositories.Migrations
                         column: x => x.VaccineCategoryId,
                         principalTable: "VaccineCategories",
                         principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ProfileId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PurchaseDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    TotalAmount = table.Column<int>(type: "int", nullable: false),
+                    TotalOrderPrice = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ChildrenProfileId = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
+                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
+                    DeletedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_ChildrenProfiles_ChildrenProfileId",
+                        column: x => x.ChildrenProfileId,
+                        principalTable: "ChildrenProfiles",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Orders_ChildrenProfiles_ProfileId",
+                        column: x => x.ProfileId,
+                        principalTable: "ChildrenProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -412,8 +448,6 @@ namespace Repositories.Migrations
                     VaccinePackageId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PackagePrice = table.Column<int>(type: "int", nullable: false),
-                    VaccinePackageId1 = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -434,11 +468,6 @@ namespace Repositories.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_VaccinePackageDetails_VaccinePackages_VaccinePackageId1",
-                        column: x => x.VaccinePackageId1,
-                        principalTable: "VaccinePackages",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_VaccinePackageDetails_Vaccines_VaccineId",
                         column: x => x.VaccineId,
                         principalTable: "Vaccines",
@@ -453,12 +482,12 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    OrderId = table.Column<string>(type: "longtext", nullable: false)
+                    OrderId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Rating = table.Column<int>(type: "int", nullable: false),
                     Comment = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    OrderId1 = table.Column<string>(type: "varchar(255)", nullable: false)
+                    Status = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -473,54 +502,10 @@ namespace Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Feedbacks", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "varchar(255)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    FeedbackId = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ProfileId = table.Column<string>(type: "varchar(255)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PurchaseDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    TotalAmount = table.Column<int>(type: "int", nullable: false),
-                    TotalOrderPrice = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ChildrenProfileId = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    DeletedBy = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_ChildrenProfiles_ChildrenProfileId",
-                        column: x => x.ChildrenProfileId,
-                        principalTable: "ChildrenProfiles",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Orders_ChildrenProfiles_ProfileId",
-                        column: x => x.ProfileId,
-                        principalTable: "ChildrenProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Orders_Feedbacks_FeedbackId",
-                        column: x => x.FeedbackId,
-                        principalTable: "Feedbacks",
+                        name: "FK_Feedbacks_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 })
@@ -578,8 +563,6 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<int>(type: "int", nullable: false),
-                    OrderId1 = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -599,11 +582,6 @@ namespace Repositories.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_OrderVaccineDetails_Orders_OrderId1",
-                        column: x => x.OrderId1,
-                        principalTable: "Orders",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_OrderVaccineDetails_Vaccines_VaccineId",
                         column: x => x.VaccineId,
@@ -784,14 +762,10 @@ namespace Repositories.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChildrenProfiles_AccountId1",
-                table: "ChildrenProfiles",
-                column: "AccountId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Feedbacks_OrderId1",
+                name: "IX_Feedbacks_OrderId",
                 table: "Feedbacks",
-                column: "OrderId1");
+                column: "OrderId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderPackageDetails_OrderId",
@@ -809,11 +783,6 @@ namespace Repositories.Migrations
                 column: "ChildrenProfileId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_FeedbackId",
-                table: "Orders",
-                column: "FeedbackId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Orders_ProfileId",
                 table: "Orders",
                 column: "ProfileId");
@@ -822,11 +791,6 @@ namespace Repositories.Migrations
                 name: "IX_OrderVaccineDetails_OrderId",
                 table: "OrderVaccineDetails",
                 column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderVaccineDetails_OrderId1",
-                table: "OrderVaccineDetails",
-                column: "OrderId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderVaccineDetails_VaccineId",
@@ -879,11 +843,6 @@ namespace Repositories.Migrations
                 column: "ManufacturerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VaccineBatches_ManufacturerId1",
-                table: "VaccineBatches",
-                column: "ManufacturerId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_VaccineBatches_VaccineCenterId",
                 table: "VaccineBatches",
                 column: "VaccineCenterId");
@@ -924,11 +883,6 @@ namespace Repositories.Migrations
                 column: "VaccinePackageId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VaccinePackageDetails_VaccinePackageId1",
-                table: "VaccinePackageDetails",
-                column: "VaccinePackageId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_VaccineReactions_VaccinationScheduleId",
                 table: "VaccineReactions",
                 column: "VaccinationScheduleId");
@@ -952,38 +906,13 @@ namespace Repositories.Migrations
                 name: "IX_Vaccines_VaccineCategoryId",
                 table: "Vaccines",
                 column: "VaccineCategoryId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Feedbacks_Orders_OrderId1",
-                table: "Feedbacks",
-                column: "OrderId1",
-                principalTable: "Orders",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Accounts_VaccineCenters_CenterId",
-                table: "Accounts");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Accounts_VaccineCenters_VaccineCenterId",
-                table: "Accounts");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ChildrenProfiles_Accounts_AccountId",
-                table: "ChildrenProfiles");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ChildrenProfiles_Accounts_AccountId1",
-                table: "ChildrenProfiles");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Feedbacks_Orders_OrderId1",
-                table: "Feedbacks");
+            migrationBuilder.DropTable(
+                name: "Feedbacks");
 
             migrationBuilder.DropTable(
                 name: "Payments");
@@ -1010,7 +939,13 @@ namespace Repositories.Migrations
                 name: "VaccinePackages");
 
             migrationBuilder.DropTable(
+                name: "Orders");
+
+            migrationBuilder.DropTable(
                 name: "Vaccines");
+
+            migrationBuilder.DropTable(
+                name: "ChildrenProfiles");
 
             migrationBuilder.DropTable(
                 name: "VaccineBatches");
@@ -1019,22 +954,13 @@ namespace Repositories.Migrations
                 name: "VaccineCategories");
 
             migrationBuilder.DropTable(
+                name: "Accounts");
+
+            migrationBuilder.DropTable(
                 name: "Manufacturers");
 
             migrationBuilder.DropTable(
                 name: "VaccineCenters");
-
-            migrationBuilder.DropTable(
-                name: "Accounts");
-
-            migrationBuilder.DropTable(
-                name: "Orders");
-
-            migrationBuilder.DropTable(
-                name: "ChildrenProfiles");
-
-            migrationBuilder.DropTable(
-                name: "Feedbacks");
         }
     }
 }

@@ -9,6 +9,11 @@ namespace ModelViews.Responses.VaccineCenter
 {
     public class VaccineCenterResponseDTO
     {
+
+        //int code
+        //T data 
+        //    string message
+
         public string Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }

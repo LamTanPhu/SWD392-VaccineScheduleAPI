@@ -12,15 +12,13 @@ namespace IRepositories.Entity
 
     public class VaccinePackageDetail : BaseEntity
     {
+        [ForeignKey("Vaccine")]
         public string VaccineId { get; set; }
+        [ForeignKey("VaccinePackage")]
         public string VaccinePackageId { get; set; }
         public int PackagePrice { get; set; }
-
         // Navigation properties
-        [ForeignKey("VaccineId")]
         public virtual Vaccine Vaccine { get; set; }
-
-        [ForeignKey("VaccinePackageId")]
         public virtual VaccinePackage VaccinePackage { get; set; }
     }
 
