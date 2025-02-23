@@ -123,6 +123,11 @@ namespace Repositories.Context
                 .WithMany()
                 .HasForeignKey(p => p.OrderId);
 
+            // Configure PayAmount column type
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.PayAmount)
+                .HasColumnType("decimal(18,4)");
+
             // OrderVaccineDetail -> Order relationship
             modelBuilder.Entity<OrderVaccineDetails>()
                 .HasOne(ovd => ovd.Order)
