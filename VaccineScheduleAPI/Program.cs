@@ -10,13 +10,16 @@ builder.Services.AddControllers();
 // Get the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Register DbContext with MySQL provider (Pomelo)
+//// Register DbContext with MySQL provider (Pomelo)
+//builder.Services.AddDbContext<DatabaseContext>(options =>
+//    options.UseMySql(
+//        connectionString,
+//        ServerVersion.AutoDetect(connectionString)
+//    ));
+//// Register database context
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    ));
-
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
