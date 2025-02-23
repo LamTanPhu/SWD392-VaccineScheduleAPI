@@ -14,4 +14,5 @@ namespace Core.Utils
                 return Convert.ToBase64String(hashBytes);
             }
         }
+    }
 }
