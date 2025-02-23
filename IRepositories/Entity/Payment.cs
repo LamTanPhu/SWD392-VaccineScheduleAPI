@@ -20,7 +20,6 @@ namespace IRepositories.Entity
         public decimal PayAmount { get; set; }
 
         // Navigation properties
-
         public virtual Order Order { get; set; }
     }
 
