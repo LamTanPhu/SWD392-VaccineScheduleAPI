@@ -16,18 +16,20 @@ namespace IRepositories.Entity
     public class Account : BaseEntity
     {
         [ForeignKey("VaccineCenter")]
-        public string? CenterId { get; set; }
+        public string? VaccineCenterId { get; set; }  // Foreign key for VaccineCenter
+
+        public virtual VaccineCenter VaccineCenter { get; set; }  // Navigation property
+
         public string? Username { get; set; }
         public string PasswordHash { get; set; }
         public string Email { get; set; }
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]  // Ensures JSON serialization uses string values
-        public RoleEnum Role { get; set; }  // Now using Enum instead of string
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public RoleEnum Role { get; set; }
 
         public string Status { get; set; }
 
-        // Navigation properties
-        public virtual VaccineCenter Center { get; set; }
         public virtual ICollection<ChildrenProfile> ChildrenProfiles { get; set; }
     }
+
 }

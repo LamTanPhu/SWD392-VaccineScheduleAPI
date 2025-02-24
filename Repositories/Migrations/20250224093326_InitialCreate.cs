@@ -148,7 +148,7 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CenterId = table.Column<string>(type: "varchar(255)", nullable: true)
+                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Username = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -159,8 +159,6 @@ namespace Repositories.Migrations
                     Role = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Status = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -176,15 +174,11 @@ namespace Repositories.Migrations
                 {
                     table.PrimaryKey("PK_Accounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Accounts_VaccineCenters_CenterId",
-                        column: x => x.CenterId,
-                        principalTable: "VaccineCenters",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_Accounts_VaccineCenters_VaccineCenterId",
                         column: x => x.VaccineCenterId,
                         principalTable: "VaccineCenters",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -196,12 +190,10 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ManufacturerId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CenterId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     ActiveStatus = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -223,16 +215,11 @@ namespace Repositories.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_VaccineBatches_VaccineCenters_CenterId",
-                        column: x => x.CenterId,
-                        principalTable: "VaccineCenters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_VaccineBatches_VaccineCenters_VaccineCenterId",
                         column: x => x.VaccineCenterId,
                         principalTable: "VaccineCenters",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -279,7 +266,7 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CategoryId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    VaccineCategoryId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     BatchId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -296,8 +283,6 @@ namespace Repositories.Migrations
                     ProductionDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     ExpirationDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Status = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    VaccineCategoryId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -317,18 +302,13 @@ namespace Repositories.Migrations
                         column: x => x.BatchId,
                         principalTable: "VaccineBatches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Vaccines_VaccineCategories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "VaccineCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Vaccines_VaccineCategories_VaccineCategoryId",
                         column: x => x.VaccineCategoryId,
                         principalTable: "VaccineCategories",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -636,7 +616,7 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ProfileId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CenterId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     OrderVaccineDetailsId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -648,10 +628,6 @@ namespace Repositories.Migrations
                     AdministeredBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    ChildrenProfileId = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    VaccineCenterId = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -665,11 +641,6 @@ namespace Repositories.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_VaccinationSchedules", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_VaccinationSchedules_ChildrenProfiles_ChildrenProfileId",
-                        column: x => x.ChildrenProfileId,
-                        principalTable: "ChildrenProfiles",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_VaccinationSchedules_ChildrenProfiles_ProfileId",
                         column: x => x.ProfileId,
@@ -689,16 +660,11 @@ namespace Repositories.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_VaccinationSchedules_VaccineCenters_CenterId",
-                        column: x => x.CenterId,
-                        principalTable: "VaccineCenters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_VaccinationSchedules_VaccineCenters_VaccineCenterId",
                         column: x => x.VaccineCenterId,
                         principalTable: "VaccineCenters",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -708,7 +674,7 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    VaccineScheduleId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    VaccinationScheduleId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Reaction = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -716,8 +682,6 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ReactionTime = table.Column<int>(type: "int", nullable: false),
                     ResolvedTime = table.Column<int>(type: "int", nullable: true),
-                    VaccinationScheduleId = table.Column<string>(type: "varchar(255)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -735,20 +699,10 @@ namespace Repositories.Migrations
                         name: "FK_VaccineReactions_VaccinationSchedules_VaccinationScheduleId",
                         column: x => x.VaccinationScheduleId,
                         principalTable: "VaccinationSchedules",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_VaccineReactions_VaccinationSchedules_VaccineScheduleId",
-                        column: x => x.VaccineScheduleId,
-                        principalTable: "VaccinationSchedules",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Accounts_CenterId",
-                table: "Accounts",
-                column: "CenterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_VaccineCenterId",
@@ -802,16 +756,6 @@ namespace Repositories.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VaccinationSchedules_CenterId",
-                table: "VaccinationSchedules",
-                column: "CenterId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VaccinationSchedules_ChildrenProfileId",
-                table: "VaccinationSchedules",
-                column: "ChildrenProfileId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_VaccinationSchedules_OrderPackageDetailsId",
                 table: "VaccinationSchedules",
                 column: "OrderPackageDetailsId");
@@ -830,11 +774,6 @@ namespace Repositories.Migrations
                 name: "IX_VaccinationSchedules_VaccineCenterId",
                 table: "VaccinationSchedules",
                 column: "VaccineCenterId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_VaccineBatches_CenterId",
-                table: "VaccineBatches",
-                column: "CenterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VaccineBatches_ManufacturerId",
@@ -887,19 +826,9 @@ namespace Repositories.Migrations
                 column: "VaccinationScheduleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VaccineReactions_VaccineScheduleId",
-                table: "VaccineReactions",
-                column: "VaccineScheduleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Vaccines_BatchId",
                 table: "Vaccines",
                 column: "BatchId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Vaccines_CategoryId",
-                table: "Vaccines",
-                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Vaccines_VaccineCategoryId",

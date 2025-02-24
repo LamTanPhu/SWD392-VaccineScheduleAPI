@@ -7,11 +7,9 @@ using Core.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace IRepositories.Entity
 {
-
-
     public class Vaccine : BaseEntity
     {
-        public string CategoryId { get; set; }
+        public string VaccineCategoryId { get; set; }  // This is the FK property
         public string BatchId { get; set; }
         public string Name { get; set; }
         public int QuantityAvailable { get; set; }
@@ -25,13 +23,13 @@ namespace IRepositories.Entity
         public DateTime ExpirationDate { get; set; }
         public string Status { get; set; }
 
-
         // Navigation properties
-        [ForeignKey("CategoryId")]
-        public virtual VaccineCategory Category { get; set; }
+        [ForeignKey("VaccineCategoryId")]
+        public virtual VaccineCategory VaccineCategory { get; set; }
 
         [ForeignKey("BatchId")]
         public virtual VaccineBatch Batch { get; set; }
     }
+
 
 }
