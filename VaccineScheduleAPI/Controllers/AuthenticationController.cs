@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using IServices.Interfaces;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
-using Core.Utils;
+using Microsoft.AspNetCore.Authorization;
+using IRepositories.Entity;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -13,77 +14,51 @@ namespace VaccineScheduleAPI.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IJwtService _jwtService;
 
-        public AuthenticationController(IAccountService accountService)
+        public AuthenticationController(IAccountService accountService, IJwtService jwtService)
         {
             _accountService = accountService;
+            _jwtService = jwtService;
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
-        {
-            try
-            {
-                if (model == null)
-                {
-                    return BadRequest(new { message = "Invalid login request." });
-                }
-
-                var user = await _accountService.GetByUsernameAsync(model.Username);
-                if (user == null || !VerifyPassword(model.Password, user.PasswordHash))
-                {
-                    return Unauthorized(new { message = "Invalid username or password." });
-                }
-
-                return Ok(new LoginResponseDTO { Username = user.Username, Role = user.Role });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message,
-                    exception = ex.ToString() // Returns full exception details
-                });
-            }
-        }
+        // POST api/authentication/register
         [HttpPost("register")]
-public async Task<IActionResult> Register([FromBody] RegisterRequestDTO model)
-{
-    try
-    {
-        if (model == null || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password) || string.IsNullOrEmpty(model.ConfirmPassword))
+        public async Task<ActionResult<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO request)
         {
-            return BadRequest(new { message = "Email, Password, and ConfirmPassword are required." });
+            var response = await _accountService.RegisterAsync(request);
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response);
         }
 
-        if (model.Password != model.ConfirmPassword)
+        // POST api/authentication/login
+        [HttpPost("login")]
+        public async Task<ActionResult<LoginResponseDTO>> LoginAsync(LoginRequestDTO request)
         {
-            return BadRequest(new { message = "Password and ConfirmPassword do not match." });
+            var response = await _accountService.LoginAsync(request);
+            if (string.IsNullOrEmpty(response.Token))
+                return Unauthorized(new { message = "Invalid username or password." });
+
+            return Ok(response); // Return the successful login response
         }
 
-        model.Password = CoreHelper.HashPassword(model.Password);
-        var result = await _accountService.RegisterAsync(model);
-        if (!result.Success)
+        // GET api/authentication/profile
+        [Authorize(Roles = "Admin, Staff, Parent")]
+        [HttpGet("profile")]
+        public async Task<ActionResult<Account>> GetProfileAsync()
         {
-            return BadRequest(new { message = result.Message });
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { message = "Token is required" });
+
+            var account = await _jwtService.ExtractAccountAsync(token);
+            if (account == null)
+                return Unauthorized(new { message = "Invalid token" });
+
+            return Ok(account);
         }
 
-        return Ok(new { message = "Registration successful." });
-    }
-    catch (Exception ex)
-    {
-        return BadRequest(new
-        {
-            message = ex.Message,
-            exception = ex.ToString()
-        });
-    }
-}
-
-
-        private bool VerifyPassword(string password, string storedHash)
-        {
-            return CoreHelper.HashPassword(password) == storedHash;
-        }
     }
 }

@@ -8,31 +8,28 @@ using System.Threading.Tasks;
 using Repositories.Context;
 using Microsoft.EntityFrameworkCore;
 using ModelViews.DTOs;
+using System.Threading.Tasks;
+
 namespace Repositories.Repository
 {
-    public class AccountRepository : IAccountRepository
+    public class AccountRepository : GenericRepository<Account>, IAccountRepository
     {
-        private readonly DatabaseContext _context;
-
-        public AccountRepository(DatabaseContext context)
-        {
-            _context = context;
-        }
+        public AccountRepository(DatabaseContext context) : base(context) { }
 
         public async Task<bool> AddUserAsync(Account user)
         {
-            await _context.Accounts.AddAsync(user);
+            await _dbSet.AddAsync(user);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task<Account> GetByUsernameAsync(string username)
+
+        public async Task<Account?> GetByUsernameAsync(string username)
         {
-            return await _context.Accounts.FirstOrDefaultAsync(a => a.Username == username);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Username == username);
         }
 
-        public async Task<Account> GetByEmailAsync(string email)
+        public async Task<Account?> GetByEmailAsync(string email)
         {
-            return await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
         }
-   
     }
 }

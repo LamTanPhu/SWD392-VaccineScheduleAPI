@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IRepositories.IRepository
 {
-    public interface IAccountRepository
+    public interface IAccountRepository : IGenericRepository<Account>
     {
         Task<Account?> GetByUsernameAsync(string username);
         Task<Account> GetByEmailAsync(string email);

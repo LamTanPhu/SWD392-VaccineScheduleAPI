@@ -13,5 +13,6 @@ namespace IServices.Interfaces
     {
         Task<Account?> GetByUsernameAsync(string username);
         Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request);
+        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);  // Added LoginAsync method
     }
 }

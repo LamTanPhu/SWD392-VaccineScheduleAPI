@@ -48,6 +48,13 @@ namespace Repositories.Context
         // Configuration for relationships and database constraints
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            // Store RoleEnum as a string in the database
+            modelBuilder.Entity<Account>()
+                .Property(a => a.Role)
+                .HasConversion<string>();
+
             // VaccineCategory -> ParentCategory relationship
             modelBuilder.Entity<VaccineCategory>()
                 .HasOne(v => v.ParentCategory)
