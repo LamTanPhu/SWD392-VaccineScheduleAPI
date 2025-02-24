@@ -12,13 +12,14 @@ namespace IRepositories.Entity
     {
         [ForeignKey("Manufacturer")]
         public string ManufacturerId { get; set; }
-        [ForeignKey("Center")]
-        public string CenterId { get; set; }
+        public virtual Manufacturer Manufacturer { get; set; }
+
+
+        [ForeignKey("VaccineCenter")]
+        public string VaccineCenterId { get; set; }
+        public virtual VaccineCenter VaccineCenter { get; set; }
+
         public int Quantity { get; set; }
         public string ActiveStatus { get; set; }
-        // Navigation properties
-        public virtual Manufacturer Manufacturer { get; set; }
-        public virtual VaccineCenter Center { get; set; }
     }
-
 }

@@ -27,9 +27,6 @@ namespace Repositories.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("CenterId")
-                        .HasColumnType("varchar(255)");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
 
@@ -71,8 +68,6 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CenterId");
 
                     b.HasIndex("VaccineCenterId");
 
@@ -434,13 +429,6 @@ namespace Repositories.Migrations
                     b.Property<DateTime>("AppointmentDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("CenterId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("ChildrenProfileId")
-                        .HasColumnType("varchar(255)");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
 
@@ -476,13 +464,10 @@ namespace Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("VaccineCenterId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CenterId");
-
-                    b.HasIndex("ChildrenProfileId");
 
                     b.HasIndex("OrderPackageDetailsId");
 
@@ -506,10 +491,6 @@ namespace Repositories.Migrations
 
                     b.Property<DateTime>("BetweenPeriod")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("CategoryId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
@@ -562,13 +543,12 @@ namespace Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("VaccineCategoryId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
-
-                    b.HasIndex("CategoryId");
 
                     b.HasIndex("VaccineCategoryId");
 
@@ -583,10 +563,6 @@ namespace Repositories.Migrations
                     b.Property<string>("ActiveStatus")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<string>("CenterId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
@@ -614,11 +590,10 @@ namespace Repositories.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("VaccineCenterId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CenterId");
 
                     b.HasIndex("ManufacturerId");
 
@@ -909,9 +884,6 @@ namespace Repositories.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("VaccinationScheduleId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("VaccineScheduleId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
@@ -919,22 +891,17 @@ namespace Repositories.Migrations
 
                     b.HasIndex("VaccinationScheduleId");
 
-                    b.HasIndex("VaccineScheduleId");
-
                     b.ToTable("VaccineReactions");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.Account", b =>
                 {
-                    b.HasOne("IRepositories.Entity.VaccineCenter", "Center")
-                        .WithMany()
-                        .HasForeignKey("CenterId");
-
-                    b.HasOne("IRepositories.Entity.VaccineCenter", null)
+                    b.HasOne("IRepositories.Entity.VaccineCenter", "VaccineCenter")
                         .WithMany("Accounts")
-                        .HasForeignKey("VaccineCenterId");
+                        .HasForeignKey("VaccineCenterId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Center");
+                    b.Navigation("VaccineCenter");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.ChildrenProfile", b =>
@@ -1025,16 +992,6 @@ namespace Repositories.Migrations
 
             modelBuilder.Entity("IRepositories.Entity.VaccinationSchedule", b =>
                 {
-                    b.HasOne("IRepositories.Entity.VaccineCenter", "Center")
-                        .WithMany()
-                        .HasForeignKey("CenterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.ChildrenProfile", null)
-                        .WithMany("VaccinationSchedules")
-                        .HasForeignKey("ChildrenProfileId");
-
                     b.HasOne("IRepositories.Entity.OrderPackageDetails", "OrderPackageDetails")
                         .WithMany()
                         .HasForeignKey("OrderPackageDetailsId")
@@ -1046,22 +1003,24 @@ namespace Repositories.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IRepositories.Entity.ChildrenProfile", "Profile")
-                        .WithMany()
+                        .WithMany("VaccinationSchedules")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IRepositories.Entity.VaccineCenter", null)
+                    b.HasOne("IRepositories.Entity.VaccineCenter", "VaccineCenter")
                         .WithMany("VaccinationSchedules")
-                        .HasForeignKey("VaccineCenterId");
-
-                    b.Navigation("Center");
+                        .HasForeignKey("VaccineCenterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("OrderPackageDetails");
 
                     b.Navigation("OrderVaccineDetails");
 
                     b.Navigation("Profile");
+
+                    b.Navigation("VaccineCenter");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.Vaccine", b =>
@@ -1069,45 +1028,37 @@ namespace Repositories.Migrations
                     b.HasOne("IRepositories.Entity.VaccineBatch", "Batch")
                         .WithMany()
                         .HasForeignKey("BatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("IRepositories.Entity.VaccineCategory", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("IRepositories.Entity.VaccineCategory", null)
+                    b.HasOne("IRepositories.Entity.VaccineCategory", "VaccineCategory")
                         .WithMany("Vaccines")
-                        .HasForeignKey("VaccineCategoryId");
+                        .HasForeignKey("VaccineCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Batch");
 
-                    b.Navigation("Category");
+                    b.Navigation("VaccineCategory");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.VaccineBatch", b =>
                 {
-                    b.HasOne("IRepositories.Entity.VaccineCenter", "Center")
-                        .WithMany()
-                        .HasForeignKey("CenterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("IRepositories.Entity.Manufacturer", "Manufacturer")
                         .WithMany("VaccineBatches")
                         .HasForeignKey("ManufacturerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("IRepositories.Entity.VaccineCenter", null)
+                    b.HasOne("IRepositories.Entity.VaccineCenter", "VaccineCenter")
                         .WithMany("VaccineBatches")
-                        .HasForeignKey("VaccineCenterId");
-
-                    b.Navigation("Center");
+                        .HasForeignKey("VaccineCenterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Manufacturer");
+
+                    b.Navigation("VaccineCenter");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.VaccineCategory", b =>
@@ -1175,17 +1126,13 @@ namespace Repositories.Migrations
 
             modelBuilder.Entity("IRepositories.Entity.VaccineReaction", b =>
                 {
-                    b.HasOne("IRepositories.Entity.VaccinationSchedule", null)
+                    b.HasOne("IRepositories.Entity.VaccinationSchedule", "VaccinationSchedule")
                         .WithMany("VaccineReactions")
-                        .HasForeignKey("VaccinationScheduleId");
-
-                    b.HasOne("IRepositories.Entity.VaccinationSchedule", "VaccineSchedule")
-                        .WithMany()
-                        .HasForeignKey("VaccineScheduleId")
+                        .HasForeignKey("VaccinationScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("VaccineSchedule");
+                    b.Navigation("VaccinationSchedule");
                 });
 
             modelBuilder.Entity("IRepositories.Entity.Account", b =>

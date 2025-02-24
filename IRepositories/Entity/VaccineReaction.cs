@@ -11,15 +11,15 @@ namespace IRepositories.Entity
 
     public class VaccineReaction : BaseEntity
     {
-        public string VaccineScheduleId { get; set; }
+        public string VaccinationScheduleId { get; set; }  // Updated foreign key property
+
+        [ForeignKey("VaccinationScheduleId")]
+        public virtual VaccinationSchedule VaccinationSchedule { get; set; }  // Updated navigation property
+
         public string Reaction { get; set; }
         public string Severity { get; set; }
         public int ReactionTime { get; set; }
         public int? ResolvedTime { get; set; }
-
-        // Navigation property
-        [ForeignKey("VaccineScheduleId")]
-        public virtual VaccinationSchedule VaccineSchedule { get; set; }
     }
 
 }
