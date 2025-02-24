@@ -57,7 +57,7 @@ namespace Services.Services
                 Username = request.Username,
                 Email = request.Email,
                 PasswordHash = hashedPassword,
-                Role = RoleEnum.Parent, // Default role, change based on your logic
+                Role = request.Role,  // Use the role passed in the request
                 Status = "Active"
             };
 
@@ -67,7 +67,8 @@ namespace Services.Services
                 return new RegisterResponseDTO
                 {
                     Success = true,
-                    Message = "User registered successfully."
+                    Message = "User registered successfully.",
+                    Role = newUser.Role  // Include the role in the response
                 };
             }
 
@@ -86,9 +87,9 @@ namespace Services.Services
                 return new LoginResponseDTO
                 {
                     Username = request.Username,
-                    Role = RoleEnum.Parent, // Default or adjust depending on your logic
-                    Token = string.Empty, // No token if login failed
-                    Expiration = DateTime.MinValue // No expiration if login failed
+                    Role = RoleEnum.Parent,  // Default role on failure
+                    Token = string.Empty,
+                    Expiration = DateTime.MinValue
                 };
             }
 
@@ -98,10 +99,11 @@ namespace Services.Services
             return new LoginResponseDTO
             {
                 Username = user.Username,
-                Role = user.Role,
+                Role = user.Role,  // Return the correct role from the database
                 Token = token,
                 Expiration = expiration
             };
         }
+
     }
 }
