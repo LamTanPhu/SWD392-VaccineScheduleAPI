@@ -1,8 +1,10 @@
-﻿namespace Core.Utils
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace Core.Utils
 {
-    public class CoreHelper
+    public static class CoreHelper
     {
         public static DateTimeOffset SystemTimeNow => TimeHelper.ConvertToUtcPlus7(DateTimeOffset.Now);
-
     }
 }

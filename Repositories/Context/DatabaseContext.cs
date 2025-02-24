@@ -48,6 +48,13 @@ namespace Repositories.Context
         // Configuration for relationships and database constraints
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            // Store RoleEnum as a string in the database
+            modelBuilder.Entity<Account>()
+                .Property(a => a.Role)
+                .HasConversion<string>();
+
             // VaccineCategory -> ParentCategory relationship
             modelBuilder.Entity<VaccineCategory>()
                 .HasOne(v => v.ParentCategory)
@@ -122,6 +129,11 @@ namespace Repositories.Context
                 .HasOne(p => p.Order)
                 .WithMany()
                 .HasForeignKey(p => p.OrderId);
+
+            // Configure PayAmount column type
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.PayAmount)
+                .HasColumnType("decimal(18,4)");
 
             // OrderVaccineDetail -> Order relationship
             modelBuilder.Entity<OrderVaccineDetails>()

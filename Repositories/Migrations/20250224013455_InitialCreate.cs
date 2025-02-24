@@ -148,9 +148,9 @@ namespace Repositories.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    CenterId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    CenterId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Username = table.Column<string>(type: "longtext", nullable: false)
+                    Username = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PasswordHash = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -179,8 +179,7 @@ namespace Repositories.Migrations
                         name: "FK_Accounts_VaccineCenters_CenterId",
                         column: x => x.CenterId,
                         principalTable: "VaccineCenters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Accounts_VaccineCenters_VaccineCenterId",
                         column: x => x.VaccineCenterId,
@@ -606,7 +605,7 @@ namespace Repositories.Migrations
                     PaymentDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     PaymentStatus = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    PayAmount = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    PayAmount = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)

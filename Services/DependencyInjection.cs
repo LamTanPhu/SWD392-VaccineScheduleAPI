@@ -23,6 +23,7 @@ namespace Services
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IVaccineCenterRepository, VaccineCenterRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
         }
     }
 }

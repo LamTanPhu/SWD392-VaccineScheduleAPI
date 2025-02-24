@@ -28,7 +28,6 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("CenterId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedBy")
@@ -66,7 +65,6 @@ namespace Repositories.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Username")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("VaccineCenterId")
@@ -398,7 +396,7 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<decimal>("PayAmount")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime(6)");
@@ -930,9 +928,7 @@ namespace Repositories.Migrations
                 {
                     b.HasOne("IRepositories.Entity.VaccineCenter", "Center")
                         .WithMany()
-                        .HasForeignKey("CenterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CenterId");
 
                     b.HasOne("IRepositories.Entity.VaccineCenter", null)
                         .WithMany("Accounts")

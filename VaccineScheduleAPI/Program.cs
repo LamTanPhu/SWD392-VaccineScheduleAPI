@@ -1,6 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Repositories.Context;
 using VaccineScheduleAPI;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,17 +19,114 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 // Register DbContext with MySQL provider (Pomelo)
 builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    ));
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
 
 // Add Swagger/OpenAPI support
+// Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        Description = "Enter 'Bearer' [space] and then your token"
+    });
 
-// Configuring DI for other services (repositories and API services)
-builder.Services.AddConfig(builder.Configuration);  // Registers services and repositories
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+
+// Register database context
+// If you were using SQL Server or another database provider, you could configure it here as needed
+// Example:
+// builder.Services.AddDbContext<DatabaseContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+// );
+
+// Register custom services and repositories
+builder.Services.AddConfig(builder.Configuration); // Registers services and repositories
+
+// Set up JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+Console.WriteLine("JWT Key: " + jwtSettings["Key"]);  // Debugging step
+
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                Console.WriteLine($"🔍 Received Token: {context.Token}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                var jwtToken = context.SecurityToken as Microsoft.IdentityModel.JsonWebTokens.JsonWebToken;
+                if (jwtToken != null)
+                {
+                    Console.WriteLine($"✅ Token Issuer: {jwtToken.Issuer}");
+                    Console.WriteLine($"✅ Token Audience: {jwtToken.Audiences.FirstOrDefault()}");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Failed to parse JWT token.");
+                }
+                Console.WriteLine($"✅ Token Issuer: {jwtToken.Issuer}");
+                Console.WriteLine($"✅ Token Audience: {jwtToken.Audiences.FirstOrDefault()}");
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"❌ JWT Authentication Failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+
+
+// Add authorization policy (optional)
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Bearer", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 var app = builder.Build();
 
@@ -33,7 +137,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Use HTTPS redirection and authentication/authorization middleware
 app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
+app.UseAuthentication();  // Added authentication middleware
+app.UseAuthorization();   // Add authorization middleware
+app.MapControllers();     // Map the controllers
+app.Run();                // Run the application
