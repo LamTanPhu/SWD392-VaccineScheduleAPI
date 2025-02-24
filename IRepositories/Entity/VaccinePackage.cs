@@ -13,7 +13,7 @@ namespace IRepositories.Entity
     {
         public string PackageName { get; set; }
         public string PackageDescription { get; set; }
-        public int PackageStatus { get; set; }
+        public bool PackageStatus { get; set; }
 
         // Navigation property
         public virtual ICollection<VaccinePackageDetail> PackageDetails { get; set; }

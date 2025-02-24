@@ -795,8 +795,8 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("PackageStatus")
-                        .HasColumnType("int");
+                    b.Property<bool>("PackageStatus")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
 
