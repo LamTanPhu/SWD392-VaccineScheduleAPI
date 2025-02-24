@@ -5,6 +5,7 @@ using Repositories.Context;
 using Services;
 using IServices.Interfaces;
 using Services.Services;
+using Services.Interfaces;
 
 namespace VaccineScheduleAPI
 {
@@ -39,6 +40,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IVaccineCenterService, VaccineCenterService>(); //  Register Services 
             services.AddScoped<IAccountService, AccountService>(); //  Register Services 
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IVaccinePackageService, VaccinePackageService>();
 
         }
     }
