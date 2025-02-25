@@ -5,6 +5,7 @@
     using ModelViews.Responses.VaccinePackage;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 namespace VaccineScheduleAPI.Controllers
 {
 
@@ -19,13 +20,14 @@ namespace VaccineScheduleAPI.Controllers
             {
                 _service = service;
             }
-
+            [Authorize(Roles = "Admin")]
             [HttpGet]
             public async Task<ActionResult<IEnumerable<VaccinePackageResponseDTO>>> GetAll()
             {
                 return Ok(await _service.GetAllPackagesAsync());
             }
 
+            [Authorize(Roles = "Admin")]
             [HttpGet("{id}")]
             public async Task<ActionResult<VaccinePackageResponseDTO>> GetById(string id)
             {
@@ -33,7 +35,8 @@ namespace VaccineScheduleAPI.Controllers
                 if (package == null) return NotFound();
                 return Ok(package);
             }
-
+            
+            [Authorize(Roles = "Admin")]
             [HttpPost]
             public async Task<ActionResult> Create(VaccinePackageRequestDTO packageDto)
             {
@@ -41,6 +44,7 @@ namespace VaccineScheduleAPI.Controllers
                 return CreatedAtAction(nameof(GetById), new { id = packageDto.PackageName }, packageDto);
             }
 
+            [Authorize(Roles = "Admin")]
             [HttpPut("{id}")]
             public async Task<ActionResult> Update(string id, VaccinePackageRequestDTO packageDto)
             {
@@ -48,6 +52,7 @@ namespace VaccineScheduleAPI.Controllers
                 return NoContent();
             }
 
+            [Authorize(Roles = "Admin")]
             [HttpDelete("{id}")]
             public async Task<ActionResult> Delete(string id)
             {

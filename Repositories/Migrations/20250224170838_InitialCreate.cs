@@ -28,10 +28,7 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CountryCode = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ActiveStatus = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Status = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ActiveStatus = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)

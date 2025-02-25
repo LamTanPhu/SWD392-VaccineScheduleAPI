@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250224144809_InitialCreate")]
+    [Migration("20250224170838_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -176,9 +176,8 @@ namespace Repositories.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("ActiveStatus")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<bool>("ActiveStatus")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("CountryCode")
                         .IsRequired()
@@ -210,10 +209,6 @@ namespace Repositories.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("longtext");
 
