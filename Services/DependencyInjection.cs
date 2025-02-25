@@ -25,6 +25,7 @@ namespace Services
             services.AddScoped<IVaccineCenterRepository, VaccineCenterRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IVaccinePackageRepository, VaccinePackageRepository>();
+            services.AddScoped<IManufacturerRepository, ManufacturerRepository>();
 
         }
     }
