@@ -20,6 +20,8 @@ namespace IRepositories.Entity
         public virtual VaccineCenter VaccineCenter { get; set; }
 
         public int Quantity { get; set; }
+        public string BatchNumber { get; set; }
+
         public string ActiveStatus { get; set; }
     }
 }
