@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250224170838_InitialCreate")]
+    [Migration("20250226061540_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -559,6 +559,10 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("ActiveStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("BatchNumber")
                         .IsRequired()
                         .HasColumnType("longtext");
 

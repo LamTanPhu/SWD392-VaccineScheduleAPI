@@ -42,6 +42,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
+            services.AddScoped<IVaccineBatchService, VaccineBatchService>();
 
         }
     }
