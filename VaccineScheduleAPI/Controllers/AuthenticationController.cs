@@ -59,6 +59,15 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(account);
         }
 
+        // POST api/authentication/login-with-google
+        [HttpPost("login-with-google")]
+        public async Task<ActionResult<LoginResponseDTO>> LoginWithGoogleAsync([FromBody] GoogleLoginRequestDTO request)
+        {
+            var response = await _accountService.LoginWithGoogleAsync(request.TokenId);
+            if (string.IsNullOrEmpty(response.Token))
+                return Unauthorized(new { message = "Invalid Google token." });
 
+            return Ok(response);  // Return the successful Google login response
+        }
     }
 }
