@@ -2,14 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IServices.Interfaces;
 using ModelViews.Requests.VaccineCenter;
 using ModelViews.Responses.VaccineCenter;
+using Microsoft.AspNetCore.Authorization;
+using IServices.Interfaces.Inventory;
 
 namespace VaccineScheduleAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class VaccineCentersController : ControllerBase
     {
         private readonly IVaccineCenterService _vaccineCenterService;
@@ -19,6 +21,8 @@ namespace VaccineScheduleAPI.Controllers
             _vaccineCenterService = vaccineCenterService;
         }
 
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllVaccineCenters()
         {
@@ -33,6 +37,8 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetVaccineCenterById(string id)
         {
@@ -51,6 +57,8 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateVaccineCenter([FromBody] VaccineCenterRequestDTO model)
         {
@@ -69,6 +77,8 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateVaccineCenter(string id, [FromBody] VaccineCenterUpdateDTO model)
         {
@@ -87,20 +97,8 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteVaccineCenter(string id)
-        //{
-
-        //    try
-        //    {
-        //        await _vaccineCenterService.DeleteAsync(id);
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { message = ex.Message });
-        //    }
-        //}
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
         [HttpDelete]
         public async Task<IActionResult> DeleteVaccineCenter([FromBody] VaccineCenterDeleteDTO model)
         {
@@ -115,7 +113,9 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        [HttpGet("{name}")]
+        // Only Admin can access this method
+        [Authorize(Roles = "Admin")]
+        [HttpGet("byname/{name}")]
         public async Task<IActionResult> GetVaccineCentersByName(string name)
         {
             try
@@ -132,7 +132,6 @@ namespace VaccineScheduleAPI.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
-
     }
+
 }

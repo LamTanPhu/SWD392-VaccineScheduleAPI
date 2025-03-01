@@ -7,7 +7,11 @@ using System.Reflection.PortableExecutable;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using IRepositories.Entity;
+using IRepositories.Entity.Accounts;
+using IRepositories.Entity.Inventory;
+using IRepositories.Entity.Orders;
+using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Vaccines;
 
 namespace Repositories.Context
 {
@@ -48,6 +52,13 @@ namespace Repositories.Context
         // Configuration for relationships and database constraints
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            // Store RoleEnum as a string in the database
+            modelBuilder.Entity<Account>()
+                .Property(a => a.Role)
+                .HasConversion<string>();
+
             // VaccineCategory -> ParentCategory relationship
             modelBuilder.Entity<VaccineCategory>()
                 .HasOne(v => v.ParentCategory)
@@ -63,22 +74,22 @@ namespace Repositories.Context
 
             // VaccineBatch -> VaccineCenter relationship
             modelBuilder.Entity<VaccineBatch>()
-                .HasOne(vb => vb.Center)
-                .WithMany()
-                .HasForeignKey(vb => vb.CenterId)
+                .HasOne(vb => vb.VaccineCenter)  // Updated navigation property name
+                .WithMany(vc => vc.VaccineBatches)  // Ensure VaccineCenter has a collection
+                .HasForeignKey(vb => vb.VaccineCenterId)  // Updated foreign key property
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Vaccine -> VaccineCategory relationship
             modelBuilder.Entity<Vaccine>()
-                .HasOne(v => v.Category)
-                .WithMany()
-                .HasForeignKey(v => v.CategoryId);
+                    .HasOne(v => v.VaccineCategory)       // A Vaccine has one VaccineCategory
+                    .WithMany(vc => vc.Vaccines)          // A VaccineCategory has many Vaccines
+                    .HasForeignKey(v => v.VaccineCategoryId);  // The foreign key in Vaccine is VaccineCategoryId
 
-            // Vaccine -> VaccineBatch relationship
+            // ✅ Fix: Vaccine -> VaccineBatch relationship
             modelBuilder.Entity<Vaccine>()
                 .HasOne(v => v.Batch)
                 .WithMany()
-                .HasForeignKey(v => v.BatchId);
+                .HasForeignKey(v => v.BatchId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // VaccinePackageDetail -> Vaccine relationship
             modelBuilder.Entity<VaccinePackageDetail>()
@@ -94,9 +105,10 @@ namespace Repositories.Context
 
             // Account -> VaccineCenter relationship
             modelBuilder.Entity<Account>()
-                .HasOne(a => a.Center)
-                .WithMany()
-                .HasForeignKey(a => a.CenterId);
+                .HasOne(a => a.VaccineCenter)  // Updated navigation property name
+                .WithMany(vc => vc.Accounts)   // Make sure VaccineCenter has a collection of Accounts
+                .HasForeignKey(a => a.VaccineCenterId)  // Updated foreign key property
+                .OnDelete(DeleteBehavior.Restrict);  // Optional: Define delete behavior
 
             // ChildrenProfile -> Account relationship
             modelBuilder.Entity<ChildrenProfile>()
@@ -173,14 +185,14 @@ namespace Repositories.Context
             // VaccinationSchedule -> ChildrenProfile relationship
             modelBuilder.Entity<VaccinationSchedule>()
                 .HasOne(vs => vs.Profile)
-                .WithMany()
+                .WithMany(cp => cp.VaccinationSchedules)  // A ChildrenProfile can have many VaccinationSchedules
                 .HasForeignKey(vs => vs.ProfileId);
 
             // VaccinationSchedule -> VaccineCenter relationship
             modelBuilder.Entity<VaccinationSchedule>()
-                .HasOne(vs => vs.Center)
-                .WithMany()
-                .HasForeignKey(vs => vs.CenterId)
+                .HasOne(vs => vs.VaccineCenter)
+                .WithMany(vc => vc.VaccinationSchedules)
+                .HasForeignKey(vs => vs.VaccineCenterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // VaccinationSchedule -> OrderVaccineDetail relationship
@@ -199,9 +211,9 @@ namespace Repositories.Context
 
             // VaccineReaction -> VaccinationSchedule relationship
             modelBuilder.Entity<VaccineReaction>()
-                .HasOne(vr => vr.VaccineSchedule)
-                .WithMany()
-                .HasForeignKey(vr => vr.VaccineScheduleId);
+                .HasOne(vr => vr.VaccinationSchedule)  // Updated navigation property
+                .WithMany(vs => vs.VaccineReactions)  // Ensure VaccinationSchedule has a collection
+                .HasForeignKey(vr => vr.VaccinationScheduleId);  // Updated foreign key property
         }
     }
 }
