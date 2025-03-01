@@ -23,7 +23,6 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 );
 
 // Add Swagger/OpenAPI support
-// Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

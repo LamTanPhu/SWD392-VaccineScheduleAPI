@@ -1,4 +1,4 @@
-﻿using IRepositories.Entity;
+﻿using IRepositories.Entity.Inventory;
 using IRepositories.IRepository;
 using IRepositories.IRepository.Inventory;
 using IServices.Interfaces.Inventory;
