@@ -18,7 +18,9 @@ namespace IRepositories.Entity
         public string Email { get; set; }
         public string Role { get; set; } // e.g., Admin, Parent, Staff
         public string Status { get; set; }
-
+        // Add OTP properties
+        public string? OTP { get; set; }
+        public DateTime? OTPExpired { get; set; }
         // Navigation properties
         public virtual VaccineCenter Center { get; set; }
         public virtual ICollection<ChildrenProfile> ChildrenProfiles { get; set; }

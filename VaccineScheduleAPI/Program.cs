@@ -16,11 +16,14 @@ builder.Services.AddControllers();
 
 // Get the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Add DbContext for your database
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register DbContext with MySQL provider (Pomelo)
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-);
+//builder.Services.AddDbContext<DatabaseContext>(options =>
+//    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+//);
 
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();

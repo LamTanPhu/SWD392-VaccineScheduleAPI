@@ -14,6 +14,8 @@ namespace IServices.Interfaces.Accounts
         Task<Account?> GetByUsernameAsync(string username);
         Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request);
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);  // Added LoginAsync method
-
+        Task<Account?> GetUserByEmailAsync(string email); // Add this method
+        Task UpdateUserAsync(Account user); // Add this method
+        Task<string> HashPassword(string password); // Add this method
     }
 }
