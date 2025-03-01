@@ -8,6 +8,9 @@ using System.IdentityModel.Tokens.Jwt;
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using IServices.Interfaces.Mail;
+using ModelViews.Requests.Mail;
+using Services.Services.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+// Configure Email settings and register EmailService
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
 // Register DbContext with MySQL provider (Pomelo)
 //builder.Services.AddDbContext<DatabaseContext>(options =>
 //    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))

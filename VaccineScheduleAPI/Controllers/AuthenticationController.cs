@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
+using BCrypt.Net;
 using System.Threading.Tasks;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
@@ -9,6 +9,7 @@ using IRepositories.Entity.Accounts;
 using Microsoft.AspNetCore.Identity.Data;
 using ModelViews.Requests.Mail;
 using IServices.Interfaces.Mail;
+using Org.BouncyCastle.Crypto.Generators;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -92,26 +93,26 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        //// POST api/authentication/reset-password
-        //[HttpPost("reset-password")]
-        //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
-        //{
-        //    var user = await _accountService.GetUserByEmailAsync(request.Email);
-        //    if (user == null)
-        //        return NotFound(new { message = "User not found." });
+        // POST api/authentication/reset-password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        {
+            var user = await _accountService.GetUserByEmailAsync(request.Email);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
 
-        //    // Validate OTP and expiry time
-        //    if (user.OTP != request.Otp || user.OTPExpired == null || user.OTPExpired < DateTime.UtcNow)
-        //        return BadRequest(new { message = "Invalid or expired OTP." });
+            // Validate OTP and expiry time
+            if (user.OTP != request.Otp || user.OTPExpired == null || user.OTPExpired < DateTime.UtcNow)
+                return BadRequest(new { message = "Invalid or expired OTP." });
 
-        //    // Reset password
-        //    user.Password = _accountService.HashPassword(request.NewPassword);
-        //    user.OTP = null;
-        //    user.OTPExpired = null; // Clear OTP after use
-        //    await _accountService.UpdateUserAsync(user);
+            // Reset password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.OTP = null;
+            user.OTPExpired = null; // Clear OTP after use
+            await _accountService.UpdateUserAsync(user);
 
-        //    return Ok(new { message = "Password has been reset successfully." });
-        //}
+            return Ok(new { message = "Password has been reset successfully." });
+        }
 
     }
 }

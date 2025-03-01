@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ModelViews.Requests.Auth
 {
-    public class ResetPasswordRequest
+    public class ResetPasswordRequestDTO
     {
         public string Email { get; set; }
         public string Otp { get; set; }  
