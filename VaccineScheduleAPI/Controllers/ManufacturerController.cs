@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Responses.Manufacturer;
-using Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
