@@ -91,6 +91,20 @@ builder.Services.AddAuthentication("Bearer")
         {
             OnMessageReceived = context =>
             {
+                // Check if the token starts with "Bearer " and remove it
+                if (context.Request.Headers.ContainsKey("Authorization"))
+                {
+                    var authorizationHeader = context.Request.Headers["Authorization"].ToString();
+                    if (authorizationHeader.StartsWith("Bearer ", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        context.Token = authorizationHeader.Substring("Bearer ".Length).Trim();
+                    }
+                    else
+                    {
+                        context.Token = authorizationHeader;  // Use the token directly if no "Bearer" prefix
+                    }
+                }
+
                 Console.WriteLine($"🔍 Received Token: {context.Token}");
                 return Task.CompletedTask;
             },
@@ -106,8 +120,6 @@ builder.Services.AddAuthentication("Bearer")
                 {
                     Console.WriteLine("❌ Failed to parse JWT token.");
                 }
-                Console.WriteLine($"✅ Token Issuer: {jwtToken.Issuer}");
-                Console.WriteLine($"✅ Token Audience: {jwtToken.Audiences.FirstOrDefault()}");
                 return Task.CompletedTask;
             },
             OnAuthenticationFailed = context =>
@@ -117,8 +129,6 @@ builder.Services.AddAuthentication("Bearer")
             }
         };
     });
-
-
 
 // Add authorization policy (optional)
 builder.Services.AddAuthorization(options =>
