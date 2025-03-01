@@ -7,7 +7,11 @@ using System.Reflection.PortableExecutable;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using IRepositories.Entity;
+using IRepositories.Entity.Accounts;
+using IRepositories.Entity.Inventory;
+using IRepositories.Entity.Orders;
+using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Vaccines;
 
 namespace Repositories.Context
 {

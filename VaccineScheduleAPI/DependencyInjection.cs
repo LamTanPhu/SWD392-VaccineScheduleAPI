@@ -3,9 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Repositories.Context;
 using Services;
-using IServices.Interfaces;
-using Services.Services;
-using Services.Interfaces;
+using IServices.Interfaces.Accounts;
+using IServices.Interfaces.Vaccines;
+using IServices.Interfaces.Inventory;
+using Services.Services.Accounts;
+using Services.Services.Inventory;
+using Services.Services.Vaccines;
 
 namespace VaccineScheduleAPI
 {

@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using IServices.Interfaces;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using Microsoft.AspNetCore.Authorization;
-using IRepositories.Entity;
+using IServices.Interfaces.Accounts;
+using IRepositories.Entity.Accounts;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -40,7 +40,6 @@ namespace VaccineScheduleAPI.Controllers
             var response = await _accountService.LoginAsync(request);
             if (string.IsNullOrEmpty(response.Token))
                 return Unauthorized(new { message = "Invalid username or password." });
-
             return Ok(response); // Return the successful login response
         }
 
