@@ -7,6 +7,7 @@ using ModelViews.DTOs;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using System;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace Services.Services.Accounts
@@ -15,6 +16,7 @@ namespace Services.Services.Accounts
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public AccountService(IAccountRepository accountRepository, IJwtService jwtService)
         {
@@ -104,6 +106,8 @@ namespace Services.Services.Accounts
                 Expiration = expiration
             };
         }
+
+
 
     }
 }
