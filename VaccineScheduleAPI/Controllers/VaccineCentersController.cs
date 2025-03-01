@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IServices.Interfaces;
 using ModelViews.Requests.VaccineCenter;
 using ModelViews.Responses.VaccineCenter;
 using Microsoft.AspNetCore.Authorization;
+using IServices.Interfaces.Inventory;
 
 namespace VaccineScheduleAPI.Controllers
 {

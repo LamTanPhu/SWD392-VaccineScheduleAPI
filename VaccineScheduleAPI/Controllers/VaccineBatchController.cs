@@ -1,4 +1,4 @@
-﻿using IServices.Interfaces;
+﻿using IServices.Interfaces.Inventory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.VaccineBatch;
