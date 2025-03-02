@@ -16,17 +16,29 @@ namespace Services.Services.Accounts
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IFirebaseAuthService _firebaseAuthService; // New dependency for Firebase token validation
 
-        public AccountService(IAccountRepository accountRepository, IJwtService jwtService)
+        public AccountService(IAccountRepository accountRepository, IJwtService jwtService, IFirebaseAuthService firebaseAuthService)
         {
             _accountRepository = accountRepository;
             _jwtService = jwtService;
+            _firebaseAuthService = firebaseAuthService; // Inject Firebase service
+
         }
 
         public async Task<Account?> GetByUsernameAsync(string username)
         {
             return await _accountRepository.GetByUsernameAsync(username);
+        }
+
+        public async Task<Account?> GetUserByEmailAsync(string email)
+        {
+            return await _accountRepository.GetByEmailAsync(email);
+        }
+
+        public async Task UpdateUserAsync(Account user)
+        {
+            await _accountRepository.UpdateUserAsync(user);
         }
 
         public async Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request)
@@ -107,7 +119,38 @@ namespace Services.Services.Accounts
             };
         }
 
+        public async Task<LoginResponseDTO> LoginWithGoogleAsync(string idToken)
+        {
+            // Verify Firebase ID token
+            var payload = await _firebaseAuthService.VerifyFirebaseTokenAsync(idToken);
 
+            // Find the user in your database by email
+            var user = await _accountRepository.GetByEmailAsync(payload.Email);
+            if (user == null)
+            {
+                // Optionally, you can auto-register the user if not found
+                user = new Account
+                {
+                    Username = payload.Email,
+                    Email = payload.Email,
+                    Role = RoleEnum.Parent,
+                    Status = "Active"
+                };
+                await _accountRepository.AddUserAsync(user);
+            }
+
+            // Generate JWT token for the user
+            var token = _jwtService.GenerateJwtToken(user);
+            var expiration = _jwtService.ExtractExpiration(token);
+
+            return new LoginResponseDTO
+            {
+                Username = user.Username,
+                Role = user.Role,
+                Token = token,
+                Expiration = expiration
+            };
+        }
 
     }
 }

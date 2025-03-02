@@ -6,6 +6,8 @@ using ModelViews.Responses.Auth;
 using Microsoft.AspNetCore.Authorization;
 using IServices.Interfaces.Accounts;
 using IRepositories.Entity.Accounts;
+using ModelViews.Requests.Mail;
+using IServices.Interfaces.Mail;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -15,11 +17,12 @@ namespace VaccineScheduleAPI.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IJwtService _jwtService;
-
-        public AuthenticationController(IAccountService accountService, IJwtService jwtService)
+        private readonly IEmailService _emailService;
+        public AuthenticationController(IAccountService accountService, IJwtService jwtService, IEmailService emailService)
         {
             _accountService = accountService;
             _jwtService = jwtService;
+            _emailService = emailService;
         }
 
         // POST api/authentication/register
@@ -59,6 +62,74 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(account);
         }
 
+        // POST api/authentication/login-with-google
+        [HttpPost("login-with-google")]
+        public async Task<ActionResult<LoginResponseDTO>> LoginWithGoogleAsync([FromBody] GoogleLoginRequestDTO request)
+        {
+            var response = await _accountService.LoginWithGoogleAsync(request.TokenId);
+            if (string.IsNullOrEmpty(response.Token))
+                return Unauthorized(new { message = "Invalid Google token." });
 
+            return Ok(response);  // Return the successful Google login response
+        }
+        // POST api/authentication/forgot-password
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
+        {
+            var user = await _accountService.GetUserByEmailAsync(request.Email);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            // Generate OTP and set expiry time (10 minutes)
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.OTP = otp;
+            user.OTPExpired = DateTime.UtcNow.AddMinutes(5);
+
+            await _accountService.UpdateUserAsync(user);
+
+            // Send OTP via email
+            var mailRequest = new MailRequestDTO
+            {
+                ToEmail = request.Email,
+                Subject = "Password Reset OTP",
+                Body = $"Your OTP for password reset is: {otp} (Valid for 10 minutes)"
+            };
+            await _emailService.SendEmailAsync(mailRequest);
+
+            return Ok(new { message = "OTP has been sent to your email." });
+        }
+
+
+        // POST api/authentication/reset-password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        {
+            var user = await _accountService.GetUserByEmailAsync(request.Email);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            // Validate OTP and expiry time
+            if (user.OTP != request.Otp || user.OTPExpired == null || user.OTPExpired < DateTime.UtcNow)
+                return BadRequest(new { message = "Invalid or expired OTP." });
+
+            // Reset password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            user.OTP = null;
+            user.OTPExpired = null; // Clear OTP after use
+            await _accountService.UpdateUserAsync(user);
+
+            return Ok(new { message = "Password has been reset successfully." });
+        }
+
+        [Authorize(Roles = "Admin, Staff, Parent")]
+        [HttpGet("by-email/{email}")]
+        public async Task<ActionResult<Account>> GetUserByEmailAsync(string email)
+        {
+            var user = await _accountService.GetUserByEmailAsync(email);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            return Ok(user);
+        }
     }
 }

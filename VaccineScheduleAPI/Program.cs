@@ -62,7 +62,9 @@ builder.Services.AddSwaggerGen(options =>
 
 // Register custom services and repositories
 builder.Services.AddConfig(builder.Configuration); // Registers services and repositories
-
+// Firebase Authentication Configuration
+var firebaseIssuer = builder.Configuration["Firebase:Issuer"];
+var firebaseAudience = builder.Configuration["Firebase:Audience"];
 // Set up JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 Console.WriteLine("JWT Key: " + jwtSettings["Key"]);  // Debugging step

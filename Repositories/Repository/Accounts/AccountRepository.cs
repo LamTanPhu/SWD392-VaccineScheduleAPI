@@ -22,6 +22,11 @@ namespace Repositories.Repository.Accounts
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task UpdateUserAsync(Account user)
+        {
+            _dbSet.Update(user);
+            await _context.SaveChangesAsync();
+        }
         public async Task<Account?> GetByUsernameAsync(string username)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Username == username);
