@@ -15,6 +15,8 @@ namespace IServices.Interfaces.Accounts
         Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request);
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);  // Added LoginAsync method
         Task<LoginResponseDTO> LoginWithGoogleAsync(string idToken);  // New method for Google login
+        Task<Account?> GetUserByEmailAsync(string email); 
+        Task UpdateUserAsync(Account user); 
 
     }
 }

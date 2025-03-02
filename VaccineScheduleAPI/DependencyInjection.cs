@@ -9,6 +9,9 @@ using IServices.Interfaces.Inventory;
 using Services.Services.Accounts;
 using Services.Services.Inventory;
 using Services.Services.Vaccines;
+using Core.Utils;
+using IServices.Interfaces.Mail;
+using Services.Services.Mail;
 
 namespace VaccineScheduleAPI
 {
@@ -18,7 +21,7 @@ namespace VaccineScheduleAPI
         {
             services.AddDatabase(configuration);  // Registers MySQL Database
             services.AddInfrastructure();  // Registers Repositories from Service Project
-            services.AddServices();        // Registers Services (API-Specific)
+            services.AddServices(configuration);        // Registers Services (API-Specific)
         }
 
         private static void AddDatabase(this IServiceCollection services, IConfiguration configuration)
@@ -38,16 +41,21 @@ namespace VaccineScheduleAPI
             });
         }
 
-        private static void AddServices(this IServiceCollection services)
+        private static void AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IVaccineCenterService, VaccineCenterService>(); //  Register Services 
-            services.AddScoped<IAccountService, AccountService>(); //  Register Services 
+            services.AddScoped<IVaccineCenterService, VaccineCenterService>();
+            services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
 
+            // Register Email Settings
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+            // Register Email Service
+            services.AddTransient<IEmailService, EmailService>();
         }
     }
 }
