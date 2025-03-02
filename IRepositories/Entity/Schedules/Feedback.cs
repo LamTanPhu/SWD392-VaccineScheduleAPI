@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Base;
 using IRepositories.Entity.Orders;
-namespace IRepositories.Entity.Schedule
+namespace IRepositories.Entity.Schedules
 {
     public class Feedback : BaseEntity
     {

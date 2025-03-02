@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.Services.Schedule
+namespace IServices.Interfaces.Schedules
 {
-    class VaccineScheduleService
+    interface IVaccineHistoryService
     {
     }
 }

@@ -8,7 +8,7 @@ using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
 using IRepositories.Entity.Vaccines;
 
-namespace IRepositories.Entity.Schedule
+namespace IRepositories.Entity.Schedules
 {
 
     public class VaccineHistory : BaseEntity
