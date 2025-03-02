@@ -121,5 +121,15 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(new { message = "Password has been reset successfully." });
         }
 
+        [Authorize(Roles = "Admin, Staff, Parent")]
+        [HttpGet("by-email/{email}")]
+        public async Task<ActionResult<Account>> GetUserByEmailAsync(string email)
+        {
+            var user = await _accountService.GetUserByEmailAsync(email);
+            if (user == null)
+                return NotFound(new { message = "User not found." });
+
+            return Ok(user);
+        }
     }
 }

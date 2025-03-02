@@ -31,6 +31,16 @@ namespace Services.Services.Accounts
             return await _accountRepository.GetByUsernameAsync(username);
         }
 
+        public async Task<Account?> GetUserByEmailAsync(string email)
+        {
+            return await _accountRepository.GetByEmailAsync(email);
+        }
+
+        public async Task UpdateUserAsync(Account user)
+        {
+            await _accountRepository.UpdateUserAsync(user);
+        }
+
         public async Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request)
         {
             var existingUserByEmail = await _accountRepository.GetByEmailAsync(request.Email);
