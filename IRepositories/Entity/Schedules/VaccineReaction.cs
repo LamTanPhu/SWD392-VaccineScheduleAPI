@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Base;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace IRepositories.Entity.Schedule
+namespace IRepositories.Entity.Schedules
 {
 
 

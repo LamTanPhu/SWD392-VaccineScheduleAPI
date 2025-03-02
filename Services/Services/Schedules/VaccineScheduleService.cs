@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.Services.Schedule
+namespace Services.Services.Schedules
 {
-    class VaccineReactionService
+    class VaccineScheduleService
     {
     }
 }

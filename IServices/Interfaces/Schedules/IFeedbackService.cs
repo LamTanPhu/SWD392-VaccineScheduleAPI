@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IServices.Interfaces.Schedule
+namespace IServices.Interfaces.Schedules
 {
     public interface IFeedbackService
     {

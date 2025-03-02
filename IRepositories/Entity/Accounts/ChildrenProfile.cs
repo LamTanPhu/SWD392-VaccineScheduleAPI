@@ -7,7 +7,7 @@ using System.Security.Principal;
 using Core.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 using IRepositories.Entity.Orders;
-using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Schedules;
 
 namespace IRepositories.Entity.Accounts
 {

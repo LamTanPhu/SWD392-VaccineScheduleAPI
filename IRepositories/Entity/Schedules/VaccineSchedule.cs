@@ -9,7 +9,7 @@ using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
 using IRepositories.Entity.Orders;
 
-namespace IRepositories.Entity.Schedule
+namespace IRepositories.Entity.Schedules
 {
     public class VaccinationSchedule : BaseEntity
     {

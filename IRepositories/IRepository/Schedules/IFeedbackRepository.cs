@@ -1,4 +1,4 @@
-﻿using IRepositories.Entity.Schedule;
+﻿using IRepositories.Entity.Schedules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
