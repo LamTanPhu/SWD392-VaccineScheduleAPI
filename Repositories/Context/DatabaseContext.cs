@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
 using IRepositories.Entity.Orders;
-using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Schedules;
 using IRepositories.Entity.Vaccines;
 
 namespace Repositories.Context
