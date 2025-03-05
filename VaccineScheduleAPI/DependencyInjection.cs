@@ -12,6 +12,8 @@ using Services.Services.Vaccines;
 using Core.Utils;
 using IServices.Interfaces.Mail;
 using Services.Services.Mail;
+using IRepositories.IRepository.Vaccines;
+using Repositories.Repository.Vaccines;
 
 namespace VaccineScheduleAPI
 {
@@ -48,10 +50,12 @@ namespace VaccineScheduleAPI
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
             services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
+            services.AddScoped<IVaccineService, VaccineService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
 
+            
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
