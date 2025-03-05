@@ -47,6 +47,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
+            services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
