@@ -55,7 +55,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
             services.AddScoped<IVaccineCategoryService, VaccineCategoryService>();
-
+            services.AddScoped<IChildrenProfileService, ChildrenProfileService>();
             
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
