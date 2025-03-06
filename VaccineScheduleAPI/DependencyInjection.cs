@@ -17,6 +17,8 @@ using Repositories.Repository.Vaccines;
 using IRepositories.IRepository.Schedules;
 using IServices.Interfaces.Schedules;
 using Services.Services.Schedules;
+using IServices.Interfaces.Orders;
+using Services.Services.Orders;
 
 namespace VaccineScheduleAPI
 {
@@ -60,7 +62,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IVaccineCategoryService, VaccineCategoryService>();
             services.AddScoped<IChildrenProfileService, ChildrenProfileService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
-            
+            services.AddScoped<IOrderPackageDetailsService, OrderPackageDetailsService>();
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
