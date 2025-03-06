@@ -18,14 +18,14 @@ namespace VaccineScheduleAPI.Controllers
             _service = service;
         }
 
-        [Authorize(Roles = "Admin, User")]
+        [Authorize(Roles = "Admin, Parent")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderVaccineDetailsResponseDTO>>> GetAll()
         {
             return Ok(await _service.GetAllOrderVaccineDetailsAsync());
         }
 
-        [Authorize(Roles = "Admin, User")]
+        [Authorize(Roles = "Admin, Parent")]
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderVaccineDetailsResponseDTO>> GetById(string id)
         {
@@ -34,7 +34,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(details);
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Parent")]
         [HttpPost]
         public async Task<ActionResult> Create(OrderVaccineDetailsRequestDTO detailsDto)
         {
@@ -42,7 +42,7 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = detailsDto.OrderId }, detailsDto);
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Parent")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, OrderVaccineDetailsRequestDTO detailsDto)
         {
@@ -50,7 +50,7 @@ namespace VaccineScheduleAPI.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Parent")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {

@@ -44,6 +44,7 @@ namespace Services
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IOrderPackageDetailsRepository, OrderPackageDetailsRepository>();
             services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
 
         }
     }
