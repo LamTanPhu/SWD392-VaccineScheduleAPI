@@ -1,6 +1,8 @@
 ﻿using IRepositories.IRepository;
 using IRepositories.IRepository.Accounts;
 using IRepositories.IRepository.Inventory;
+using IRepositories.IRepository.Orders;
+using IRepositories.IRepository.Schedules;
 using IRepositories.IRepository.Vaccines;
 using IServices.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Repositories.Repository;
 using Repositories.Repository.Accounts;
 using Repositories.Repository.Inventory;
+using Repositories.Repository.Order;
+using Repositories.Repository.Schedules;
 using Repositories.Repository.Vaccines;
 using Services.Services;
 using System;
@@ -31,8 +35,16 @@ namespace Services
             services.AddScoped<IVaccineCenterRepository, VaccineCenterRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IVaccinePackageRepository, VaccinePackageRepository>();
+            services.AddScoped<IVaccinePackageDetailsRepository, VaccinePackageDetailRepository>();
             services.AddScoped<IManufacturerRepository, ManufacturerRepository>();
             services.AddScoped<IVaccineBatchRepository, VaccineBatchRepository>();
+            services.AddScoped<IVaccineRepository, VaccineRepository>();
+            services.AddScoped<IVaccineCategoryRepository, VaccineCategoryRepository>();
+            services.AddScoped<IChildrenProfileRepository, ChildrenProfileRepository>();
+            services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            services.AddScoped<IOrderPackageDetailsRepository, OrderPackageDetailsRepository>();
+            services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
 
         }
     }

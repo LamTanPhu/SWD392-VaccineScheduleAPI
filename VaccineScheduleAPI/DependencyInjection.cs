@@ -12,6 +12,13 @@ using Services.Services.Vaccines;
 using Core.Utils;
 using IServices.Interfaces.Mail;
 using Services.Services.Mail;
+using IRepositories.IRepository.Vaccines;
+using Repositories.Repository.Vaccines;
+using IRepositories.IRepository.Schedules;
+using IServices.Interfaces.Schedules;
+using Services.Services.Schedules;
+using IServices.Interfaces.Orders;
+using Services.Services.Orders;
 
 namespace VaccineScheduleAPI
 {
@@ -47,10 +54,17 @@ namespace VaccineScheduleAPI
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
+            services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
+            services.AddScoped<IVaccineService, VaccineService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
-
+            services.AddScoped<IVaccineCategoryService, VaccineCategoryService>();
+            services.AddScoped<IChildrenProfileService, ChildrenProfileService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
+            services.AddScoped<IOrderPackageDetailsService, OrderPackageDetailsServices>();
+            services.AddScoped<IOrderVaccineDetailsService, OrderVaccineDetailsService>();
+            services.AddScoped<IOrderService, OrderService>();
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 

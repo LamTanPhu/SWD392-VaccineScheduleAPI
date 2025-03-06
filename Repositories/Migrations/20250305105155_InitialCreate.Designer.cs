@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250302061421_InitialCreate")]
+    [Migration("20250305105155_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -473,7 +473,7 @@ namespace Repositories.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.Feedback", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.Feedback", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -518,7 +518,7 @@ namespace Repositories.Migrations
                     b.ToTable("Feedbacks");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccinationSchedule", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccinationSchedule", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -583,7 +583,7 @@ namespace Repositories.Migrations
                     b.ToTable("VaccinationSchedules");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccineHistory", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccineHistory", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -653,7 +653,7 @@ namespace Repositories.Migrations
                     b.ToTable("VaccineHistories");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccineReaction", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccineReaction", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
@@ -1006,18 +1006,18 @@ namespace Repositories.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.Feedback", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.Feedback", b =>
                 {
                     b.HasOne("IRepositories.Entity.Orders.Order", "Order")
                         .WithOne("Feedback")
-                        .HasForeignKey("IRepositories.Entity.Schedule.Feedback", "OrderId")
+                        .HasForeignKey("IRepositories.Entity.Schedules.Feedback", "OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccinationSchedule", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccinationSchedule", b =>
                 {
                     b.HasOne("IRepositories.Entity.Orders.OrderPackageDetails", "OrderPackageDetails")
                         .WithMany()
@@ -1050,7 +1050,7 @@ namespace Repositories.Migrations
                     b.Navigation("VaccineCenter");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccineHistory", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccineHistory", b =>
                 {
                     b.HasOne("IRepositories.Entity.Accounts.Account", "Account")
                         .WithMany()
@@ -1085,9 +1085,9 @@ namespace Repositories.Migrations
                     b.Navigation("Vaccine");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccineReaction", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccineReaction", b =>
                 {
-                    b.HasOne("IRepositories.Entity.Schedule.VaccinationSchedule", "VaccinationSchedule")
+                    b.HasOne("IRepositories.Entity.Schedules.VaccinationSchedule", "VaccinationSchedule")
                         .WithMany("VaccineReactions")
                         .HasForeignKey("VaccinationScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1179,7 +1179,7 @@ namespace Repositories.Migrations
                     b.Navigation("OrderVaccineDetails");
                 });
 
-            modelBuilder.Entity("IRepositories.Entity.Schedule.VaccinationSchedule", b =>
+            modelBuilder.Entity("IRepositories.Entity.Schedules.VaccinationSchedule", b =>
                 {
                     b.Navigation("VaccineReactions");
                 });
