@@ -43,6 +43,7 @@ namespace Services
             services.AddScoped<IChildrenProfileRepository, ChildrenProfileRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IOrderPackageDetailsRepository, OrderPackageDetailsRepository>();
+            services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
 
         }
     }

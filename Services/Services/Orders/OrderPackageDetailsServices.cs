@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 
 namespace Services.Services.Orders
 {
-    public class OrderPackageDetailsService : IOrderPackageDetailsService
+    public class OrderPackageDetailsServices : IOrderPackageDetailsService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOrderPackageDetailsRepository _repository;
 
-        public OrderPackageDetailsService(IUnitOfWork unitOfWork, IOrderPackageDetailsRepository repository)
+        public OrderPackageDetailsServices(IUnitOfWork unitOfWork, IOrderPackageDetailsRepository repository)
         {
             _unitOfWork = unitOfWork;
             _repository = repository;
