@@ -10,10 +10,6 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class ChildrenProfileController : ControllerBase
     {
-        //public IActionResult Index()
-        //{
-        //    return View();
-        //}
 
         private readonly IChildrenProfileService _service;
 

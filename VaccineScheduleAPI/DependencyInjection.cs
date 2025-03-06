@@ -14,6 +14,9 @@ using IServices.Interfaces.Mail;
 using Services.Services.Mail;
 using IRepositories.IRepository.Vaccines;
 using Repositories.Repository.Vaccines;
+using IRepositories.IRepository.Schedules;
+using IServices.Interfaces.Schedules;
+using Services.Services.Schedules;
 
 namespace VaccineScheduleAPI
 {
@@ -56,6 +59,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IFirebaseAuthService, FirebaseAuthService>();
             services.AddScoped<IVaccineCategoryService, VaccineCategoryService>();
             services.AddScoped<IChildrenProfileService, ChildrenProfileService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
             
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
