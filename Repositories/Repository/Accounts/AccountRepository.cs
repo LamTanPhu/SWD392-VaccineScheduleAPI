@@ -33,5 +33,11 @@ namespace Repositories.Repository.Accounts
 
         public async Task<Account?> GetByEmailAsync(string email) =>
             await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
+        public async Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail)
+        {
+            return await _dbSet.AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Username == usernameOrEmail || a.Email == usernameOrEmail);
+        }
+
     }
 }

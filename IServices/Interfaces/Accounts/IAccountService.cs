@@ -17,5 +17,7 @@ namespace IServices.Interfaces.Accounts
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);
         Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request);
         Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request);
+        Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail);
+
     }
 }
