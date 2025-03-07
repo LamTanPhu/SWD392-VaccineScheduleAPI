@@ -1,10 +1,7 @@
 ﻿using IRepositories.Entity.Accounts;
 using ModelViews.Requests.Auth;
+using ModelViews.Requests.Mail;
 using ModelViews.Responses.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace IServices.Interfaces.Accounts
@@ -12,10 +9,13 @@ namespace IServices.Interfaces.Accounts
     public interface IAccountService
     {
         Task<Account?> GetByUsernameAsync(string username);
+        Task<Account?> GetUserByEmailAsync(string email);
+        Task UpdateUserAsync(Account user);
+        string HashPassword(string password); // Không cần async vì là hàm đồng bộ
+
         Task<RegisterResponseDTO> RegisterAsync(RegisterRequestDTO request);
-        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);  // Added LoginAsync method
-        Task<Account?> GetUserByEmailAsync(string email); // Add this method
-        Task UpdateUserAsync(Account user); // Add this method
-        Task<string> HashPassword(string password); // Add this method
+        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);
+        Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request);
+        Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request);
     }
 }

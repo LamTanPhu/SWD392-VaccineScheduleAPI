@@ -22,14 +22,16 @@ namespace Repositories.Repository.Accounts
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<Account?> GetByUsernameAsync(string username)
+        public async Task UpdateUserAsync(Account user)
         {
-            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Username == username);
+            _dbSet.Update(user);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<Account?> GetByEmailAsync(string email)
-        {
-            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
-        }
+        public async Task<Account?> GetByUsernameAsync(string username) =>
+            await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Username == username);
+
+        public async Task<Account?> GetByEmailAsync(string email) =>
+            await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
     }
 }

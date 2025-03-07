@@ -1,4 +1,5 @@
 ﻿using IRepositories.Entity;
+using IRepositories.Entity.Accounts;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using System;

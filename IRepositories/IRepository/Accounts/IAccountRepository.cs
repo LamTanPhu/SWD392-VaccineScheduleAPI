@@ -11,7 +11,9 @@ namespace IRepositories.IRepository.Accounts
     {
         Task<Account?> GetByUsernameAsync(string username);
         Task<Account> GetByEmailAsync(string email);
-        Task<bool> AddUserAsync(Account user);
+        Task<bool> AddUserAsync(Account user);      
+        Task UpdateUserAsync(Account user);
+
     }
 }
 

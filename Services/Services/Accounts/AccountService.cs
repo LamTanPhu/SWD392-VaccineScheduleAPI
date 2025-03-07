@@ -3,11 +3,12 @@ using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
 using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
-using ModelViews.DTOs;
+using IServices.Interfaces.Mail;
 using ModelViews.Requests.Auth;
+using ModelViews.Requests.Mail;
 using ModelViews.Responses.Auth;
+using Services.Services.Mail;
 using System;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace Services.Services.Accounts
@@ -16,12 +17,70 @@ namespace Services.Services.Accounts
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
-        private readonly IHttpClientFactory _httpClientFactory;
+         // New dependency for Firebase token validation
+        private readonly IEmailService _emailService;
 
-        public AccountService(IAccountRepository accountRepository, IJwtService jwtService)
+        public AccountService(IAccountRepository accountRepository, IEmailService emailService, IJwtService jwtService)
         {
             _accountRepository = accountRepository;
             _jwtService = jwtService;
+    
+            _emailService = emailService;
+
+        }
+
+        public async Task<Account?> GetUserByEmailAsync(string email)
+            => await _accountRepository.GetByEmailAsync(email);
+
+        public async Task UpdateUserAsync(Account user)
+            => await _accountRepository.UpdateUserAsync(user);
+
+        public string HashPassword(string password)
+            => BCrypt.Net.BCrypt.HashPassword(password);
+
+        public async Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request)
+        {
+            var user = await _accountRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+                return new ForgotPasswordResponseDTO { Success = false, Message = "User not found." };
+
+            // Generate OTP and expiry time
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.OTP = otp;
+            user.OTPExpired = DateTime.UtcNow.AddMinutes(5);
+
+            await _accountRepository.UpdateUserAsync(user);
+
+            // Send OTP via email
+            var mailRequest = new Mailrequest
+            {
+                ToEmail = request.Email,
+                Subject = "Password Reset OTP",
+                Body = $"Your OTP for password reset is: {otp} (Valid for 5 minutes)."
+            };
+            await _emailService.SendEmailAsync(mailRequest);
+
+            return new ForgotPasswordResponseDTO { Success = true, Message = "OTP has been sent to your email." };
+        }
+
+        public async Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request)
+        {
+            var user = await _accountRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+                return new ResetPasswordResponseDTO { Success = false, Message = "User not found." };
+
+            // Validate OTP
+            if (user.OTP != request.Otp || user.OTPExpired == null || user.OTPExpired < DateTime.UtcNow)
+                return new ResetPasswordResponseDTO { Success = false, Message = "Invalid or expired OTP." };
+
+            // Reset password
+            user.PasswordHash = HashPassword(request.NewPassword);
+            user.OTP = null;
+            user.OTPExpired = null;
+
+            await _accountRepository.UpdateUserAsync(user);
+
+            return new ResetPasswordResponseDTO { Success = true, Message = "Password has been reset successfully." };
         }
 
         public async Task<Account?> GetByUsernameAsync(string username)
@@ -106,7 +165,6 @@ namespace Services.Services.Accounts
                 Expiration = expiration
             };
         }
-
 
 
     }
