@@ -34,7 +34,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(details);
         }
 
-        [Authorize(Roles = "Parent")]
+        [Authorize(Roles = "Admin,Parent")]
         [HttpPost]
         public async Task<ActionResult> Create(OrderVaccineDetailsRequestDTO detailsDto)
         {
