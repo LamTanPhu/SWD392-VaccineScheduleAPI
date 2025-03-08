@@ -1,0 +1,3 @@
+dotnet ef database drop --project Repositories --startup-project VaccineScheduleAPI --force
+dotnet ef migrations add InitialCreate --project Repositories --startup-project VaccineScheduleAPI
+dotnet ef database update --project Repositories --startup-project VaccineScheduleAPI
