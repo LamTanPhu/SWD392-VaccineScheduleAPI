@@ -95,7 +95,8 @@ namespace Services.Services.Accounts
 
         public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
         {
-            var user = await _accountRepository.GetByUsernameAsync(request.Username);
+            //var user = await _accountRepository.GetByUsernameAsync(request.Username);
+            var user = await _accountRepository.GetByUsernameOrEmailAsync(request.Username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return new LoginResponseDTO
@@ -151,6 +152,12 @@ namespace Services.Services.Accounts
                 Expiration = expiration
             };
         }
+
+        public Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail)
+        {
+            throw new NotImplementedException();
+        }
+
 
     }
 }

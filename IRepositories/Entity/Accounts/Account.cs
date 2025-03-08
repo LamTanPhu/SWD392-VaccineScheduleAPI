@@ -29,8 +29,8 @@ namespace IRepositories.Entity.Accounts
         public RoleEnum Role { get; set; }
 
         // Add OTP properties
-        public string? OTP { get; set; }
-        public DateTime? OTPExpired { get; set; }
+        //public string? OTP { get; set; }
+        //public DateTime? OTPExpired { get; set; }
 
         public string Status { get; set; }
 
