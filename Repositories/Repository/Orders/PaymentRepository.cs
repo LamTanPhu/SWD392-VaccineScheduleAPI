@@ -10,7 +10,7 @@ using IRepositories.IRepository.Orders;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Context;
 
-namespace Repositories.Repository.Order
+namespace Repositories.Repository.Orders
 {
     public class PaymentRepository : GenericRepository<Payment>, IPaymentRepository
     {

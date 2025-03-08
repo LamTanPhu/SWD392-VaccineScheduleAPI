@@ -13,7 +13,7 @@ namespace IRepositories.IRepository.Accounts
         Task<Account> GetByEmailAsync(string email);
         Task<bool> AddUserAsync(Account user);
         Task UpdateUserAsync(Account user);
-
+        Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail);
     }
 }
 
