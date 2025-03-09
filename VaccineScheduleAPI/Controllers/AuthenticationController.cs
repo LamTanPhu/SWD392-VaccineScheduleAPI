@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
-using Microsoft.AspNetCore.Authorization;
 using IServices.Interfaces.Accounts;
-using IRepositories.Entity.Accounts;
-using ModelViews.Requests.Mail;
-using IServices.Interfaces.Mail;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -15,121 +10,51 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAccountService _accountService;
-        private readonly IJwtService _jwtService;
-        private readonly IEmailService _emailService;
-        public AuthenticationController(IAccountService accountService, IJwtService jwtService, IEmailService emailService)
+        private readonly IAuthService _authService;
+        private readonly IRegistrationService _registrationService; // Added for /register
+
+        public AuthenticationController(
+            IAuthService authService,
+            IRegistrationService registrationService)
         {
-            _accountService = accountService;
-            _jwtService = jwtService;
-            _emailService = emailService;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         }
 
-        // POST api/authentication/register
         [HttpPost("register")]
-        public async Task<ActionResult<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO request)
+        public async Task<ActionResult<RegisterResponseDTO>> RegisterAsync([FromBody] RegisterRequestDTO request)
         {
-            var response = await _accountService.RegisterAsync(request);
-            if (response.Success)
-                return Ok(response);
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
 
-            return BadRequest(response);
+            var response = await _registrationService.RegisterAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
-        // POST api/authentication/login
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponseDTO>> LoginAsync(LoginRequestDTO request)
+        public async Task<ActionResult<LoginResponseDTO>> LoginAsync([FromBody] LoginRequestDTO request)
         {
-            var response = await _accountService.LoginAsync(request);
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
+
+            var response = await _authService.LoginAsync(request);
             if (string.IsNullOrEmpty(response.Token))
-                return Unauthorized(new { message = "Invalid username or password." });
-            return Ok(response); // Return the successful login response
+                return Unauthorized(new { Message = "Invalid username or password." });
+
+            return Ok(response);
         }
 
-        // GET api/authentication/profile
-        [Authorize(Roles = "Admin, Staff, Parent")]
-        [HttpGet("profile")]
-        public async Task<ActionResult<Account>> GetProfileAsync()
-        {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized(new { message = "Token is required" });
-
-            var account = await _jwtService.ExtractAccountAsync(token);
-            if (account == null)
-                return Unauthorized(new { message = "Invalid token" });
-
-            return Ok(account);
-        }
-
-        // POST api/authentication/login-with-google
         [HttpPost("login-with-google")]
         public async Task<ActionResult<LoginResponseDTO>> LoginWithGoogleAsync([FromBody] GoogleLoginRequestDTO request)
         {
-            var response = await _accountService.LoginWithGoogleAsync(request.TokenId);
+            if (!ModelState.IsValid || string.IsNullOrEmpty(request.TokenId))
+                return BadRequest(new { Message = "Google token is required." });
+
+            var response = await _authService.LoginWithGoogleAsync(request.TokenId);
             if (string.IsNullOrEmpty(response.Token))
-                return Unauthorized(new { message = "Invalid Google token." });
+                return Unauthorized(new { Message = "Invalid Google token." });
 
-            return Ok(response);  // Return the successful Google login response
-        }
-        // POST api/authentication/forgot-password
-        //[HttpPost("forgot-password")]
-        //public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
-        //{
-        //    var user = await _accountService.GetUserByEmailAsync(request.Email);
-        //    if (user == null)
-        //        return NotFound(new { message = "User not found." });
-
-        //    // Generate OTP and set expiry time (10 minutes)
-        //    var otp = new Random().Next(100000, 999999).ToString();
-        //    user.OTP = otp;
-        //    user.OTPExpired = DateTime.UtcNow.AddMinutes(5);
-
-        //    await _accountService.UpdateUserAsync(user);
-
-        //    // Send OTP via email
-        //    var mailRequest = new MailRequestDTO
-        //    {
-        //        ToEmail = request.Email,
-        //        Subject = "Password Reset OTP",
-        //        Body = $"Your OTP for password reset is: {otp} (Valid for 10 minutes)"
-        //    };
-        //    await _emailService.SendEmailAsync(mailRequest);
-
-        //    return Ok(new { message = "OTP has been sent to your email." });
-        //}
-
-
-        //// POST api/authentication/reset-password
-        //[HttpPost("reset-password")]
-        //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
-        //{
-        //    var user = await _accountService.GetUserByEmailAsync(request.Email);
-        //    if (user == null)
-        //        return NotFound(new { message = "User not found." });
-
-        //    // Validate OTP and expiry time
-        //    if (user.OTP != request.Otp || user.OTPExpired == null || user.OTPExpired < DateTime.UtcNow)
-        //        return BadRequest(new { message = "Invalid or expired OTP." });
-
-        //    // Reset password
-        //    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-        //    user.OTP = null;
-        //    user.OTPExpired = null; // Clear OTP after use
-        //    await _accountService.UpdateUserAsync(user);
-
-        //    return Ok(new { message = "Password has been reset successfully." });
-        //}
-
-        [Authorize(Roles = "Admin, Staff, Parent")]
-        [HttpGet("by-email/{email}")]
-        public async Task<ActionResult<Account>> GetUserByEmailAsync(string email)
-        {
-            var user = await _accountService.GetUserByEmailAsync(email);
-            if (user == null)
-                return NotFound(new { message = "User not found." });
-
-            return Ok(user);
+            return Ok(response);
         }
     }
 }

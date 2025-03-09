@@ -1,7 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Repositories.Context;
+using Repositories; // Add this to access Repositories.DependencyInjection
 using Services;
 using IServices.Interfaces.Accounts;
 using IServices.Interfaces.Vaccines;
@@ -12,9 +11,6 @@ using Services.Services.Vaccines;
 using Core.Utils;
 using IServices.Interfaces.Mail;
 using Services.Services.Mail;
-using IRepositories.IRepository.Vaccines;
-using Repositories.Repository.Vaccines;
-using IRepositories.IRepository.Schedules;
 using IServices.Interfaces.Schedules;
 using Services.Services.Schedules;
 using IServices.Interfaces.Orders;
@@ -26,26 +22,9 @@ namespace VaccineScheduleAPI
     {
         public static void AddConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDatabase(configuration);  // Registers MySQL Database
-            services.AddInfrastructure();  // Registers Repositories from Service Project
+            services.AddDatabaseContext(configuration); // Call the repository layer's method
+            services.AddRepositories();                 // Registers Repositories from Services Project
             services.AddServices(configuration);        // Registers Services (API-Specific)
-        }
-
-        private static void AddDatabase(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Registering DbContext with Pomelo MySQL provider and enabling lazy loading
-            services.AddDbContext<DatabaseContext>(options =>
-            {
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-                if (string.IsNullOrEmpty(connectionString))
-                {
-                    throw new InvalidOperationException("The connection string 'DefaultConnection' is missing.");
-                }
-
-                options.UseLazyLoadingProxies() // Enable Lazy Loading
-                       .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-            });
         }
 
         private static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -65,6 +44,10 @@ namespace VaccineScheduleAPI
             services.AddScoped<IOrderPackageDetailsService, OrderPackageDetailsServices>();
             services.AddScoped<IOrderVaccineDetailsService, OrderVaccineDetailsService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IRegistrationService, RegistrationService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
+
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
