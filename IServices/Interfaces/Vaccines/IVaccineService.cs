@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace IServices.Interfaces.Vaccines
 {
@@ -12,8 +13,10 @@ namespace IServices.Interfaces.Vaccines
     {
         Task<IEnumerable<VaccineResponseDTO>> GetAllVaccinesAsync();
         Task<VaccineResponseDTO?> GetVaccineByIdAsync(string id);
-        Task AddVaccineAsync(VaccineRequestDTO vaccine);
+        Task<VaccineResponseDTO> AddVaccineAsync(VaccineRequestDTO vaccine); // ✅ Accept Image
         Task UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto);
         Task DeleteVaccineAsync(string id);
     }
+
+
 }

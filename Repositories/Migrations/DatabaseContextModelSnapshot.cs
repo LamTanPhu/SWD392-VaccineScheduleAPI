@@ -725,6 +725,10 @@ namespace Repositories.Migrations
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("IngredientsDescription")
                         .HasColumnType("longtext");
 

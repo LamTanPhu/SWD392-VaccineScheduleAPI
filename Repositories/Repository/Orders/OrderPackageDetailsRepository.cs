@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repositories.Repository.Order
+namespace Repositories.Repository.Orders
 {
     public class OrderPackageDetailsRepository : GenericRepository<OrderPackageDetails>, IOrderPackageDetailsRepository
     {

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repositories.Repository.Order
+namespace Repositories.Repository.Orders
 {
-    public class OrderRepository : GenericRepository<IRepositories.Entity.Orders.Order>, IOrderRepository
+    public class OrderRepository : GenericRepository<Order>, IOrderRepository
     {
         public OrderRepository(DatabaseContext context) : base(context) { }
     }

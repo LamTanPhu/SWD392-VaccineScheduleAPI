@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repositories.Repository.Order
+namespace Repositories.Repository.Orders
 {
     public class OrderVaccineDetailsRepository : GenericRepository<OrderVaccineDetails>, IOrderVaccineDetailsRepository
     {

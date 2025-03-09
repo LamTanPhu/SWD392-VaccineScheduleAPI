@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250305105155_InitialCreate")]
+    [Migration("20250308130226_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -727,6 +727,10 @@ namespace Repositories.Migrations
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("IngredientsDescription")
                         .HasColumnType("longtext");

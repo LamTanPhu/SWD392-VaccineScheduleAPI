@@ -33,12 +33,13 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(vaccine);
         }
 
-        [Authorize(Roles = "Admin")]
+        // ✅ Modified to accept VaccineRequestDTO + Image file
+        //[Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult> Create(VaccineRequestDTO vaccineDto)
+        public async Task<ActionResult<VaccineResponseDTO>> Create([FromForm] VaccineRequestDTO vaccineDto)
         {
-            await _service.AddVaccineAsync(vaccineDto);
-            return CreatedAtAction(nameof(GetById), new { id = vaccineDto.Name }, vaccineDto);
+            var createdVaccine = await _service.AddVaccineAsync(vaccineDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdVaccine.Id }, createdVaccine);
         }
 
         [Authorize(Roles = "Admin")]
