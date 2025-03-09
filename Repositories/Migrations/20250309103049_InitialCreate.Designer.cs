@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250308130226_InitialCreate")]
+    [Migration("20250309103049_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -50,12 +50,6 @@ namespace Repositories.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("OTP")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("OTPExpired")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PasswordHash")

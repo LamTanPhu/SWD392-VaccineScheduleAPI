@@ -4,8 +4,6 @@ using IRepositories.IRepository.Inventory;
 using IRepositories.IRepository.Orders;
 using IRepositories.IRepository.Schedules;
 using IRepositories.IRepository.Vaccines;
-using IServices.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Repositories.Repository;
 using Repositories.Repository.Accounts;
@@ -13,23 +11,12 @@ using Repositories.Repository.Inventory;
 using Repositories.Repository.Orders;
 using Repositories.Repository.Schedules;
 using Repositories.Repository.Vaccines;
-using Services.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Services
 {
     public static class DependencyInjection
     {
-        public static void AddInfrastructure(this IServiceCollection services)
-        {
-            services.AddRepositories();
-        }
-
-        private static void AddRepositories(this IServiceCollection services)
+        public static void AddRepositories(this IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IVaccineCenterRepository, VaccineCenterRepository>();
@@ -45,7 +32,6 @@ namespace Services
             services.AddScoped<IOrderPackageDetailsRepository, OrderPackageDetailsRepository>();
             services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
-
         }
     }
 }
