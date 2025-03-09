@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,5 +22,8 @@ namespace ModelViews.Requests.Vaccine
         public string VaccineCategoryId { get; set; }
         [Required]
         public string BatchId { get; set; }
+
+        public IFormFile image { get; set; }
+
     }
 }

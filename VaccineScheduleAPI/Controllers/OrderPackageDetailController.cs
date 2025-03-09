@@ -34,7 +34,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(details);
         }
 
-        [Authorize(Roles = "Parent")]
+        [Authorize(Roles = "Admin, Parent")]
         [HttpPost]
         public async Task<ActionResult> Create(OrderPackageDetailsRequestDTO detailsDto)
         {
@@ -42,7 +42,7 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = detailsDto.OrderId }, detailsDto);
         }
 
-        [Authorize(Roles = "Parent")]
+        [Authorize(Roles = "Admin, Parent")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, OrderPackageDetailsRequestDTO detailsDto)
         {
@@ -50,7 +50,7 @@ namespace VaccineScheduleAPI.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Parent")]
+        [Authorize(Roles = "Admin, Parent")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {

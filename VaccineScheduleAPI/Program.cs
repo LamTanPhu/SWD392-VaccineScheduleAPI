@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register HttpClient 
+builder.Services.AddHttpClient();
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -50,6 +53,9 @@ builder.Services.AddSwaggerGen(options =>
             new string[] {}
         }
     });
+
+    // ✅ Add support for file uploads in Swagger
+    options.OperationFilter<SwaggerFileOperationFilter>();
 });
 
 

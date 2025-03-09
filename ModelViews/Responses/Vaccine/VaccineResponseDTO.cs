@@ -15,5 +15,7 @@ namespace ModelViews.Responses.Vaccine
         public string Status { get; set; }
         public string VaccineCategoryId { get; set; }
         public string BatchId { get; set; }
+
+        public string image { get; set; }
     }
 }

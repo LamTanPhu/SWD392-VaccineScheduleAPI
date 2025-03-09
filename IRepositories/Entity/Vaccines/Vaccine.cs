@@ -24,6 +24,8 @@ namespace IRepositories.Entity.Vaccines
         public DateTime ExpirationDate { get; set; }
         public string Status { get; set; }
 
+        public string Image { get; set; }
+
         // Navigation properties
         [ForeignKey("VaccineCategoryId")]
         public virtual VaccineCategory VaccineCategory { get; set; }

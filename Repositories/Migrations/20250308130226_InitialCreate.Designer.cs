@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Repositories.Context;
 
@@ -11,9 +12,11 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250308130226_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,6 +50,12 @@ namespace Repositories.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<DateTimeOffset>("LastUpdatedTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("OTP")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("OTPExpired")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PasswordHash")

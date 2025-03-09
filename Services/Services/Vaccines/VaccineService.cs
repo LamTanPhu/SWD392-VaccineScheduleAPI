@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 namespace Services.Services.Vaccines
 {
@@ -16,11 +18,14 @@ namespace Services.Services.Vaccines
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVaccineRepository _repository;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private const string ImgBBApiKey = "bae68497dea95ef8d4911c8d98f34b5c"; // Replace with your actual API key
 
-        public VaccineService(IUnitOfWork unitOfWork, IVaccineRepository repository)
+        public VaccineService(IUnitOfWork unitOfWork, IVaccineRepository repository, IHttpClientFactory httpClientFactory)
         {
             _unitOfWork = unitOfWork;
             _repository = repository;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<IEnumerable<VaccineResponseDTO>> GetAllVaccinesAsync()
@@ -34,7 +39,8 @@ namespace Services.Services.Vaccines
                 Price = v.Price,
                 Status = v.Status,
                 VaccineCategoryId = v.VaccineCategoryId,
-                BatchId = v.BatchId
+                BatchId = v.BatchId,
+                image = v.Image
             }).ToList();
         }
 
@@ -50,12 +56,15 @@ namespace Services.Services.Vaccines
                 Price = vaccine.Price,
                 Status = vaccine.Status,
                 VaccineCategoryId = vaccine.VaccineCategoryId,
-                BatchId = vaccine.BatchId
+                BatchId = vaccine.BatchId,
+                image = vaccine.Image
             };
         }
 
-        public async Task AddVaccineAsync(VaccineRequestDTO vaccineDto)
+        public async Task<VaccineResponseDTO> AddVaccineAsync(VaccineRequestDTO vaccineDto)
         {
+            string imageUrl = await UploadImageToImgBB(vaccineDto.image);
+
             var vaccine = new Vaccine
             {
                 Name = vaccineDto.Name,
@@ -63,10 +72,53 @@ namespace Services.Services.Vaccines
                 Price = vaccineDto.Price,
                 Status = vaccineDto.Status,
                 VaccineCategoryId = vaccineDto.VaccineCategoryId,
-                BatchId = vaccineDto.BatchId
+                BatchId = vaccineDto.BatchId,
+                Image = imageUrl
             };
+
             await _repository.InsertAsync(vaccine);
             await _unitOfWork.SaveAsync();
+
+            return new VaccineResponseDTO
+            {
+                Id = vaccine.Id,
+                Name = vaccine.Name,
+                QuantityAvailable = vaccine.QuantityAvailable,
+                Price = vaccine.Price,
+                Status = vaccine.Status,
+                VaccineCategoryId = vaccine.VaccineCategoryId,
+                BatchId = vaccine.BatchId,
+                image = vaccine.Image
+            };
+        }
+
+        private async Task<string> UploadImageToImgBB(IFormFile image)
+        {
+            if (image == null || image.Length == 0)
+                throw new Exception("Invalid image file.");
+
+            using var memoryStream = new MemoryStream();
+            await image.CopyToAsync(memoryStream);
+            byte[] imageBytes = memoryStream.ToArray();
+            string base64Image = Convert.ToBase64String(imageBytes);
+
+            using var client = _httpClientFactory.CreateClient();
+            using var formData = new MultipartFormDataContent
+            {
+                { new StringContent(ImgBBApiKey), "key" },
+                { new StringContent(base64Image), "image" }
+            };
+
+            var response = await client.PostAsync("https://api.imgbb.com/1/upload", formData);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            using var jsonDoc = JsonDocument.Parse(responseBody);
+            var root = jsonDoc.RootElement;
+
+            if (!root.GetProperty("success").GetBoolean())
+                throw new Exception("Image upload failed.");
+
+            return root.GetProperty("data").GetProperty("url").GetString();
         }
 
         public async Task UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto)
@@ -81,6 +133,7 @@ namespace Services.Services.Vaccines
             existingVaccine.Status = vaccineDto.Status;
             existingVaccine.VaccineCategoryId = vaccineDto.VaccineCategoryId;
             existingVaccine.BatchId = vaccineDto.BatchId;
+
             await _repository.UpdateAsync(existingVaccine);
             await _unitOfWork.SaveAsync();
         }
