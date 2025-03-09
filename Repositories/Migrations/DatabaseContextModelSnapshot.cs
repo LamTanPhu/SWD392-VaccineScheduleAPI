@@ -49,12 +49,6 @@ namespace Repositories.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("OTP")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("OTPExpired")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("longtext");
