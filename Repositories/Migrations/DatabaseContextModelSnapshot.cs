@@ -83,6 +83,10 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
 

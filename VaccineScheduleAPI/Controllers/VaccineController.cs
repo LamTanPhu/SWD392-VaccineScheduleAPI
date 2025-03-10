@@ -14,7 +14,7 @@ namespace VaccineScheduleAPI.Controllers
 
         public VaccineController(IVaccineService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         [Authorize(Roles = "Admin")]
@@ -33,8 +33,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(vaccine);
         }
 
-        // ✅ Modified to accept VaccineRequestDTO + Image file
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<VaccineResponseDTO>> Create([FromForm] VaccineRequestDTO vaccineDto)
         {
@@ -44,7 +43,7 @@ namespace VaccineScheduleAPI.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, VaccineRequestDTO vaccineDto)
+        public async Task<ActionResult> Update(string id, [FromForm] VaccineRequestDTO vaccineDto)
         {
             await _service.UpdateVaccineAsync(id, vaccineDto);
             return NoContent();

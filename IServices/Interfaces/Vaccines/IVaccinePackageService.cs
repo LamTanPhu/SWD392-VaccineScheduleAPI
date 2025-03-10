@@ -10,8 +10,11 @@ namespace IServices.Interfaces.Vaccines
     {
         Task<IEnumerable<VaccinePackageResponseDTO>> GetAllPackagesAsync();
         Task<VaccinePackageResponseDTO?> GetPackageByIdAsync(string id);
-        Task AddPackageAsync(VaccinePackageRequestDTO package);
+        Task<VaccinePackageResponseDTO> AddPackageAsync(VaccinePackageRequestDTO package);
         Task UpdatePackageAsync(string id, VaccinePackageRequestDTO packageDto);
+        Task AddVaccineToPackageAsync(string packageId, VaccinePackageUpdateRequestDTO request);
+        Task RemoveVaccineFromPackageAsync(string packageId, VaccinePackageUpdateRequestDTO request);
         Task DeletePackageAsync(string id);
+        Task<CombinedVaccineResponseDTO> GetAllVaccinesAndPackagesAsync();
     }
 }
