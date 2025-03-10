@@ -21,6 +21,8 @@ namespace IRepositories.Entity.Accounts
         public string Gender { get; set; }
         public string Status { get; set; }
 
+        public string Address { set; get; }
+
         // Navigation property
         public virtual Account Account { get; set; }  // EF will automatically use AccountId as the foreign key here
 
