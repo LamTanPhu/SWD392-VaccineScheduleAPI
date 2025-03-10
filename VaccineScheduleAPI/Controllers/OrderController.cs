@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.Order;
 using ModelViews.Responses.Order;
+using Services.Services.Orders;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -10,51 +11,42 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-        private readonly IOrderService _service;
+
+        private readonly IOrderService _orderService;
 
         public OrderController(IOrderService service)
         {
-            _service = service;
+            _orderService = service;
         }
 
         [Authorize(Roles = "Admin, Parent")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetAll()
+        public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetOrderAll()
         {
-            return Ok(await _service.GetAllOrdersAsync());
+            return Ok(await _orderService.GetAllOrdersAsync());
         }
 
         [Authorize(Roles = "Admin, Parent")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderResponseDTO>> GetById(string id)
+        public async Task<ActionResult<OrderResponseDTO>> GetOrderById(string id)
         {
-            var order = await _service.GetOrderByIdAsync(id);
+            var order = await _orderService.GetOrderByIdAsync(id);
             if (order == null) return NotFound();
             return Ok(order);
         }
 
         [Authorize(Roles = "Admin, Parent")]
         [HttpPost]
-        public async Task<ActionResult> Create(OrderRequestDTO orderDto)
+        public async Task<ActionResult<OrderResponseDTO>> CreateOrder([FromBody] OrderRequestDTO orderDto)
         {
-            await _service.AddOrderAsync(orderDto);
-            return CreatedAtAction(nameof(GetById), new { id = orderDto.ProfileId }, orderDto);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var order = await _orderService.CreateOrderAsync(orderDto);
+            return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
         }
 
-        [Authorize(Roles = "Admin, Parent")]
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, OrderRequestDTO orderDto)
-        {
-            await _service.UpdateOrderAsync(id, orderDto);
-            return NoContent();
-        }
-
-        [Authorize(Roles = "Admin, Parent")]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(string id)
-        {
-            await _service.DeleteOrderAsync(id);
-            return NoContent();
-        }
     }
 }
