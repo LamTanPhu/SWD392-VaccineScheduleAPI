@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace ModelViews.Requests.Vaccine
 {
@@ -12,18 +8,39 @@ namespace ModelViews.Requests.Vaccine
     {
         [Required]
         public string Name { get; set; }
+
+        public string? IngredientsDescription { get; set; }
+
+        [Required]
+        public int UnitOfVolume { get; set; }
+
+        [Required]
+        public int MinAge { get; set; }
+
+        [Required]
+        public int MaxAge { get; set; }
+
+        [Required]
+        public DateTime BetweenPeriod { get; set; }
+
         [Required]
         public int QuantityAvailable { get; set; }
+
         [Required]
         public int Price { get; set; }
+
         [Required]
-        public string Status { get; set; }
+        public DateTime ProductionDate { get; set; }
+
+        [Required]
+        public DateTime ExpirationDate { get; set; }
+
         [Required]
         public string VaccineCategoryId { get; set; }
+
         [Required]
         public string BatchId { get; set; }
 
-        public IFormFile image { get; set; }
-
+        public IFormFile Image { get; set; } // Tùy chọn để upload ảnh
     }
 }
