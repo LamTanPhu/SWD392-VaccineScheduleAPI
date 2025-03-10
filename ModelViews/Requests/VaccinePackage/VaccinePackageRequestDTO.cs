@@ -14,6 +14,8 @@ namespace ModelViews.Requests.VaccinePackage
         public string? PackageDescription { get; set; }
 
         [Required]
-        public bool PackageStatus { get; set; }
+        public List<string> VaccineIds { get; set; } // Danh sách VaccineId để tạo package
     }
+
+
 }
