@@ -19,69 +19,98 @@ namespace Services.Services.Accounts
 
         public JwtService(IConfiguration configuration)
         {
-            _configuration = configuration;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public string GenerateJwtToken(Account account)
         {
-            if (account == null)
-                throw new ArgumentNullException(nameof(account), "Account cannot be null");
-
-            if (string.IsNullOrEmpty(account.Username))
-                throw new ArgumentNullException(nameof(account.Username), "Username cannot be null or empty");
+            if (account == null) throw new ArgumentNullException(nameof(account));
+            if (string.IsNullOrEmpty(account.Username)) throw new ArgumentNullException(nameof(account.Username));
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, account.Username),
-                new Claim(ClaimTypes.Role, account.Role.ToString())  // Adding the Role claim
+                new Claim(ClaimTypes.Role, account.Role.ToString()),
+                new Claim(ClaimTypes.Email, account.Email)
             };
-
-            // Retrieve the secret key from configuration
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"], // Using dynamic config for issuer
-                audience: _configuration["Jwt:Audience"], // Using dynamic config for audience
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["Jwt:ExpireMinutes"])),
                 signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            Console.WriteLine($"Generated Token: '{tokenString}'"); // Log generated token
+            return tokenString;
         }
 
-        public async Task<Account> ExtractAccountAsync(string token)
+        public async Task<ClaimsPrincipal> ValidateTokenAsync(string token)
         {
-            var claims = ExtractAllClaims(token);
-            var username = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
-            // You might want to load account data based on username from the database
-            // For simplicity, we assume it's retrieved from the database
-            var account = new Account
+            try
             {
-                Username = username,
-                // Add other fields as needed (e.g., Email, Role)
-            };
-
-            return account;
+                var principal = await Task.Run(() =>
+                    tokenHandler.ValidateToken(token, new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = _configuration["Jwt:Issuer"],
+                        ValidAudience = _configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    }, out _));
+                return principal;
+            }
+            catch (SecurityTokenExpiredException ex)
+            {
+                Console.WriteLine($"Token expired: {ex.Message}");
+                return null;
+            }
+            catch (SecurityTokenInvalidSignatureException ex)
+            {
+                Console.WriteLine($"Invalid signature: {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Validation failed: {ex.Message}");
+                return null;
+            }
         }
 
-        public bool IsTokenExpired(string token)
-        {
-            var expiration = ExtractExpiration(token);
-            return expiration < DateTime.Now;
-        }
+        public bool IsTokenExpired(string token) => ExtractExpiration(token) < DateTime.UtcNow; // Use UTC for consistency
 
         public DateTime ExtractExpiration(string token)
         {
-            var jwtToken = new JwtSecurityTokenHandler().ReadToken(token) as JwtSecurityToken;
-            return jwtToken?.ValidTo ?? DateTime.MinValue;
+            try
+            {
+                var jwtToken = new JwtSecurityTokenHandler().ReadToken(token) as JwtSecurityToken;
+                return jwtToken?.ValidTo ?? DateTime.MinValue;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to extract expiration: {ex.Message}");
+                return DateTime.MinValue;
+            }
         }
 
         public IEnumerable<Claim> ExtractAllClaims(string token)
         {
-            var jwtToken = new JwtSecurityTokenHandler().ReadToken(token) as JwtSecurityToken;
-            return jwtToken?.Claims ?? Enumerable.Empty<Claim>();
+            try
+            {
+                var jwtToken = new JwtSecurityTokenHandler().ReadToken(token) as JwtSecurityToken;
+                return jwtToken?.Claims ?? Enumerable.Empty<Claim>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to extract claims: {ex.Message}");
+                return Enumerable.Empty<Claim>();
+            }
         }
     }
 }

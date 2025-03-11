@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using IRepositories.Entity.Accounts;
 using IServices.Interfaces.Accounts;
+using System.Security.Claims;
+using ModelViews.Responses.Auth;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -23,17 +25,32 @@ namespace VaccineScheduleAPI.Controllers
 
         [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpGet("profile")]
-        public async Task<ActionResult<Account>> GetProfileAsync()
+        public async Task<ActionResult<ProfileResponseDTO>> GetProfileAsync()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(token))
+            var authHeader = Request.Headers["Authorization"].ToString();
+            Console.WriteLine($"Raw Authorization Header: '{authHeader}'");
+
+            if (string.IsNullOrEmpty(authHeader))
                 return Unauthorized(new { Message = "Token is required." });
 
-            var account = await _jwtService.ExtractAccountAsync(token);
-            if (account == null || account.DeletedTime != null)
-                return Unauthorized(new { Message = "Invalid token or account deleted." });
+            // Use the ClaimsPrincipal from the middleware (already validated)
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            Console.WriteLine($"Middleware Extracted Username: '{username}'");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-            return Ok(account);
+            // Optional: Double-check with JwtService if needed
+            var token = authHeader.Trim();
+            var expired = _jwtService.IsTokenExpired(token);
+            Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
+            if (expired)
+                return Unauthorized(new { Message = "Token has expired." });
+
+            var profile = await _userProfileService.GetProfileByUsernameAsync(username);
+            if (profile == null)
+                return NotFound(new { Message = "User not found or deleted." });
+
+            return Ok(profile);
         }
 
         [Authorize(Roles = "Admin, Staff, Parent")]
