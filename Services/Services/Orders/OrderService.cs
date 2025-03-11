@@ -161,10 +161,6 @@ namespace Services.Services.Orders
                     TotalAmount = 0,
                     TotalOrderPrice = 0,
                     Status = "Pending",
-                    CreatedBy = "System",
-                    CreatedTime = DateTimeOffset.UtcNow,
-                    LastUpdatedBy = "System",
-                    LastUpdatedTime = DateTimeOffset.UtcNow
                 };
 
                 await _orderRepository.InsertAsync(order);
@@ -189,10 +185,6 @@ namespace Services.Services.Orders
                         VaccineId = vaccineItem.VaccineId,
                         Quantity = vaccineItem.Quantity,
                         TotalPrice = vaccine.Price * vaccineItem.Quantity,
-                        CreatedBy = "System",
-                        CreatedTime = DateTimeOffset.UtcNow,
-                        LastUpdatedBy = "System",
-                        LastUpdatedTime = DateTimeOffset.UtcNow
                     };
 
                     await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
@@ -222,10 +214,6 @@ namespace Services.Services.Orders
                         VaccinePackageId = packageItem.VaccinePackageId,
                         Quantity = packageItem.Quantity,
                         TotalPrice = packagePrice * packageItem.Quantity,
-                        CreatedBy = "System",
-                        CreatedTime = DateTimeOffset.UtcNow,
-                        LastUpdatedBy = "System",
-                        LastUpdatedTime = DateTimeOffset.UtcNow
                     };
 
                     await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
@@ -237,7 +225,7 @@ namespace Services.Services.Orders
                 // Cập nhật TotalAmount và TotalOrderPrice
                 order.TotalAmount = totalAmount;
                 order.TotalOrderPrice = totalOrderPrice;
-                order.LastUpdatedTime = DateTimeOffset.UtcNow;
+
 
                 await _orderRepository.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();

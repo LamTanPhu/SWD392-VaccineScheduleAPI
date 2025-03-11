@@ -9,5 +9,6 @@ namespace IRepositories.IRepository.Orders
 {
     public interface IOrderPackageDetailsRepository : IGenericRepository<OrderPackageDetails>
     {
+        Task<OrderPackageDetails> GetByIdWithPackageDetailsAsync(string id);
     }
 }
