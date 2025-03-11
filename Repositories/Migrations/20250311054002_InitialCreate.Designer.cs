@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250309103049_InitialCreate")]
+    [Migration("20250311054002_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -85,6 +85,10 @@ namespace Repositories.Migrations
                     b.Property<string>("AccountId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
@@ -613,6 +617,9 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("DosedNumber")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("longtext");
 
@@ -630,6 +637,9 @@ namespace Repositories.Migrations
                     b.Property<string>("VaccineId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("VaccinedStatus")
+                        .HasColumnType("int");
 
                     b.Property<int>("VerifiedStatus")
                         .HasColumnType("int");
