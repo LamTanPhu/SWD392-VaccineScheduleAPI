@@ -3,7 +3,6 @@ using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
 using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
-using ModelViews.DTOs;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using System;
