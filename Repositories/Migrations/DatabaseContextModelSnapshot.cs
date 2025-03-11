@@ -614,6 +614,9 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("DosedNumber")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("longtext");
 
@@ -631,6 +634,9 @@ namespace Repositories.Migrations
                     b.Property<string>("VaccineId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("VaccinedStatus")
+                        .HasColumnType("int");
 
                     b.Property<int>("VerifiedStatus")
                         .HasColumnType("int");
