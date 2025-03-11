@@ -20,10 +20,10 @@ builder.Services.AddControllers();
 // Get the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Register DbContext with MySQL provider (Pomelo)
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-);
+//// Register DbContext with MySQL provider (Pomelo)
+//builder.Services.AddDbContext<DatabaseContext>(options =>
+//    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+//);
 
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
@@ -58,7 +58,17 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SwaggerFileOperationFilter>();
 });
 
-
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Allow your frontend origin
+              .AllowAnyMethod() // Allow GET, POST, etc.
+              .AllowAnyHeader() // Allow all headers (e.g., Content-Type)
+              .AllowCredentials(); // Allow cookies/auth if needed
+    });
+});
 // Register database context
 // If you were using SQL Server or another database provider, you could configure it here as needed
 // Example:
@@ -156,6 +166,7 @@ if (app.Environment.IsDevelopment())
 
 // Use HTTPS redirection and authentication/authorization middleware
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend"); // Add this line to enable CORS
 app.UseAuthentication();  // Added authentication middleware
 app.UseAuthorization();   // Add authorization middleware
 app.MapControllers();     // Map the controllers
