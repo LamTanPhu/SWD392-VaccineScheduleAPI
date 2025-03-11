@@ -23,6 +23,11 @@ namespace IRepositories.Entity.Schedules
         public string Notes { get; set; }
         public int VerifiedStatus { get; set; }
 
+        public int VaccinedStatus { get; set; }
+
+        public int DosedNumber { get; set; }
+
+
         // Navigation properties
         public virtual Vaccine Vaccine { get; set; }
         public virtual ChildrenProfile Profile { get; set; }

@@ -32,6 +32,7 @@ namespace Services
             services.AddScoped<IOrderPackageDetailsRepository, OrderPackageDetailsRepository>();
             services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IVaccineScheduleRepository, VaccineScheduleRepository>();
         }
     }
 }

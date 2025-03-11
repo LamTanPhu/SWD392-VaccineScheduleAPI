@@ -237,6 +237,8 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Status = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Address = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
@@ -377,6 +379,8 @@ namespace Repositories.Migrations
                     Notes = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     VerifiedStatus = table.Column<int>(type: "int", nullable: false),
+                    VaccinedStatus = table.Column<int>(type: "int", nullable: false),
+                    DosedNumber = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     LastUpdatedBy = table.Column<string>(type: "longtext", nullable: true)
