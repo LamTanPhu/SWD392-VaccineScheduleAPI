@@ -24,10 +24,12 @@ namespace Repositories.Repository.Accounts
 
         public async Task<Account?> GetByUsernameAsync(string username)
         {
-            return await _dbSet.AsNoTracking()
+            var account = await _dbSet.AsNoTracking()
                 .Include(a => a.VaccineCenter)
                 .Include(a => a.ChildrenProfiles)
                 .FirstOrDefaultAsync(a => a.Username == username);
+            Console.WriteLine($"Repository Fetched: Id={account?.Id}, Username={account?.Username}, Email={account?.Email}, Status={account?.Status}, Role={account?.Role}");
+            return account;
         }
 
         public async Task<Account?> GetByEmailAsync(string email)
