@@ -33,24 +33,32 @@ namespace VaccineScheduleAPI.Controllers
             if (string.IsNullOrEmpty(authHeader))
                 return Unauthorized(new { Message = "Token is required." });
 
-            // Use the ClaimsPrincipal from the middleware (already validated)
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             Console.WriteLine($"Middleware Extracted Username: '{username}'");
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
-            // Optional: Double-check with JwtService if needed
             var token = authHeader.Trim();
             var expired = _jwtService.IsTokenExpired(token);
             Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
             if (expired)
                 return Unauthorized(new { Message = "Token has expired." });
 
-            var profile = await _userProfileService.GetProfileByUsernameAsync(username);
-            if (profile == null)
+            var profileData = await _userProfileService.GetProfileByUsernameAsync(username);
+            if (profileData == null)
                 return NotFound(new { Message = "User not found or deleted." });
 
-            return Ok(profile);
+            var response = new ProfileResponseDTO
+            {
+                Username = profileData.Username,
+                Email = profileData.Email ?? "Not provided",
+                Role = profileData.Role,
+                Status = profileData.Status ?? "Active",
+                VaccineCenter = profileData.VaccineCenter,
+                ChildrenProfiles = profileData.ChildrenProfiles
+            };
+            Console.WriteLine($"Final Response DTO: Username={response.Username}, Email={response.Email}, Status={response.Status}, Role={response.Role}");
+            return new JsonResult(response); // Force DTO
         }
 
         [Authorize(Roles = "Admin, Staff, Parent")]

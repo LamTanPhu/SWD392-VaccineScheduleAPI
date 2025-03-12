@@ -22,14 +22,16 @@ namespace Services.Services.Accounts
 
         public async Task<ProfileResponseDTO?> GetProfileByUsernameAsync(string username)
         {
-            if (string.IsNullOrEmpty(username))
-                throw new ArgumentNullException(nameof(username), "Username cannot be null or empty.");
-
             var account = await _accountRepository.GetByUsernameAsync(username);
             if (account == null || account.DeletedTime != null)
+            {
+                Console.WriteLine($"Account null or deleted for username: {username}");
                 return null;
+            }
 
-            return MapToProfileResponseDTO(account);
+            var dto = MapToProfileResponseDTO(account);
+            Console.WriteLine($"Mapped DTO: Id(not included)={account.Id}, Username={dto.Username}, Email={dto.Email}, Status={dto.Status}, Role={dto.Role}");
+            return dto;
         }
 
         public async Task<Account?> GetByUsernameAsync(string username)
