@@ -583,6 +583,8 @@ namespace Repositories.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     OrderId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    TransactionId = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     PaymentName = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     PaymentMethod = table.Column<string>(type: "longtext", nullable: false)

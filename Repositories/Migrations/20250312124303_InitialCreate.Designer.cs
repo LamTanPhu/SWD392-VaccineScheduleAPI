@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250311055559_InitialCreate")]
+    [Migration("20250312124303_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -461,6 +461,10 @@ namespace Repositories.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("TransactionId")
                         .IsRequired()
                         .HasColumnType("longtext");
 

@@ -1,10 +1,13 @@
-﻿using IRepositories.IRepository;
+﻿using IRepositories.Entity.Orders;
+using IRepositories.IRepository;
+using IRepositories.IRepository.Orders;
 using IServices.Interfaces.Orders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using ModelViews.Config;
 using ModelViews.Requests.VNPay;
 using ModelViews.Responses.VNPay;
+using Repositories.Repository.Orders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +21,12 @@ namespace Services.Services.Orders
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly VNPayConfig _config;
-
-        public VNPayService(IUnitOfWork unitOfWork, IOptions<VNPayConfig> config)
+        private readonly IPaymentRepository _paymentRepository;
+        public VNPayService(IUnitOfWork unitOfWork, IOptions<VNPayConfig> config, IPaymentRepository paymentRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _config = config.Value ?? throw new ArgumentNullException(nameof(config));
+            _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
         }
 
         public async Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request)
@@ -30,7 +34,6 @@ namespace Services.Services.Orders
             if (request == null || request.Amount <= 0 || string.IsNullOrEmpty(request.OrderId))
                 throw new ArgumentException("Invalid payment request data.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var vnpParams = new Dictionary<string, string>
@@ -80,13 +83,51 @@ namespace Services.Services.Orders
                 {
                     TransactionId = vnpParams["vnp_TransactionNo"],
                     OrderId = vnpParams["vnp_TxnRef"],
-                    Amount = decimal.Parse(vnpParams["vnp_Amount"]) / 100, // VND / 100 
+                    Amount = decimal.Parse(vnpParams["vnp_Amount"]) / 100,
                     ResponseCode = vnpParams["vnp_ResponseCode"],
                     IsSuccess = isValid && vnpParams["vnp_ResponseCode"] == "00"
                 };
 
-                if (!response.IsSuccess)
-                    throw new Exception("Payment verification failed or transaction unsuccessful.");
+                if (response.IsSuccess)
+                {
+                    // Tạo đối tượng Payment
+                    var payment = new Payment
+                    {
+                        Id = Guid.NewGuid().ToString(), // Giả sử BaseEntity có Id
+                        OrderId = response.OrderId,
+                        TransactionId = response.TransactionId,
+                        PaymentName = "Thanh toán VNPay",
+                        PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
+                        PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
+                        PaymentStatus = "Success",
+                        PayAmount = response.Amount,
+                        CreatedTime = DateTime.Now,
+                        LastUpdatedTime = DateTime.Now
+                    };
+
+                    // Lưu vào DB
+                    await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
+                    await _unitOfWork.SaveAsync();
+                }
+                else
+                {
+                    // Có thể lưu trạng thái thất bại nếu cần
+                    var payment = new Payment
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OrderId = response.OrderId,
+                        TransactionId = response.TransactionId,
+                        PaymentName = "Thanh toán VNPay",
+                        PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
+                        PaymentDate = DateTime.Now, // Nếu thất bại, không có vnp_PayDate chính xác
+                        PaymentStatus = "Failed",
+                        PayAmount = response.Amount,
+                        CreatedTime = DateTime.Now,
+                        LastUpdatedTime = DateTime.Now
+                    };
+                    await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
+                    await _unitOfWork.SaveAsync();
+                }
 
                 await _unitOfWork.CommitTransactionAsync();
                 return response;

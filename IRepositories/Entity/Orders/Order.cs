@@ -16,7 +16,7 @@ namespace IRepositories.Entity.Orders
         public DateTime PurchaseDate { get; set; }
         public int TotalAmount { get; set; }
         public int TotalOrderPrice { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } // 1: Pending, 2:Complete, 3:Delete
         // Navigation properties
         public virtual Feedback Feedback { get; set; }
         [ForeignKey("ProfileId")]
