@@ -25,7 +25,7 @@ namespace IRepositories.Entity.Schedules
 
         public int VaccinedStatus { get; set; }
 
-        public int DosedNumber { get; set; }
+        public int DosedNumber { get; set; }  
 
 
         // Navigation properties

@@ -8,8 +8,12 @@ using System.IdentityModel.Tokens.Jwt;
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ModelViews.Config;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Register Configuaration for VNPay
+builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("VNPay"));
 
 // Register HttpClient 
 builder.Services.AddHttpClient();
