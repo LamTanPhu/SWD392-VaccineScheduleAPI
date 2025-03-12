@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using IRepositories.Entity.Accounts;
 using IServices.Interfaces.Accounts;
+using System.Security.Claims;
+using ModelViews.Responses.Auth;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -23,17 +25,40 @@ namespace VaccineScheduleAPI.Controllers
 
         [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpGet("profile")]
-        public async Task<ActionResult<Account>> GetProfileAsync()
+        public async Task<ActionResult<ProfileResponseDTO>> GetProfileAsync()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(token))
+            var authHeader = Request.Headers["Authorization"].ToString();
+            Console.WriteLine($"Raw Authorization Header: '{authHeader}'");
+
+            if (string.IsNullOrEmpty(authHeader))
                 return Unauthorized(new { Message = "Token is required." });
 
-            var account = await _jwtService.ExtractAccountAsync(token);
-            if (account == null || account.DeletedTime != null)
-                return Unauthorized(new { Message = "Invalid token or account deleted." });
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            Console.WriteLine($"Middleware Extracted Username: '{username}'");
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-            return Ok(account);
+            var token = authHeader.Trim();
+            var expired = _jwtService.IsTokenExpired(token);
+            Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
+            if (expired)
+                return Unauthorized(new { Message = "Token has expired." });
+
+            var profileData = await _userProfileService.GetProfileByUsernameAsync(username);
+            if (profileData == null)
+                return NotFound(new { Message = "User not found or deleted." });
+
+            var response = new ProfileResponseDTO
+            {
+                Username = profileData.Username,
+                Email = profileData.Email ?? "Not provided",
+                Role = profileData.Role,
+                Status = profileData.Status ?? "Active",
+                VaccineCenter = profileData.VaccineCenter,
+                ChildrenProfiles = profileData.ChildrenProfiles
+            };
+            Console.WriteLine($"Final Response DTO: Username={response.Username}, Email={response.Email}, Status={response.Status}, Role={response.Role}");
+            return new JsonResult(response); // Force DTO
         }
 
         [Authorize(Roles = "Admin, Staff, Parent")]

@@ -11,9 +11,9 @@ namespace IServices.Interfaces.Accounts
     public interface IJwtService
     {
         string GenerateJwtToken(Account account);
-        Task<Account> ExtractAccountAsync(string token);
+        Task<ClaimsPrincipal> ValidateTokenAsync(string token); // Return claims instead of Account
         bool IsTokenExpired(string token);
         DateTime ExtractExpiration(string token);
-        IEnumerable<Claim> ExtractAllClaims(string token);  // Changed to return IEnumerable<Claim>
+        IEnumerable<Claim> ExtractAllClaims(string token);
     }
 }

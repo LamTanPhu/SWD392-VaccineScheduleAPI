@@ -49,6 +49,8 @@ namespace VaccineScheduleAPI
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IVaccinationScheduleService, VaccinationScheduleService>();
             services.AddScoped<IVNPayService, VNPayService>();
+            services.AddScoped<IAccountAssignmentService, AccountAssignmentService>();
+
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
