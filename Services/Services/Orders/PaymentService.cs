@@ -104,6 +104,7 @@ namespace Services.Services.Orders
                     var order = await _orderRepository.GetByIdAsync(response.OrderId);
                     if (order != null)
                         throw new Exception("Order not found");
+                    //Chuyển Order Status -> Complated vì thanh toán thành công nhá
                     order.Status = "Completed";
                     await _orderRepository.UpdateAsync(order);
                     // Tạo đối tượng Payment
@@ -182,7 +183,7 @@ namespace Services.Services.Orders
                 string secureHash = HmacSHA512(_config.HashSecret, queryString);
                 vnpParams["vnp_SecureHash"] = secureHash;
 
-                // Tạo URL thanh toán
+                // Tạo URL thanh toán từ VNPay
                 string paymentUrl = _config.BaseUrl + "?" + BuildQueryString(vnpParams);
 
                 // Tạo mã QR từ URL
@@ -209,6 +210,7 @@ namespace Services.Services.Orders
             return string.Join("&", sortedParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
         }
 
+        
         private string HmacSHA512(string key, string input)
         {
             using (var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key)))
@@ -247,10 +249,6 @@ namespace Services.Services.Orders
             };
         }
 
-        public Task UpdatePaymentDetailsAsync(string name, PaymentDetailsResponseDTO detailsDto)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 }
