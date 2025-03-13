@@ -107,10 +107,10 @@ namespace Services.Services.Orders
                     //Chuyển Order Status -> Complated vì thanh toán thành công nhá
                     order.Status = "Completed";
                     await _orderRepository.UpdateAsync(order);
-                    // Tạo đối tượng Payment
+                   
                     var payment = new Payment
                     {
-                        Id = Guid.NewGuid().ToString(), // Giả sử BaseEntity có Id
+                        Id = Guid.NewGuid().ToString(), 
                         OrderId = response.OrderId,
                         TransactionId = response.TransactionId,
                         PaymentName = "Thanh toán VNPay",
@@ -190,7 +190,7 @@ namespace Services.Services.Orders
                 var qrGenerator = new QRCodeGenerator();
                 var qrCodeData = qrGenerator.CreateQrCode(paymentUrl, QRCodeGenerator.ECCLevel.Q);
                 var qrCode = new BitmapByteQRCode(qrCodeData);
-                byte[] qrCodeBytes = qrCode.GetGraphic(20); // Kích thước pixel mỗi module
+                byte[] qrCodeBytes = qrCode.GetGraphic(20); 
                 //string base64Image = Convert.ToBase64String(qrCodeImage);
 
                 await _unitOfWork.CommitTransactionAsync();
