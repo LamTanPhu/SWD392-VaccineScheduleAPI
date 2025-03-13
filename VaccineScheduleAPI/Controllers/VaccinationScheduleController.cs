@@ -19,7 +19,7 @@ namespace VaccineScheduleAPI.Controllers
             _scheduleService = scheduleService ?? throw new ArgumentNullException(nameof(scheduleService));
         }
 
-        // CREATE Order Schedule
+
         [Authorize(Roles = "Admin, Staff")]
         [HttpPost("order")]
         public async Task<ActionResult<List<ScheduleResponseDTO>>> CreateOrderSchedules([FromBody] ScheduleRequestDTO request)
@@ -28,7 +28,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(createdSchedules);
         }
 
-        // CREATE Schedule
+
         [Authorize(Roles = "Admin, Staff")]
         [HttpPost]
         public async Task<ActionResult<ScheduleResponseDTO>> CreateSchedule([FromBody] CreateScheduleRequestDTO request)
@@ -37,7 +37,7 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetScheduleById), new { id = createdSchedule.Id }, createdSchedule);
         }
 
-        // READ ALL
+
         [Authorize(Roles = "Admin, Staff")]
         [HttpGet]
         public async Task<ActionResult<List<ScheduleResponseDTO>>> GetAllSchedules()
@@ -46,7 +46,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(schedules);
         }
 
-        // READ BY ID
+
         [Authorize(Roles = "Admin, Staff")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ScheduleResponseDTO>> GetScheduleById(string id)
@@ -55,7 +55,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(schedule);
         }
 
-        // UPDATE
+
         [Authorize(Roles = "Admin, Staff")]
         [HttpPut]
         public async Task<IActionResult> UpdateSchedule(string scheduleId, [FromBody] UpdateScheduleRequestDTO request)
@@ -64,7 +64,7 @@ namespace VaccineScheduleAPI.Controllers
             return NoContent();
         }
 
-        // DELETE (Soft Delete)
+     //www
         [Authorize(Roles = "Admin, Staff")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSchedule(string id)
