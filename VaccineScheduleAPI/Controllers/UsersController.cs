@@ -5,6 +5,7 @@ using IRepositories.Entity.Accounts;
 using IServices.Interfaces.Accounts;
 using System.Security.Claims;
 using ModelViews.Responses.Auth;
+using ModelViews.Requests.Auth;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -13,6 +14,8 @@ namespace VaccineScheduleAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserProfileService _userProfileService;
+        private readonly IAccountUpdateService _accountUpdateService;
+
         private readonly IJwtService _jwtService;
 
         public UsersController(
@@ -73,6 +76,26 @@ namespace VaccineScheduleAPI.Controllers
                 return NotFound(new { Message = "User not found or deleted." });
 
             return Ok(user);
+        }
+
+
+        [HttpPut("update-profile")]
+        [Authorize] //will restrict roles later
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateAccountRequestDTO request)
+        {
+            try
+            {
+                var username = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (string.IsNullOrEmpty(username))
+                    return Unauthorized(new { Message = "Invalid token payload." });
+
+                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(username, request);
+                return Ok(updatedProfile);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }

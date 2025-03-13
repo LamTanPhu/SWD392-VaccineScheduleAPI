@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using ModelViews.Requests.VaccineCenter;
 using ModelViews.Responses.VaccineCenter;
@@ -11,7 +10,6 @@ namespace VaccineScheduleAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class VaccineCentersController : ControllerBase
     {
         private readonly IVaccineCenterService _vaccineCenterService;
@@ -21,8 +19,8 @@ namespace VaccineScheduleAPI.Controllers
             _vaccineCenterService = vaccineCenterService;
         }
 
-        // Only Admin can access this method
-        [Authorize(Roles = "Admin")]
+        // Allow any authenticated user to access this method
+        //[Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllVaccineCenters()
         {
@@ -30,6 +28,30 @@ namespace VaccineScheduleAPI.Controllers
             {
                 var vaccineCenters = await _vaccineCenterService.GetAllAsync();
                 return Ok(vaccineCenters);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // Public endpoint for fetching vaccine centers (no authentication required)
+        //[AllowAnonymous] // Uncommented to allow public access
+        [HttpGet("public")]
+        public async Task<IActionResult> GetAllVaccineCentersPublic()
+        {
+            try
+            {
+                var vaccineCenters = await _vaccineCenterService.GetAllAsync();
+                // Return only necessary fields (id and name) for public access
+                var filteredCenters = vaccineCenters
+                    .Select(vc => new
+                    {
+                        id = vc.Id,
+                        name = vc.Name
+                    })
+                    .ToList();
+                return Ok(filteredCenters);
             }
             catch (Exception ex)
             {
@@ -133,5 +155,4 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
     }
-
 }
