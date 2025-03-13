@@ -4,11 +4,6 @@ using IRepositories.IRepository;
 using IServices.Interfaces.Accounts;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Responses.ChildrenProfile;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Services.Services.Accounts
 {
@@ -33,8 +28,26 @@ namespace Services.Services.Accounts
                 FullName = p.FullName,
                 DateOfBirth = p.DateOfBirth,
                 Gender = p.Gender,
-                Status = p.Status
+                Status = p.Status,
+                Address = p.Address
             }).ToList();
+        }
+
+        public async Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesByAccountIdAsync(string accountId)
+        {
+            var profiles = await _repository.GetAllAsync();
+            return profiles
+                .Where(p => p.AccountId == accountId)
+                .Select(p => new ChildrenProfileResponseDTO
+                {
+                    Id = p.Id,
+                    AccountId = p.AccountId,
+                    FullName = p.FullName,
+                    DateOfBirth = p.DateOfBirth,
+                    Gender = p.Gender,
+                    Status = p.Status,
+                    Address = p.Address
+                }).ToList();
         }
 
         public async Task<ChildrenProfileResponseDTO?> GetProfileByIdAsync(string id)
@@ -48,7 +61,8 @@ namespace Services.Services.Accounts
                 FullName = profile.FullName,
                 DateOfBirth = profile.DateOfBirth,
                 Gender = profile.Gender,
-                Status = profile.Status
+                Status = profile.Status,
+                Address = profile.Address
             };
         }
 
@@ -60,7 +74,8 @@ namespace Services.Services.Accounts
                 FullName = profileDto.FullName,
                 DateOfBirth = profileDto.DateOfBirth,
                 Gender = profileDto.Gender,
-                Status = profileDto.Status
+                Status = profileDto.Status,
+                Address = profileDto.Address
             };
             await _repository.InsertAsync(profile);
             await _unitOfWork.SaveAsync();
@@ -76,6 +91,7 @@ namespace Services.Services.Accounts
             existingProfile.DateOfBirth = profileDto.DateOfBirth;
             existingProfile.Gender = profileDto.Gender;
             existingProfile.Status = profileDto.Status;
+            existingProfile.Address = profileDto.Address;
             await _repository.UpdateAsync(existingProfile);
             await _unitOfWork.SaveAsync();
         }
