@@ -1,4 +1,5 @@
-﻿using ModelViews.Requests.Order;
+﻿using ModelViews.Requests;
+using ModelViews.Requests.Order;
 using ModelViews.Responses.Order;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace IServices.Interfaces.Orders
         Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO orderDto);
         Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request);
         Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request);
+        Task<OrderResponseDTO> SetPayLaterAsync(PayLaterRequestDTO request);
 
 
     }

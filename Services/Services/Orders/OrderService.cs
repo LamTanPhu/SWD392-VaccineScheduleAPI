@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using IRepositories.IRepository.Accounts;
 using IRepositories.IRepository.Inventory;
 using IRepositories.IRepository.Vaccines;
+using ModelViews.Requests;
 
 namespace Services.Services.Orders
 {
@@ -412,6 +413,39 @@ namespace Services.Services.Orders
                 throw new Exception($"Xóa Order Details thất bại: {ex.Message}");
             }
         }
+
+        public async Task<OrderResponseDTO> SetPayLaterAsync(PayLaterRequestDTO request)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+                if (order == null)
+                    throw new Exception("Order không tồn tại.");
+
+
+                if (order.Status != "Pending")
+                    throw new Exception("Chỉ có thể chuyển sang PayLater từ trạng thái Pending.");
+
+
+                order.Status = "PayLater";
+                order.LastUpdatedTime = DateTime.Now; 
+
+                await _orderRepository.UpdateAsync(order);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+
+                return await GetOrderByIdAsync(order.Id);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception($"Chuyển trạng thái sang PayLater thất bại: {ex.Message}");
+            }
+        }
+
 
 
     }
