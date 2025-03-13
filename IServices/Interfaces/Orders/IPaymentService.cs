@@ -16,7 +16,6 @@ namespace IServices.Interfaces.Orders
     {
         Task<IEnumerable<PaymentDetailsResponseDTO>> GetAllPaymentDetailsAsync();
         Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByNameAsync(string name);
-        Task UpdatePaymentDetailsAsync(string name, PaymentDetailsResponseDTO detailsDto);
         Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request);
         Task<VNPayReturnResponseDTO> HandlePaymentReturnAsync(IQueryCollection query);
         Task<byte[]> CreateQRCodeAsync(VNPayPaymentRequestDTO request);

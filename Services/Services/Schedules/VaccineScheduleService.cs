@@ -38,7 +38,7 @@
             _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
         }
 
-        // CREATE
+        
         public async Task<List<ScheduleResponseDTO>> CreateSchedulesAsync(ScheduleRequestDTO request)
         {
             if (request == null || string.IsNullOrEmpty(request.OrderId) || request.Schedules == null || !request.Schedules.Any())
@@ -107,7 +107,7 @@
                         AppointmentDate = scheduleItem.AppointmentDate,
                         ActualDate = null,
                         AdministeredBy = null,
-                        Status = 1 // Initially "đặt lịch nhưng chưa đến"
+                        Status = 1 
                     };
 
                     await _scheduleRepository.InsertAsync(schedule);
@@ -134,19 +134,19 @@
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Validate ProfileId
+                
                 var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
                 if (profile == null)
                     throw new Exception($"Profile with ID {request.ProfileId} not found.");
 
-                // Validate OrderVaccineDetailsId or OrderPackageDetailsId if provided
+
                 string? vaccineId = request.VaccineId;
                 if (!string.IsNullOrEmpty(request.OrderVaccineDetailsId))
                 {
                     var vaccineDetail = await _orderVaccineDetailsRepository.GetByIdAsync(request.OrderVaccineDetailsId);
                     if (vaccineDetail == null)
                         throw new Exception($"Invalid OrderVaccineDetailsId: {request.OrderVaccineDetailsId}");
-                    vaccineId = vaccineDetail.VaccineId; // Override VaccineId if provided
+                    vaccineId = vaccineDetail.VaccineId; 
                 }
                 else if (!string.IsNullOrEmpty(request.OrderPackageDetailsId))
                 {
@@ -156,7 +156,7 @@
 
                 }
 
-                // Validate other fields
+                
                 var currentDate = DateTime.UtcNow;
                 if (request.DoseNumber <= 0)
                     throw new Exception($"Invalid DoseNumber: {request.DoseNumber}");
@@ -165,7 +165,7 @@
                 if (request.Status < 0 || request.Status > 2)
                     throw new Exception($"Invalid Status: {request.Status}. Must be 0, 1, or 2.");
 
-                // Check for duplicate schedule
+                
                 var exists = await _scheduleRepository.ExistsAsync(
                     request.ProfileId,
                     request.OrderVaccineDetailsId,
@@ -174,7 +174,7 @@
                 if (exists)
                     throw new Exception($"Schedule already exists for Dose {request.DoseNumber}.");
 
-                // Create schedule
+                
                 var schedule = new VaccinationSchedule
                 {
                     Id = string.IsNullOrEmpty(request.Id) ? Guid.NewGuid().ToString() : request.Id,
@@ -202,14 +202,14 @@
             }
         }
 
-        // READ ALL
+        
         public async Task<List<ScheduleResponseDTO>> GetAllSchedulesAsync()
         {
             var schedules = await _scheduleRepository.GetAllAsync();
             return schedules.Select(MapToResponseDTO).ToList();
         }
 
-        // READ BY ID
+        
         public async Task<ScheduleResponseDTO> GetScheduleByIdAsync(string id)
         {
             var schedule = await _scheduleRepository.GetByIdAsync(id);
@@ -218,7 +218,7 @@
             return MapToResponseDTO(schedule);
         }
 
-        // UPDATE
+        
         public async Task UpdateScheduleAsync(string scheduleId, UpdateScheduleRequestDTO request)
         {
             if (request == null || string.IsNullOrEmpty(scheduleId))
@@ -231,7 +231,7 @@
                 if (schedule == null)
                     throw new Exception($"Schedule with ID {scheduleId} not found.");
 
-                // Validate fields
+                
                 if (request.DoseNumber <= 0)
                     throw new Exception($"Invalid DoseNumber: {request.DoseNumber}");
                 if (request.AppointmentDate <= DateTime.UtcNow && request.Status == 1)
@@ -239,7 +239,7 @@
                 if (request.Status < 0 || request.Status > 2)
                     throw new Exception($"Invalid Status: {request.Status}. Must be 0, 1, or 2.");
 
-                // Update specified fields
+                
                 schedule.DoseNumber = request.DoseNumber;
                 schedule.AppointmentDate = request.AppointmentDate;
                 schedule.ActualDate = request.ActualDate;
@@ -257,7 +257,7 @@
             }
         }
 
-        // DELETE (Soft Delete: Set Status = 0)
+       
         public async Task DeleteScheduleAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -270,7 +270,7 @@
                 if (schedule == null)
                     throw new Exception($"Schedule with ID {id} not found.");
 
-                schedule.Status = 0; // Set to "hủy lịch"
+                schedule.Status = 0;
                 await _scheduleRepository.UpdateAsync(schedule);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
@@ -282,7 +282,7 @@
             }
         }
 
-        // Helper method to map entity to DTO
+        
         private ScheduleResponseDTO MapToResponseDTO(VaccinationSchedule schedule)
         {
             return new ScheduleResponseDTO
