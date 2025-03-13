@@ -33,6 +33,7 @@ namespace Services
             services.AddScoped<IOrderVaccineDetailsRepository, OrderVaccineDetailsRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IVaccineScheduleRepository, VaccineScheduleRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
         }
     }
 }

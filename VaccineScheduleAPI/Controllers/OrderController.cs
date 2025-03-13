@@ -48,5 +48,28 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
         }
 
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("details/add")]
+        public async Task<ActionResult<OrderResponseDTO>> AddOrderDetails([FromBody] AddOrderDetailsRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.AddOrderDetailsAsync(request);
+            return Ok(updatedOrder);
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("details/remove")]
+        public async Task<ActionResult<OrderResponseDTO>> RemoveOrderDetails([FromBody] RemoveOrderDetailsRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.RemoveOrderDetailsAsync(request);
+            return Ok(updatedOrder);
+        }
+
+
     }
 }
