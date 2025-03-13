@@ -19,5 +19,6 @@ namespace ModelViews.Requests.ChildrenProfile
         public string Gender { get; set; }
         [Required]
         public string Status { get; set; }
+        public string Address { set; get; }
     }
 }

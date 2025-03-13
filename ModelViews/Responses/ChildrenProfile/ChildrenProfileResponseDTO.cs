@@ -14,5 +14,6 @@ namespace ModelViews.Responses.ChildrenProfile
         public DateTime DateOfBirth { get; set; }
         public string Gender { get; set; }
         public string Status { get; set; }
+        public string Address { set; get; }
     }
 }
