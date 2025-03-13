@@ -60,6 +60,8 @@ namespace Services.Services.Vaccines
                         VaccineCategoryId = v.VaccineCategoryId,
                         BatchId = v.BatchId,
                         Image = v.Image,
+                        ManufacturerName = v.Batch?.Manufacturer?.Name,
+                        ManufacturerCountry = v.Batch?.Manufacturer?.CountryName
                     }).ToList()
             }).ToList();
         }
@@ -98,6 +100,8 @@ namespace Services.Services.Vaccines
                         VaccineCategoryId = v.VaccineCategoryId,
                         BatchId = v.BatchId,
                         Image = v.Image,
+                        ManufacturerName = v.Batch?.Manufacturer?.Name,
+                        ManufacturerCountry = v.Batch?.Manufacturer?.CountryName
                     }).ToList()
             };
         }
