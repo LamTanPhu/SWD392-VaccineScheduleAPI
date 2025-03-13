@@ -104,7 +104,7 @@ namespace Services.Services.Orders
                     var order = await _orderRepository.GetByIdAsync(response.OrderId);
                     if (order != null)
                         throw new Exception("Order not found");
-                    order.Status = "Complete";
+                    order.Status = "Completed";
                     await _orderRepository.UpdateAsync(order);
                     // Tạo đối tượng Payment
                     var payment = new Payment

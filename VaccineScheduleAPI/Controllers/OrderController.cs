@@ -59,6 +59,16 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(updatedOrder);
         }
 
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("details/remove")]
+        public async Task<ActionResult<OrderResponseDTO>> RemoveOrderDetails([FromBody] RemoveOrderDetailsRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.RemoveOrderDetailsAsync(request);
+            return Ok(updatedOrder);
+        }
 
 
     }

@@ -352,7 +352,66 @@ namespace Services.Services.Orders
             }
         }
 
-       
+        public async Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+                if (order == null)
+                    throw new Exception("Order không tồn tại.");
+
+                // Xóa OrderVaccineDetails
+                foreach (var detailId in request.VaccineDetailIds)
+                {
+                    var detail = await _orderVaccineDetailsRepository.GetByIdAsync(detailId);
+                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+                    {
+                        var vaccine = await _vaccineRepository.GetByIdAsync(detail.VaccineId);
+                        if (vaccine != null)
+                        {
+                            vaccine.QuantityAvailable += detail.Quantity; // Hoàn lại kho
+                            await _vaccineRepository.UpdateAsync(vaccine);
+                        }
+                        detail.DeletedTime = DateTime.Now; // Soft delete
+                        await _orderVaccineDetailsRepository.UpdateAsync(detail);
+                    }
+                }
+
+                // Xóa OrderPackageDetails
+                foreach (var detailId in request.PackageDetailIds)
+                {
+                    var detail = await _orderPackageDetailsRepository.GetByIdAsync(detailId);
+                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+                    {
+                        detail.DeletedTime = DateTime.Now; // Soft delete
+                        await _orderPackageDetailsRepository.UpdateAsync(detail);
+                    }
+                }
+
+                // Cập nhật TotalAmount và TotalOrderPrice
+                var vaccineDetails = await _orderVaccineDetailsRepository.Entities
+                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+                    .ToListAsync();
+                var packageDetails = await _orderPackageDetailsRepository.Entities
+                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+                    .ToListAsync();
+
+                order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
+                order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
+                await _orderRepository.UpdateAsync(order);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return await GetOrderByIdAsync(order.Id);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception($"Xóa Order Details thất bại: {ex.Message}");
+            }
+        }
 
 
     }
