@@ -10,6 +10,7 @@ namespace ModelViews.Responses.Auth
 {
     public class LoginResponseDTO
     {
+        public string id { get; set; }
         public string Username { get; set; }
         public RoleEnum Role { get; set; }  // ✅ Use Enum instead of string
         public string Token { get; set; }  // ✅ JWT Token
