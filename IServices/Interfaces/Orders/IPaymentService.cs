@@ -19,5 +19,6 @@ namespace IServices.Interfaces.Orders
         Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request);
         Task<VNPayReturnResponseDTO> HandlePaymentReturnAsync(IQueryCollection query);
         Task<byte[]> CreateQRCodeAsync(VNPayPaymentRequestDTO request);
+        Task<PaymentDetailsResponseDTO> PayAtFacilityAsync(PayAtFacilityRequestDTO request);
     }
 }

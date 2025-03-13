@@ -32,12 +32,14 @@ namespace Services.Services.Orders
         private readonly VNPayConfig _config;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
+
         public PaymentService(IUnitOfWork unitOfWork, IOptions<VNPayConfig> config, IPaymentRepository paymentRepository, IOrderRepository orderRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _config = config.Value ?? throw new ArgumentNullException(nameof(config));
             _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
+
         }
 
         public async Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request)
@@ -105,7 +107,7 @@ namespace Services.Services.Orders
                     if (order != null)
                         throw new Exception("Order not found");
                     //Chuyển Order Status -> Complated vì thanh toán thành công nhá
-                    order.Status = "Completed";
+                    order.Status = "Paid";
                     await _orderRepository.UpdateAsync(order);
                    
                     var payment = new Payment
@@ -113,7 +115,7 @@ namespace Services.Services.Orders
                         Id = Guid.NewGuid().ToString(), 
                         OrderId = response.OrderId,
                         TransactionId = response.TransactionId,
-                        PaymentName = "Thanh toán VNPay",
+                        PaymentName = "VNPay",
                         PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
                         PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
                         PaymentStatus = "Success",
@@ -133,7 +135,7 @@ namespace Services.Services.Orders
                         Id = Guid.NewGuid().ToString(),
                         OrderId = response.OrderId,
                         TransactionId = response.TransactionId,
-                        PaymentName = "Thanh toán VNPay",
+                        PaymentName = "VNPay",
                         PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
                         PaymentDate = DateTime.Now, // Nếu thất bại, không có vnp_PayDate chính xác
                         PaymentStatus = "Failed",
@@ -225,7 +227,9 @@ namespace Services.Services.Orders
             var payments = await _paymentRepository.GetAllAsync();
             return payments.Select(p => new PaymentDetailsResponseDTO
             {
+                PaymentId = p.Id,
                 OrderId = p.OrderId,
+                TransactionId = p.TransactionId,
                 PaymentName = p.PaymentName,
                 PaymentMethod = p.PaymentMethod,
                 PaymentDate = p.PaymentDate,
@@ -240,13 +244,73 @@ namespace Services.Services.Orders
             if (payment == null) return null;
             return new PaymentDetailsResponseDTO
             {
+                PaymentId = payment.Id,
                 OrderId = payment.OrderId,
+                TransactionId = payment.TransactionId,
                 PaymentName = payment.PaymentName,
                 PaymentMethod = payment.PaymentMethod,
                 PaymentDate = payment.PaymentDate,
                 PaymentStatus = payment.PaymentStatus,
-                PayAmount = payment.PayAmount
+                PayAmount = payment.PayAmount,
             };
+        }
+
+        public async Task<PaymentDetailsResponseDTO> PayAtFacilityAsync(PayAtFacilityRequestDTO request)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // Kiểm tra Order
+                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+                if (order == null)
+                    throw new Exception("Order không tồn tại.");
+
+                if (order.Status != "PayLater")
+                    throw new Exception("Order phải ở trạng thái PayLater để thanh toán tại cơ sở.");
+
+                // Cập nhật trạng thái Order
+                order.Status = "Paid";
+                order.LastUpdatedTime = DateTime.Now; // Nếu có trường này
+                await _orderRepository.UpdateAsync(order);
+
+                // Tạo bản ghi Payment
+                var payment = new Payment
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = order.Id,
+                    TransactionId = $"FACILITY-{Guid.NewGuid().ToString()}", // Mã giao dịch giả lập
+                    PaymentName = "Thanh toán tại cơ sở",
+                    PaymentMethod = request.PaymentMethod,
+                    PaymentDate = DateTime.Now,
+                    PaymentStatus = "Success",
+                    PayAmount = order.TotalOrderPrice,
+                    CreatedTime = DateTime.Now,
+                    LastUpdatedTime = DateTime.Now
+                };
+
+                await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                // Trả về thông tin Payment
+                return new PaymentDetailsResponseDTO
+                {
+                    PaymentId = payment.Id,
+                    OrderId = payment.OrderId,
+                    TransactionId = payment.TransactionId,
+                    PaymentName = payment.PaymentName,
+                    PaymentMethod = payment.PaymentMethod,
+                    PaymentDate = payment.PaymentDate,
+                    PaymentStatus = payment.PaymentStatus,
+                    PayAmount = payment.PayAmount
+                };
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception($"Thanh toán tại cơ sở thất bại: {ex.Message}");
+            }
         }
 
     }

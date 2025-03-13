@@ -13,6 +13,7 @@ using ModelViews.Requests.VNPay;
 using ModelViews.Responses.VNPay;
 using IServices.Interfaces.Orders;
 using ModelViews.Responses.Payment;
+using Services.Services.Orders;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -142,6 +143,17 @@ namespace VaccineScheduleAPI.Controllers
         {
             var qrCodeBytes = await _paymentService.CreateQRCodeAsync(request);
             return File(qrCodeBytes, "image/png", "qrcode.png");
+        }
+
+        [Authorize(Roles = "Admin")] // Chỉ Admin tại cơ sở được phép thanh toán
+        [HttpPost("cash")]
+        public async Task<ActionResult<PaymentDetailsResponseDTO>> PayAtFacility([FromBody] PayAtFacilityRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _paymentService.PayAtFacilityAsync(request);
+            return Ok(updatedOrder);
         }
     }
 }
