@@ -9,6 +9,6 @@ namespace IRepositories.IRepository.Schedules
 {
     public interface IFeedbackRepository : IGenericRepository<Feedback>
     {
-
+      Task<IEnumerable<Feedback>> GetByOrderIdAsync(string orderId);
     }
 }
