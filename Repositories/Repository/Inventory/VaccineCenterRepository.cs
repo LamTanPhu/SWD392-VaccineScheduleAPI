@@ -10,6 +10,11 @@ namespace Repositories.Repository.Inventory
     {
         public VaccineCenterRepository(DatabaseContext context) : base(context) { }
 
+        public async Task<VaccineCenter?> GetByIdAsync(string id)
+        {
+            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<VaccineCenter?> GetByNameAsync(string name)
         {
             return await _dbSet.FirstOrDefaultAsync(vc => vc.Name == name);

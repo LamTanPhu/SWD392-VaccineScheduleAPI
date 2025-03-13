@@ -8,26 +8,21 @@ using System.IdentityModel.Tokens.Jwt;
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using IServices.Interfaces.Mail;
-using ModelViews.Requests.Mail;
-using Services.Services.Mail;
+using Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+// Add services from DependencyInjection.cs
+builder.Services.AddDatabaseContext(builder.Configuration);
+// Register HttpClient 
+builder.Services.AddHttpClient();
 
 // Add services to the container.
 builder.Services.AddControllers();
 
 // Get the connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Add DbContext for your database
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-// Configure Email settings and register EmailService
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddTransient<IEmailService, EmailService>();
-// Register DbContext with MySQL provider (Pomelo)
+//// Register DbContext with MySQL provider (Pomelo)
 //builder.Services.AddDbContext<DatabaseContext>(options =>
 //    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 //);
@@ -60,19 +55,34 @@ builder.Services.AddSwaggerGen(options =>
             new string[] {}
         }
     });
+
+    // ✅ Add support for file uploads in Swagger
+    //options.OperationFilter<SwaggerFileOperationFilter>();
 });
 
-
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Allow your frontend origin
+              .AllowAnyMethod() // Allow GET, POST, etc.
+              .AllowAnyHeader() // Allow all headers (e.g., Content-Type)
+              .AllowCredentials(); // Allow cookies/auth if needed
+    });
+});
 // Register database context
 // If you were using SQL Server or another database provider, you could configure it here as needed
 // Example:
-// builder.Services.AddDbContext<DatabaseContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-// );
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 // Register custom services and repositories
 builder.Services.AddConfig(builder.Configuration); // Registers services and repositories
-
+// Firebase Authentication Configuration
+var firebaseIssuer = builder.Configuration["Firebase:Issuer"];
+var firebaseAudience = builder.Configuration["Firebase:Audience"];
 // Set up JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 Console.WriteLine("JWT Key: " + jwtSettings["Key"]);  // Debugging step
@@ -158,6 +168,7 @@ if (app.Environment.IsDevelopment())
 
 // Use HTTPS redirection and authentication/authorization middleware
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend"); // Add this line to enable CORS
 app.UseAuthentication();  // Added authentication middleware
 app.UseAuthorization();   // Add authorization middleware
 app.MapControllers();     // Map the controllers

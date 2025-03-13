@@ -1,10 +1,13 @@
-﻿using IServices.Interfaces.Mail;
-using MailKit.Net.Smtp;
+﻿using Core.Utils;
+using IServices.Interfaces.Mail;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using ModelViews.Requests.Mail;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Services.Mail
@@ -18,7 +21,7 @@ namespace Services.Services.Mail
             emailSettings = options.Value;
         }
 
-        public async Task SendEmailAsync(Mailrequest mailrequest)
+        public async Task SendEmailAsync(MailRequestDTO mailrequest)
         {
             var email = new MimeMessage();
             email.Sender = MailboxAddress.Parse(emailSettings.Email);

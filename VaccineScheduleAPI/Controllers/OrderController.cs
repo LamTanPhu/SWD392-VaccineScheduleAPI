@@ -1,12 +1,52 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IServices.Interfaces.Orders;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ModelViews.Requests.Order;
+using ModelViews.Responses.Order;
+using Services.Services.Orders;
 
 namespace VaccineScheduleAPI.Controllers
 {
-    public class OrderController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrderController : ControllerBase
     {
-        public IActionResult Index()
+
+        private readonly IOrderService _orderService;
+
+        public OrderController(IOrderService service)
         {
-            return View();
+            _orderService = service;
         }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetOrderAll()
+        {
+            return Ok(await _orderService.GetAllOrdersAsync());
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<OrderResponseDTO>> GetOrderById(string id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(id);
+            if (order == null) return NotFound();
+            return Ok(order);
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost]
+        public async Task<ActionResult<OrderResponseDTO>> CreateOrder([FromBody] OrderRequestDTO orderDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var order = await _orderService.CreateOrderAsync(orderDto);
+            return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
+        }
+
     }
 }

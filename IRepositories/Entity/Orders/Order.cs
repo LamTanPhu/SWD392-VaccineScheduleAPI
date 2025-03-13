@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Core.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 using IRepositories.Entity.Accounts;
-using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Schedules;
 namespace IRepositories.Entity.Orders
 {
     public class Order : BaseEntity

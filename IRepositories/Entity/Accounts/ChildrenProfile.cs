@@ -7,7 +7,7 @@ using System.Security.Principal;
 using Core.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 using IRepositories.Entity.Orders;
-using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Schedules;
 
 namespace IRepositories.Entity.Accounts
 {
@@ -20,6 +20,8 @@ namespace IRepositories.Entity.Accounts
         public DateTime DateOfBirth { get; set; }
         public string Gender { get; set; }
         public string Status { get; set; }
+
+        public string Address { set; get; }
 
         // Navigation property
         public virtual Account Account { get; set; }  // EF will automatically use AccountId as the foreign key here

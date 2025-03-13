@@ -9,6 +9,6 @@ namespace IServices.Interfaces.Mail
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(Mailrequest mailrequest);
+        Task SendEmailAsync(MailRequestDTO mailrequest);
     }
 }

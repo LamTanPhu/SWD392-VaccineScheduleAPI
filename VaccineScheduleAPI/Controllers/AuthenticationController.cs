@@ -1,15 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using BCrypt.Net;
 using System.Threading.Tasks;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
-using Microsoft.AspNetCore.Authorization;
 using IServices.Interfaces.Accounts;
-using IRepositories.Entity.Accounts;
-using Microsoft.AspNetCore.Identity.Data;
-using ModelViews.Requests.Mail;
-using IServices.Interfaces.Mail;
-using Org.BouncyCastle.Crypto.Generators;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -17,76 +10,51 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAccountService _accountService;
-        private readonly IJwtService _jwtService;
-        private readonly IEmailService _emailService;
+        private readonly IAuthService _authService;
+        private readonly IRegistrationService _registrationService; // Added for /register
 
-        public AuthenticationController(IAccountService accountService, IJwtService jwtService, IEmailService emailService)
+        public AuthenticationController(
+            IAuthService authService,
+            IRegistrationService registrationService)
         {
-            _accountService = accountService;
-            _jwtService = jwtService;
-            _emailService = emailService;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+            _registrationService = registrationService ?? throw new ArgumentNullException(nameof(registrationService));
         }
 
-        // POST api/authentication/register
         [HttpPost("register")]
-        public async Task<ActionResult<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO request)
+        public async Task<ActionResult<RegisterResponseDTO>> RegisterAsync([FromBody] RegisterRequestDTO request)
         {
-            var response = await _accountService.RegisterAsync(request);
-            if (response.Success)
-                return Ok(response);
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
 
-            return BadRequest(response);
+            var response = await _registrationService.RegisterAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
-        // POST api/authentication/login
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponseDTO>> LoginAsync(LoginRequestDTO request)
+        public async Task<ActionResult<LoginResponseDTO>> LoginAsync([FromBody] LoginRequestDTO request)
         {
-            var response = await _accountService.LoginAsync(request);
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
+
+            var response = await _authService.LoginAsync(request);
             if (string.IsNullOrEmpty(response.Token))
-                return Unauthorized(new { message = "Invalid username or password." });
-            return Ok(response); // Return the successful login response
+                return Unauthorized(new { Message = "Invalid username or password." });
+
+            return Ok(response);
         }
 
-        // GET api/authentication/profile
-        [Authorize(Roles = "Admin, Staff, Parent")]
-        [HttpGet("profile")]
-        public async Task<ActionResult<Account>> GetProfileAsync()
+        [HttpPost("login-with-google")]
+        public async Task<ActionResult<LoginResponseDTO>> LoginWithGoogleAsync([FromBody] GoogleLoginRequestDTO request)
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized(new { message = "Token is required" });
+            if (!ModelState.IsValid || string.IsNullOrEmpty(request.TokenId))
+                return BadRequest(new { Message = "Google token is required." });
 
-            var account = await _jwtService.ExtractAccountAsync(token);
-            if (account == null)
-                return Unauthorized(new { message = "Invalid token" });
+            var response = await _authService.LoginWithGoogleAsync(request.TokenId);
+            if (string.IsNullOrEmpty(response.Token))
+                return Unauthorized(new { Message = "Invalid Google token." });
 
-            return Ok(account);
+            return Ok(response);
         }
-
-        // POST api/authentication/forgot-password
-        [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
-        {
-            var response = await _accountService.ForgotPasswordAsync(request);
-            if (!response.Success)
-                return NotFound(new { message = response.Message });
-
-            return Ok(new { message = response.Message });
-        }
-
-        // POST api/authentication/reset-password
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
-        {
-            var response = await _accountService.ResetPasswordAsync(request);
-            if (!response.Success)
-                return BadRequest(new { message = response.Message });
-
-            return Ok(new { message = response.Message });
-        }
-
-
     }
 }

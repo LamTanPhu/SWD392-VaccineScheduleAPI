@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using Repositories.Context;
-using Microsoft.EntityFrameworkCore;
-using ModelViews.DTOs;
 using System.Threading.Tasks;
 using IRepositories.Entity.Accounts;
 using IRepositories.IRepository.Accounts;
@@ -28,16 +22,28 @@ namespace Repositories.Repository.Accounts
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Account?> GetByUsernameAsync(string username) =>
-            await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Username == username);
+        public async Task<Account?> GetByUsernameAsync(string username)
+        {
+            return await _dbSet.AsNoTracking()
+                .Include(a => a.VaccineCenter)
+                .Include(a => a.ChildrenProfiles)
+                .FirstOrDefaultAsync(a => a.Username == username);
+        }
 
-        public async Task<Account?> GetByEmailAsync(string email) =>
-            await _dbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
+        public async Task<Account?> GetByEmailAsync(string email)
+        {
+            return await _dbSet.AsNoTracking()
+                .Include(a => a.VaccineCenter)
+                .Include(a => a.ChildrenProfiles)
+                .FirstOrDefaultAsync(a => a.Email == email);
+        }
+
         public async Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail)
         {
             return await _dbSet.AsNoTracking()
+                .Include(a => a.VaccineCenter)
+                .Include(a => a.ChildrenProfiles)
                 .FirstOrDefaultAsync(a => a.Username == usernameOrEmail || a.Email == usernameOrEmail);
         }
-
     }
 }

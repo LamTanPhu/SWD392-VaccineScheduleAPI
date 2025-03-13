@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using Core.Base;
 using IRepositories.Entity.Accounts;
-using IRepositories.Entity.Schedule;
+using IRepositories.Entity.Schedules;
 
 
 namespace IRepositories.Entity.Inventory
