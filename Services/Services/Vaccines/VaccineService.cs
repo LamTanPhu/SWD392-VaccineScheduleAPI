@@ -31,7 +31,7 @@ namespace Services.Services.Vaccines
         public async Task<IEnumerable<VaccineResponseDTO>> GetAllVaccinesAsync()
         {
             var vaccines = await _repository.Entities
-                .Where(v => v.Status != "0") // Chỉ lấy các vaccine active
+                .Where(v => v.Status != "0") //only active vaccines
                 .ToListAsync();
 
             return vaccines.Select(v => new VaccineResponseDTO
