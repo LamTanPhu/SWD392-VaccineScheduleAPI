@@ -64,7 +64,7 @@ namespace VaccineScheduleAPI.Controllers
             return NoContent();
         }
 
-     //www
+    
         [Authorize(Roles = "Admin, Staff")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSchedule(string id)
