@@ -69,8 +69,6 @@ namespace VaccineScheduleAPI.Controllers
 
             return Ok(response);
         }
-     
-        
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] PaymentDetailsRequestDTO request)

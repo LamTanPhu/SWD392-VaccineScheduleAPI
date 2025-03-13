@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Responses.ChildrenProfile;
+using System.Security.Claims;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -10,88 +11,63 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class ChildrenProfileController : ControllerBase
     {
-        private readonly IChildrenProfileService _service;
+        private readonly IUserProfileService _userProfileService;
+        private readonly IChildrenProfileService _childrenProfileService;
 
-        public ChildrenProfileController(IChildrenProfileService service)
+        public ChildrenProfileController(IUserProfileService userProfileService, IChildrenProfileService childrenProfileService)
         {
-            _service = service;
+            _userProfileService = userProfileService;
+            _childrenProfileService = childrenProfileService;
         }
 
-        [Authorize(Roles = "Admin, Parent")]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetAll()
+        [Authorize(Roles = "Parent")]
+        [HttpGet("my-children")]
+        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetMyChildrenAsync()
         {
-            return Ok(await _service.GetAllProfilesAsync());
-        }
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-        [Authorize(Roles = "Admin, Parent")]
-        [HttpGet("account/{accountId}")]
-        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetAllByAccountId(string accountId)
-        {
-            // For Parents, ensure they can only access their own children's profiles
-            if (User.IsInRole("Parent"))
-            {
-                var userAccountId = User.FindFirst("AccountId")?.Value;
-                if (string.IsNullOrEmpty(userAccountId) || userAccountId != accountId)
-                {
-                    return Forbid("You can only access your own children's profiles.");
-                }
-            }
+            var profile = await _userProfileService.GetProfileByUsernameAsync(username);
+            if (profile == null)
+                return NotFound(new { Message = "User profile not found." });
 
-            var profiles = await _service.GetAllProfilesByAccountIdAsync(accountId);
-            return Ok(profiles);
-        }
-
-        [Authorize(Roles = "Admin, Parent")]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ChildrenProfileResponseDTO>> GetById(string id)
-        {
-            var profile = await _service.GetProfileByIdAsync(id);
-            if (profile == null) return NotFound();
-
-            // For Parents, ensure they can only access their own children's profiles
-            if (User.IsInRole("Parent"))
-            {
-                var accountId = User.FindFirst("AccountId")?.Value;
-                if (profile.AccountId != accountId)
-                {
-                    return Forbid("You can only access your own children's profiles.");
-                }
-            }
-
-            return Ok(profile);
+            return Ok(profile.ChildrenProfiles ?? new List<ChildrenProfileResponseDTO>());
         }
 
         [Authorize(Roles = "Parent")]
         [HttpPost]
         public async Task<ActionResult> Create(ChildrenProfileRequestDTO profileDto)
         {
-            // Ensure the AccountId in the DTO matches the logged-in user
-            var accountId = User.FindFirst("AccountId")?.Value;
-            if (profileDto.AccountId != accountId)
-            {
-                return Forbid("You can only create profiles for your own account.");
-            }
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-            await _service.AddProfileAsync(profileDto);
-            return CreatedAtAction(nameof(GetById), new { id = profileDto.FullName }, profileDto);
+            var account = await _userProfileService.GetByUsernameAsync(username);
+            if (account == null)
+                return NotFound(new { Message = "User not found." });
+
+            profileDto.AccountId = account.Id; // Set the AccountId from the authenticated user
+            await _childrenProfileService.AddProfileAsync(profileDto);
+            return CreatedAtAction(nameof(GetMyChildrenAsync), new { id = profileDto.FullName }, profileDto);
         }
 
         [Authorize(Roles = "Parent")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, ChildrenProfileRequestDTO profileDto)
         {
-            var existingProfile = await _service.GetProfileByIdAsync(id);
-            if (existingProfile == null) return NotFound();
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-            // Ensure the profile belongs to the logged-in user
-            var accountId = User.FindFirst("AccountId")?.Value;
-            if (existingProfile.AccountId != accountId)
-            {
-                return Forbid("You can only update your own children's profiles.");
-            }
+            var existingProfile = await _childrenProfileService.GetProfileByIdAsync(id);
+            if (existingProfile == null)
+                return NotFound();
 
-            await _service.UpdateProfileAsync(id, profileDto);
+            if (existingProfile.AccountId != (await _userProfileService.GetByUsernameAsync(username))?.Id)
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only update your own children's profiles." });
+
+            await _childrenProfileService.UpdateProfileAsync(id, profileDto);
             return NoContent();
         }
 
@@ -99,17 +75,18 @@ namespace VaccineScheduleAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            var existingProfile = await _service.GetProfileByIdAsync(id);
-            if (existingProfile == null) return NotFound();
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized(new { Message = "Invalid token payload." });
 
-            // Ensure the profile belongs to the logged-in user
-            var accountId = User.FindFirst("AccountId")?.Value;
-            if (existingProfile.AccountId != accountId)
-            {
-                return Forbid("You can only delete your own children's profiles.");
-            }
+            var existingProfile = await _childrenProfileService.GetProfileByIdAsync(id);
+            if (existingProfile == null)
+                return NotFound();
 
-            await _service.DeleteProfileAsync(id);
+            if (existingProfile.AccountId != (await _userProfileService.GetByUsernameAsync(username))?.Id)
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only delete your own children's profiles." });
+
+            await _childrenProfileService.DeleteProfileAsync(id);
             return NoContent();
         }
     }
