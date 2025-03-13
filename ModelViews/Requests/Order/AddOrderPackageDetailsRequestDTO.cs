@@ -7,16 +7,13 @@ using System.Threading.Tasks;
 
 namespace ModelViews.Requests.Order
 {
-    public class OrderPackageDetailsRequestDTO
+    public class AddOrderPackageDetailsRequestDTO
     {
-        [Required]
-        public string OrderId { get; set; }
+
         [Required]
         public string VaccinePackageId { get; set; }
         [Required]
         public int Quantity { get; set; }
-        [Required]
-        public int TotalPrice { get; set; }
 
     }
 }

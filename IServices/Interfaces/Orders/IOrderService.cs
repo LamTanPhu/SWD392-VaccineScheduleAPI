@@ -13,6 +13,8 @@ namespace IServices.Interfaces.Orders
         Task<IEnumerable<OrderResponseDTO>> GetAllOrdersAsync();
         Task<OrderResponseDTO?> GetOrderByIdAsync(string id);
         Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO orderDto);
+        Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request); 
+
 
     }
 }

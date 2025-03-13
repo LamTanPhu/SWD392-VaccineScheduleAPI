@@ -273,5 +273,87 @@ namespace Services.Services.Orders
             }
         }
 
+        public async Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+                if (order == null)
+                    throw new Exception("Order không tồn tại.");
+
+                // Thêm OrderVaccineDetails
+                foreach (var vaccineItem in request.Vaccines)
+                {
+                    var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
+                    if (vaccine == null)
+                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
+                    if (vaccine.QuantityAvailable < vaccineItem.Quantity)
+                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
+
+                    var orderVaccineDetail = new OrderVaccineDetails
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OrderId = order.Id,
+                        VaccineId = vaccineItem.VaccineId,
+                        Quantity = vaccineItem.Quantity,
+                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
+                    };
+
+                    await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
+                    vaccine.QuantityAvailable -= vaccineItem.Quantity;
+                    await _vaccineRepository.UpdateAsync(vaccine);
+                }
+
+                // Thêm OrderPackageDetails
+                foreach (var packageItem in request.Packages)
+                {
+                    var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
+                    if (package == null)
+                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
+
+                    var packagePrice = await _vaccinePackageDetailRepository.Entities
+                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
+                        .SumAsync(d => d.PackagePrice);
+
+                    var orderPackageDetail = new OrderPackageDetails
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OrderId = order.Id,
+                        VaccinePackageId = packageItem.VaccinePackageId,
+                        Quantity = packageItem.Quantity,
+                        TotalPrice = packagePrice * packageItem.Quantity,
+                    };
+
+                    await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
+                }
+
+                // Cập nhật TotalAmount và TotalOrderPrice
+                var vaccineDetails = await _orderVaccineDetailsRepository.Entities
+                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+                    .ToListAsync();
+                var packageDetails = await _orderPackageDetailsRepository.Entities
+                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+                    .ToListAsync();
+
+                order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
+                order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
+                await _orderRepository.UpdateAsync(order);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return await GetOrderByIdAsync(order.Id);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception($"Thêm Order Details thất bại: {ex.Message}");
+            }
+        }
+
+       
+
+
     }
 }

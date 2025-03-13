@@ -9,7 +9,7 @@ namespace ModelViews.Requests.Order
     public class AddOrderDetailsRequestDTO
     {
         public string OrderId { get; set; }
-        public List<OrderVaccineDetailsRequestDTO> Vaccines { get; set; } = new List<OrderVaccineDetailsRequestDTO>();
-        public List<OrderPackageDetailsRequestDTO> Packages { get; set; } = new List<OrderPackageDetailsRequestDTO>();
+        public List<AddOrderVaccineDetailsRequestDTO> Vaccines { get; set; } = new List<AddOrderVaccineDetailsRequestDTO>();
+        public List<AddOrderPackageDetailsRequestDTO> Packages { get; set; } = new List<AddOrderPackageDetailsRequestDTO>();
     }
 }
