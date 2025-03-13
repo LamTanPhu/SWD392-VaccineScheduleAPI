@@ -34,6 +34,7 @@ namespace Services.Services.Accounts
             if (string.IsNullOrEmpty(request.UsernameOrEmail) || string.IsNullOrEmpty(request.Password))
                 return new LoginResponseDTO
                 {
+                    id=null,
                     Username = null,
                     Role = RoleEnum.Parent,
                     Token = string.Empty,
@@ -45,6 +46,7 @@ namespace Services.Services.Accounts
             {
                 return new LoginResponseDTO
                 {
+                    id = null,
                     Username = null,
                     Role = RoleEnum.Parent,
                     Token = string.Empty,
@@ -57,6 +59,7 @@ namespace Services.Services.Accounts
 
             return new LoginResponseDTO
             {
+                id=user.Id,
                 Username = user.Username, // Nullable, as per Account model
                 Role = user.Role,
                 Token = token,
