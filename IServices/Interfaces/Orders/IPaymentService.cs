@@ -1,5 +1,9 @@
-﻿using ModelViews.Requests.Order;
+﻿using Microsoft.AspNetCore.Http;
+using ModelViews.Requests.Order;
+using ModelViews.Requests.VNPay;
 using ModelViews.Responses.Order;
+using ModelViews.Responses.Payment;
+using ModelViews.Responses.VNPay;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +16,9 @@ namespace IServices.Interfaces.Orders
     {
         Task<IEnumerable<PaymentDetailsResponseDTO>> GetAllPaymentDetailsAsync();
         Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByNameAsync(string name);
-        Task AddPaymentDetailsAsync(PaymentDetailsResponseDTO details);
         Task UpdatePaymentDetailsAsync(string name, PaymentDetailsResponseDTO detailsDto);
-        Task DeletePaymentDetailsAsync(string name);
+        Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request);
+        Task<VNPayReturnResponseDTO> HandlePaymentReturnAsync(IQueryCollection query);
+        Task<byte[]> CreateQRCodeAsync(VNPayPaymentRequestDTO request);
     }
 }
