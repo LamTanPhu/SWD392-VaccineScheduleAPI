@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using IServices.Interfaces.Accounts;
 
-namespace IServices.Interfaces.Accounts
+namespace Services.Services.Accounts
 {
     public class AccountUpdateService : IAccountUpdateService
     {
