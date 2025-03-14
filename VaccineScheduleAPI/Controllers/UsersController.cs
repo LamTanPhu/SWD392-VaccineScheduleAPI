@@ -20,9 +20,11 @@ namespace VaccineScheduleAPI.Controllers
 
         public UsersController(
             IUserProfileService userProfileService,
+            IAccountUpdateService accountUpdateService,
             IJwtService jwtService)
         {
             _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _accountUpdateService = accountUpdateService ?? throw new ArgumentNullException(nameof(accountUpdateService));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         }
 
