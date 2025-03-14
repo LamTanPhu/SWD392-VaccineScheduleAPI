@@ -33,7 +33,7 @@ namespace VaccineScheduleAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PaymentDetailsResponseDTO>>> GetAll()
         {
-            var payments = await _context.Payments.Include(p => p.Order).ToListAsync();
+            var payments = await _paymentService.GetAllPaymentDetailsAsync();
 
             var response = payments.Select(p => new PaymentDetailsResponseDTO
             {
@@ -49,9 +49,9 @@ namespace VaccineScheduleAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PaymentDetailsResponseDTO>> GetById(string id)
+        public async Task<ActionResult<PaymentDetailsResponseDTO>> GetByName(string name)
         {
-            var payment = await _context.Payments.Include(p => p.Order).FirstOrDefaultAsync(m => m.Id == id);
+            var payment = await _paymentService.GetPaymentDetailsByNameAsync(name);
             if (payment == null)
             {
                 return NotFound();
