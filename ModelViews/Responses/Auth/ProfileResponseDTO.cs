@@ -17,10 +17,13 @@ namespace ModelViews.Responses.Auth
 {
     public class ProfileResponseDTO
         {
+            public string AccountId { get; set; }
             public string Username { get; set; }
             public string Email { get; set; }
             public string Role { get; set; }
             public string Status { get; set; }
+            public string? PhoneNumber { get; set; }
+            public string? ImageProfile { get; set; }
             public VaccineCenterResponseDTO? VaccineCenter { get; set; } // Nullable, full object when present
             public List<ChildrenProfileResponseDTO>? ChildrenProfiles { get; set; } // Nullable, list when presentx
         }

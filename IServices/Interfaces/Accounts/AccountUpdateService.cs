@@ -30,58 +30,45 @@ namespace IServices.Interfaces.Accounts
             _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
         }
 
-        public async Task<ProfileResponseDTO> UpdateAccountAsync(string username, UpdateAccountRequestDTO request)
+
+        public async Task<ProfileResponseDTO> UpdateAccountAsync(string userName, UpdateAccountRequestDTO request)
         {
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _unitOfWork.BeginTransactionAsync();
+                var account = await _accountRepository.GetByUsernameAsync(userName);
+                if (account == null)
+                    throw new Exception("Tài khoản không tồn tại.");
 
-                var account = await _accountRepository.GetByUsernameAsync(username);
-                if (account == null || account.DeletedTime != null)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    throw new Exception("Account not found or has been deleted.");
-                }
-
-                // Update account fields
-                account.Username = request.Username ?? account.Username;
-                account.Email = request.Email ?? account.Email;
-                account.Status = request.Status ?? account.Status;
-
-                // Handle VaccineCenter update
-                if (request.VaccineCenterId != null)
-                {
-                    var vaccineCenter = await _vaccineCenterRepository.GetByIdAsync(request.VaccineCenterId);
-                    if (vaccineCenter == null || vaccineCenter.DeletedTime != null)
-                    {
-                        await _unitOfWork.RollbackTransactionAsync();
-                        throw new Exception("Vaccine center not found or has been deleted.");
-                    }
-                    account.VaccineCenterId = request.VaccineCenterId;
-                }
-                else
-                {
-                    account.VaccineCenterId = null; // Allow clearing the assignment
-                }
+                // Cập nhật các trường từ request
+                account.Username = request.Username ?? account.Username; // Giữ nguyên nếu null
+                account.PhoneNumber = request.PhoneNumber;
+                account.ImageProfile = request.ImageProfile;
+                account.LastUpdatedTime = DateTime.Now; // Cập nhật thời gian chỉnh sửa
 
                 await _accountRepository.UpdateAsync(account);
                 await _unitOfWork.SaveAsync();
+
                 await _unitOfWork.CommitTransactionAsync();
 
-                // Return updated profile
-                var updatedProfile = await _userProfileService.GetProfileByUsernameAsync(account.Username);
-                if (updatedProfile == null)
+                // Trả về thông tin tài khoản đã cập nhật
+                return new ProfileResponseDTO
                 {
-                    throw new Exception("Failed to retrieve updated profile.");
-                }
-
-                return updatedProfile;
+                    AccountId = account.Id,
+                    Username = account.Username,
+                    Email = account.Email,
+                    PhoneNumber = account.PhoneNumber,
+                    ImageProfile = account.ImageProfile,
+                    Role = account.Role.ToString(),
+                    Status = account.Status
+                };
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw; // Let the controller handle the exception
+                throw new Exception($"Cập nhật tài khoản thất bại: {ex.Message}");
             }
         }
+
     }
 }
