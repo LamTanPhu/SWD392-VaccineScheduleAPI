@@ -70,6 +70,28 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(response);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PaymentDetailsResponseDTO>> GetById(string id)
+        {
+            var payment = await _paymentService.GetPaymentDetailsByIdAsync(id);
+            if (payment == null)
+            {
+                return NotFound();
+            }
+
+            var response = new PaymentDetailsResponseDTO
+            {
+                OrderId = payment.OrderId,
+                PaymentName = payment.PaymentName,
+                PaymentMethod = payment.PaymentMethod,
+                PaymentDate = payment.PaymentDate,
+                PaymentStatus = payment.PaymentStatus,
+                PayAmount = payment.PayAmount
+            };
+
+            return Ok(response);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] PaymentDetailsRequestDTO request)
         {
@@ -153,5 +175,7 @@ namespace VaccineScheduleAPI.Controllers
             var updatedOrder = await _paymentService.PayAtFacilityAsync(request);
             return Ok(updatedOrder);
         }
+
+
     }
 }
