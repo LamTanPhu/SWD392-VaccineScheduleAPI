@@ -1,4 +1,4 @@
-﻿using IRepositories.Entity.Schedules;
+using IRepositories.Entity.Schedules;
 using IRepositories.IRepository.Accounts;
 using IRepositories.IRepository.Vaccines;
 using IRepositories.IRepository;

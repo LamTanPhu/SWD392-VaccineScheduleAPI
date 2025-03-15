@@ -81,9 +81,5 @@ namespace VaccineScheduleAPI.Controllers
             var updatedOrder = await _orderService.SetPayLaterAsync(request);
             return Ok(updatedOrder);
         }
-
-
-
-
     }
 }

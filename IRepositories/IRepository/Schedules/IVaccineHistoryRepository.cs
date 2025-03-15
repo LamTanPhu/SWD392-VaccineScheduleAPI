@@ -1,8 +1,9 @@
-﻿
+
 using IRepositories.Entity.Schedules;
 using System;
 
 using System;
+
 
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,4 @@ namespace IRepositories.IRepository.Schedules
         Task<IEnumerable<VaccineHistory>> SearchByDateAsync(string userId, DateTime date);
         Task<IEnumerable<VaccineHistory>> SearchByCenterIdAsync(string centerId);
     }
-
 }

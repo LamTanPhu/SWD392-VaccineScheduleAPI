@@ -9,6 +9,6 @@ namespace IRepositories.IRepository.Accounts
 {
     public interface IChildrenProfileRepository : IGenericRepository<ChildrenProfile>
     {
-         
+
     }
 }

@@ -38,7 +38,7 @@
             _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
         }
 
-        
+
         public async Task<List<ScheduleResponseDTO>> CreateSchedulesAsync(ScheduleRequestDTO request)
         {
             if (request == null || string.IsNullOrEmpty(request.OrderId) || request.Schedules == null || !request.Schedules.Any())
@@ -107,7 +107,7 @@
                         AppointmentDate = scheduleItem.AppointmentDate,
                         ActualDate = null,
                         AdministeredBy = null,
-                        Status = 1 
+                        Status = 1
                     };
 
                     await _scheduleRepository.InsertAsync(schedule);
@@ -134,7 +134,7 @@
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                
+
                 var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
                 if (profile == null)
                     throw new Exception($"Profile with ID {request.ProfileId} not found.");
@@ -146,7 +146,7 @@
                     var vaccineDetail = await _orderVaccineDetailsRepository.GetByIdAsync(request.OrderVaccineDetailsId);
                     if (vaccineDetail == null)
                         throw new Exception($"Invalid OrderVaccineDetailsId: {request.OrderVaccineDetailsId}");
-                    vaccineId = vaccineDetail.VaccineId; 
+                    vaccineId = vaccineDetail.VaccineId;
                 }
                 else if (!string.IsNullOrEmpty(request.OrderPackageDetailsId))
                 {
@@ -156,7 +156,7 @@
 
                 }
 
-                
+
                 var currentDate = DateTime.UtcNow;
                 if (request.DoseNumber <= 0)
                     throw new Exception($"Invalid DoseNumber: {request.DoseNumber}");
@@ -165,7 +165,7 @@
                 if (request.Status < 0 || request.Status > 2)
                     throw new Exception($"Invalid Status: {request.Status}. Must be 0, 1, or 2.");
 
-                
+
                 var exists = await _scheduleRepository.ExistsAsync(
                     request.ProfileId,
                     request.OrderVaccineDetailsId,
@@ -174,7 +174,7 @@
                 if (exists)
                     throw new Exception($"Schedule already exists for Dose {request.DoseNumber}.");
 
-                
+
                 var schedule = new VaccinationSchedule
                 {
                     Id = string.IsNullOrEmpty(request.Id) ? Guid.NewGuid().ToString() : request.Id,
@@ -202,14 +202,14 @@
             }
         }
 
-        
+
         public async Task<List<ScheduleResponseDTO>> GetAllSchedulesAsync()
         {
             var schedules = await _scheduleRepository.GetAllAsync();
             return schedules.Select(MapToResponseDTO).ToList();
         }
 
-        
+
         public async Task<ScheduleResponseDTO> GetScheduleByIdAsync(string id)
         {
             var schedule = await _scheduleRepository.GetByIdAsync(id);
@@ -218,7 +218,7 @@
             return MapToResponseDTO(schedule);
         }
 
-        
+
         public async Task UpdateScheduleAsync(string scheduleId, UpdateScheduleRequestDTO request)
         {
             if (request == null || string.IsNullOrEmpty(scheduleId))
@@ -231,7 +231,7 @@
                 if (schedule == null)
                     throw new Exception($"Schedule with ID {scheduleId} not found.");
 
-                
+
                 if (request.DoseNumber <= 0)
                     throw new Exception($"Invalid DoseNumber: {request.DoseNumber}");
                 if (request.AppointmentDate <= DateTime.UtcNow && request.Status == 1)
@@ -239,7 +239,7 @@
                 if (request.Status < 0 || request.Status > 2)
                     throw new Exception($"Invalid Status: {request.Status}. Must be 0, 1, or 2.");
 
-                
+
                 schedule.DoseNumber = request.DoseNumber;
                 schedule.AppointmentDate = request.AppointmentDate;
                 schedule.ActualDate = request.ActualDate;
@@ -257,7 +257,7 @@
             }
         }
 
-       
+
         public async Task DeleteScheduleAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -282,7 +282,7 @@
             }
         }
 
-        
+
         private ScheduleResponseDTO MapToResponseDTO(VaccinationSchedule schedule)
         {
             return new ScheduleResponseDTO

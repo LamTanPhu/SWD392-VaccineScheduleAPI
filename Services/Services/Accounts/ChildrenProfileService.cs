@@ -74,7 +74,7 @@ namespace Services.Services.Accounts
                 FullName = profileDto.FullName,
                 DateOfBirth = profileDto.DateOfBirth,
                 Gender = profileDto.Gender,
-                Status = profileDto.Status,
+                 Status = profileDto.Status,
                 Address = profileDto.Address
             };
             await _repository.InsertAsync(profile);

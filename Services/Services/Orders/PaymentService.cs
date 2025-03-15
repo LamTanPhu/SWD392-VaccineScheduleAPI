@@ -109,10 +109,10 @@ namespace Services.Services.Orders
                     //Chuyển Order Status -> Complated vì thanh toán thành công nhá
                     order.Status = "Paid";
                     await _orderRepository.UpdateAsync(order);
-                   
+
                     var payment = new Payment
                     {
-                        Id = Guid.NewGuid().ToString(), 
+                        Id = Guid.NewGuid().ToString(),
                         OrderId = response.OrderId,
                         TransactionId = response.TransactionId,
                         PaymentName = "VNPay",
@@ -192,7 +192,7 @@ namespace Services.Services.Orders
                 var qrGenerator = new QRCodeGenerator();
                 var qrCodeData = qrGenerator.CreateQrCode(paymentUrl, QRCodeGenerator.ECCLevel.Q);
                 var qrCode = new BitmapByteQRCode(qrCodeData);
-                byte[] qrCodeBytes = qrCode.GetGraphic(20); 
+                byte[] qrCodeBytes = qrCode.GetGraphic(20);
                 //string base64Image = Convert.ToBase64String(qrCodeImage);
 
                 await _unitOfWork.CommitTransactionAsync();
@@ -212,7 +212,7 @@ namespace Services.Services.Orders
             return string.Join("&", sortedParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
         }
 
-        
+
         private string HmacSHA512(string key, string input)
         {
             using (var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key)))
@@ -316,4 +316,3 @@ namespace Services.Services.Orders
     }
 
 }
-

@@ -10,6 +10,7 @@ namespace VaccineScheduleAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class VaccineCentersController : ControllerBase
     {
         private readonly IVaccineCenterService _vaccineCenterService;

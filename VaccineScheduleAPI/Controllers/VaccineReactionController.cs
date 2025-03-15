@@ -1,4 +1,4 @@
-﻿using IServices.Interfaces.Schedules;
+using IServices.Interfaces.Schedules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.Schedule;

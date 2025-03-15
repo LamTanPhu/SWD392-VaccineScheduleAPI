@@ -19,7 +19,8 @@ namespace ModelViews.Responses.Vaccine
         public int Price { get; set; }
         public DateTime ProductionDate { get; set; }
         public DateTime ExpirationDate { get; set; }
-        public string Status { get; set; }
+
+        public string Status { get; set; } // "1" = active, "0" = inactive
         public string VaccineCategoryId { get; set; }
         public string BatchId { get; set; }
         public string Image { get; set; }
@@ -28,3 +29,9 @@ namespace ModelViews.Responses.Vaccine
         public string ManufacturerCountry { get; set; }
     }
 }
+
+
+    
+   
+
+

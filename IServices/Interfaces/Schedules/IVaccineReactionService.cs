@@ -1,4 +1,4 @@
-﻿using ModelViews.Requests.Schedule;
+using ModelViews.Requests.Schedule;
 using ModelViews.Responses.Schedule;
 using System;
 using System.Collections.Generic;

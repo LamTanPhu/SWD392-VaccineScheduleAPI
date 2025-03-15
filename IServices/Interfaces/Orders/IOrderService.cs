@@ -1,4 +1,4 @@
-﻿using ModelViews.Requests;
+using ModelViews.Requests;
 using ModelViews.Requests.Order;
 using ModelViews.Responses.Order;
 using System;

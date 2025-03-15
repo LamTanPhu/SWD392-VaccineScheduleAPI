@@ -1,5 +1,9 @@
+
+﻿using System;
+
 ﻿using IRepositories.Entity.Schedules;
 using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +13,11 @@ namespace IRepositories.IRepository.Schedules
 {
     public interface IVaccineReactionRepository : IGenericRepository<VaccineReaction>
     {
+        public interface IVaccineReactionRepository : IGenericRepository<VaccineReaction>
+        {
 
+
+        }
     }
+
 }
