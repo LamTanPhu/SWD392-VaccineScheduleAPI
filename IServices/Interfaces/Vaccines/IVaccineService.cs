@@ -15,7 +15,7 @@ namespace IServices.Interfaces.Vaccines
         Task<VaccineResponseDTO?> GetVaccineByIdAsync(string id);
         Task<VaccineResponseDTO> AddVaccineAsync(VaccineRequestDTO vaccine);
         Task UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto);
-        Task DeleteVaccineAsync(string id);
+        Task DeleteVaccineAsync(string id); 
     }
 
 

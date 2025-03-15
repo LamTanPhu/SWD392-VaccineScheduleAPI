@@ -1,277 +1,386 @@
-﻿using IRepositories.Entity.Orders;
-using IRepositories.IRepository.Orders;
-using IRepositories.IRepository;
-using IServices.Interfaces.Orders;
-using ModelViews.Requests.Order;
-using ModelViews.Responses.Order;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IRepositories.Entity.Vaccines;
-using IRepositories.Entity.Accounts;
-using IRepositories.Entity.Inventory;
-using Microsoft.EntityFrameworkCore;
-using IRepositories.IRepository.Accounts;
-using IRepositories.IRepository.Inventory;
-using IRepositories.IRepository.Vaccines;
+﻿
+//using IRepositories.Entity.Orders;
+//using IRepositories.IRepository.Accounts;
+//using IRepositories.IRepository.Inventory;
+//using IRepositories.IRepository.Orders;
+//using IRepositories.IRepository.Vaccines;
+//using IRepositories.IRepository;
+//using IServices.Interfaces.Orders;
+//using ModelViews.Requests.Order;
+//using ModelViews.Requests;
+//using ModelViews.Responses.Order;
+//using Microsoft.EntityFrameworkCore;
 
-namespace Services.Services.Orders
-{
-    public class OrderService : IOrderService
-    {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IOrderRepository _orderRepository;
-        private readonly IOrderVaccineDetailsRepository _orderVaccineDetailsRepository;
-        private readonly IOrderPackageDetailsRepository _orderPackageDetailsRepository;
-        private readonly IVaccineRepository _vaccineRepository;
-        private readonly IVaccinePackageRepository _vaccinePackageRepository;
-        private readonly IVaccinePackageDetailsRepository _vaccinePackageDetailRepository;
-        private readonly IChildrenProfileRepository _childrenProfileRepository;
-        private readonly IVaccineCenterRepository _vaccineCenterRepository;
+//namespace Services.Services.Orders
+//{
+//    public class OrderService : IOrderService
+//    {
+//        private readonly IUnitOfWork _unitOfWork;
+//        private readonly IOrderRepository _orderRepository;
+//        private readonly IOrderVaccineDetailsRepository _orderVaccineDetailsRepository;
+//        private readonly IOrderPackageDetailsRepository _orderPackageDetailsRepository;
+//        private readonly IVaccineRepository _vaccineRepository;
+//        private readonly IVaccinePackageRepository _vaccinePackageRepository;
+//        private readonly IVaccinePackageDetailsRepository _vaccinePackageDetailRepository;
+//        private readonly IChildrenProfileRepository _childrenProfileRepository;
+//        private readonly IVaccineCenterRepository _vaccineCenterRepository;
 
-        public OrderService(IUnitOfWork unitOfWork,
-                           IOrderRepository orderRepository,
-                           IOrderVaccineDetailsRepository orderVaccineDetailsRepository,
-                           IOrderPackageDetailsRepository orderPackageDetailsRepository,
-                           IVaccineRepository vaccineRepository,
-                           IVaccinePackageRepository vaccinePackageRepository,
-                           IVaccinePackageDetailsRepository vaccinePackageDetailRepository,
-                           IChildrenProfileRepository childrenProfileRepository,
-                           IVaccineCenterRepository vaccineCenterRepository)
-        {
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-            _orderVaccineDetailsRepository = orderVaccineDetailsRepository ?? throw new ArgumentNullException(nameof(orderVaccineDetailsRepository));
-            _orderPackageDetailsRepository = orderPackageDetailsRepository ?? throw new ArgumentNullException(nameof(orderPackageDetailsRepository));
-            _vaccineRepository = vaccineRepository ?? throw new ArgumentNullException(nameof(vaccineRepository));
-            _vaccinePackageRepository = vaccinePackageRepository ?? throw new ArgumentNullException(nameof(vaccinePackageRepository));
-            _vaccinePackageDetailRepository = vaccinePackageDetailRepository ?? throw new ArgumentNullException(nameof(vaccinePackageDetailRepository));
-            _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
-            _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
-        }
+//        public OrderService(IUnitOfWork unitOfWork,
+//                           IOrderRepository orderRepository,
+//                           IOrderVaccineDetailsRepository orderVaccineDetailsRepository,
+//                           IOrderPackageDetailsRepository orderPackageDetailsRepository,
+//                           IVaccineRepository vaccineRepository,
+//                           IVaccinePackageRepository vaccinePackageRepository,
+//                           IVaccinePackageDetailsRepository vaccinePackageDetailRepository,
+//                           IChildrenProfileRepository childrenProfileRepository,
+//                           IVaccineCenterRepository vaccineCenterRepository)
+//        {
+//            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+//            _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
+//            _orderVaccineDetailsRepository = orderVaccineDetailsRepository ?? throw new ArgumentNullException(nameof(orderVaccineDetailsRepository));
+//            _orderPackageDetailsRepository = orderPackageDetailsRepository ?? throw new ArgumentNullException(nameof(orderPackageDetailsRepository));
+//            _vaccineRepository = vaccineRepository ?? throw new ArgumentNullException(nameof(vaccineRepository));
+//            _vaccinePackageRepository = vaccinePackageRepository ?? throw new ArgumentNullException(nameof(vaccinePackageRepository));
+//            _vaccinePackageDetailRepository = vaccinePackageDetailRepository ?? throw new ArgumentNullException(nameof(vaccinePackageDetailRepository));
+//            _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
+//            _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
+//        }
 
+//        public async Task<IEnumerable<OrderResponseDTO>> GetAllOrdersAsync()
+//        {
+//            var orders = await _orderRepository.Entities
+//                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+//                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+//                .Where(o => o.DeletedTime == null)
+//                .ToListAsync();
 
-        public async Task<IEnumerable<OrderResponseDTO>> GetAllOrdersAsync()
-        {
-            // Lấy tất cả orders từ repository
-            var orders = await _orderRepository.GetAllAsync();
+//            return orders.Select(o => new OrderResponseDTO
+//            {
+//                OrderId = o.Id,
+//                ProfileId = o.ProfileId,
+//                PurchaseDate = o.PurchaseDate,
+//                TotalAmount = o.TotalAmount,
+//                TotalOrderPrice = o.TotalOrderPrice,
+//                Status = o.Status,
+//                VaccineDetails = o.OrderVaccineDetails
+//                    .Where(vd => vd.DeletedTime == null)
+//                    .Select(vd => new OrderVaccineDetailResponseDTO
+//                    {
+//                        OrderVaccineId = vd.Id,
+//                        VaccineId = vd.VaccineId,
+//                        VaccineName = vd.Vaccine?.Name,
+//                        Quantity = vd.Quantity,
+//                        TotalPrice = vd.TotalPrice,
+//                        Image = vd.Vaccine?.Image
+//                    }).ToList(),
+//                PackageDetails = o.OrderPackageDetails
+//                    .Where(pd => pd.DeletedTime == null)
+//                    .Select(pd => new OrderPackageDetailResponseDTO
+//                    {
+//                        OrderPackageId = pd.Id,
+//                        VaccinePackageId = pd.VaccinePackageId,
+//                        VaccinePackageName = pd.VaccinePackage?.PackageName,
+//                        Description = pd.VaccinePackage?.PackageDescription,
+//                        Quantity = pd.Quantity,
+//                        TotalPrice = pd.TotalPrice
+//                    }).ToList()
+//            }).ToList();
+//        }
 
-            // Lấy tất cả OrderVaccineDetails và OrderPackageDetails một lần để tối ưu
-            var allVaccineDetails = await _orderVaccineDetailsRepository.Entities
-                .Where(vd => vd.DeletedTime == null)
-                .ToListAsync();
+//        public async Task<OrderResponseDTO?> GetOrderByIdAsync(string id)
+//        {
+//            var order = await _orderRepository.Entities
+//                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+//                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+//                .FirstOrDefaultAsync(o => o.Id == id && o.DeletedTime == null);
 
-            var allPackageDetails = await _orderPackageDetailsRepository.Entities
-                .Where(pd => pd.DeletedTime == null)
-                .ToListAsync();
+//            if (order == null) return null;
 
-            // Ánh xạ sang OrderResponseDTO
-            return orders.Select(o =>
-            {
-                var vaccineDetails = allVaccineDetails
-                    .Where(vd => vd.OrderId == o.Id)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        VaccineId = vd.VaccineId,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice
-                    })
-                    .ToList();
+//            return new OrderResponseDTO
+//            {
+//                OrderId = order.Id,
+//                ProfileId = order.ProfileId,
+//                PurchaseDate = order.PurchaseDate,
+//                TotalAmount = order.TotalAmount,
+//                TotalOrderPrice = order.TotalOrderPrice,
+//                Status = order.Status,
+//                VaccineDetails = order.OrderVaccineDetails
+//                    .Where(vd => vd.DeletedTime == null)
+//                    .Select(vd => new OrderVaccineDetailResponseDTO
+//                    {
+//                        OrderVaccineId = vd.Id,
+//                        VaccineId = vd.VaccineId,
+//                        VaccineName = vd.Vaccine?.Name,
+//                        Quantity = vd.Quantity,
+//                        TotalPrice = vd.TotalPrice,
+//                        Image = vd.Vaccine?.Image
+//                    }).ToList(),
+//                PackageDetails = order.OrderPackageDetails
+//                    .Where(pd => pd.DeletedTime == null)
+//                    .Select(pd => new OrderPackageDetailResponseDTO
+//                    {
+//                        OrderPackageId = pd.Id,
+//                        VaccinePackageId = pd.VaccinePackageId,
+//                        VaccinePackageName = pd.VaccinePackage?.PackageName,
+//                        Description = pd.VaccinePackage?.PackageDescription,
+//                        Quantity = pd.Quantity,
+//                        TotalPrice = pd.TotalPrice
+//                    }).ToList()
+//            };
+//        }
 
-                var packageDetails = allPackageDetails
-                    .Where(pd => pd.OrderId == o.Id)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        VaccinePackageId = pd.VaccinePackageId,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    })
-                    .ToList();
+//        public async Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO request)
+//        {
+//            await _unitOfWork.BeginTransactionAsync();
+//            try
+//            {
+//                var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
+//                if (profile == null)
+//                    throw new Exception("Profile không tồn tại.");
 
-                return new OrderResponseDTO
-                {
-                    OrderId = o.Id,
-                    ProfileId = o.ProfileId,
-                    PurchaseDate = o.PurchaseDate,
-                    TotalAmount = o.TotalAmount,
-                    TotalOrderPrice = o.TotalOrderPrice,
-                    Status = o.Status,
-                    VaccineDetails = vaccineDetails,
-                    PackageDetails = packageDetails
-                };
-            }).ToList();
-        }
+//                var order = new Order
+//                {
+//                    Id = Guid.NewGuid().ToString(),
+//                    ProfileId = request.ProfileId,
+//                    PurchaseDate = request.PurchaseDate,
+//                    TotalAmount = 0,
+//                    TotalOrderPrice = 0,
+//                    Status = "Pending",
+//                };
 
-        public async Task<OrderResponseDTO?> GetOrderByIdAsync(string id)
-        {
-            var order = await _orderRepository.GetByIdAsync(id);
-            if (order == null) return null;
-            // Fetch chi tiết OrderVaccineDetails và OrderPackageDetails
-            var vaccineDetails = await _orderVaccineDetailsRepository.Entities
-                .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
-                .Select(vd => new OrderVaccineDetailResponseDTO
-                {
-                    VaccineId = vd.VaccineId,
-                    Quantity = vd.Quantity,
-                    TotalPrice = vd.TotalPrice
-                })
-                .ToListAsync();
+//                await _orderRepository.InsertAsync(order);
+//                await _unitOfWork.SaveAsync();
 
-            var packageDetails = await _orderPackageDetailsRepository.Entities
-                .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
-                .Select(pd => new OrderPackageDetailResponseDTO
-                {
-                    VaccinePackageId = pd.VaccinePackageId,
-                    Quantity = pd.Quantity,
-                    TotalPrice = pd.TotalPrice
-                })
-                .ToListAsync();
-            return new OrderResponseDTO
-            {
-                OrderId = order.Id,
-                ProfileId = order.ProfileId,
-                PurchaseDate = order.PurchaseDate,
-                TotalAmount = order.TotalAmount,
-                TotalOrderPrice = order.TotalOrderPrice,
-                Status = order.Status,
-                VaccineDetails = vaccineDetails,
-                PackageDetails = packageDetails
-            };
-        }
+//                int totalAmount = 0;
+//                int totalOrderPrice = 0;
 
-        public async Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO request)
-        {
-            await _unitOfWork.BeginTransactionAsync();
+//                foreach (var vaccineItem in request.Vaccines)
+//                {
+//                    var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
+//                    if (vaccine == null)
+//                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
+//                    if (vaccine.QuantityAvailable < vaccineItem.Quantity)
+//                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
 
-            try
-            {
-                // Validate ProfileId và CenterId
-                var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
-                if (profile == null)
-                    throw new Exception("Profile không tồn tại.");
+//                    var orderVaccineDetail = new OrderVaccineDetails
+//                    {
+//                        Id = Guid.NewGuid().ToString(),
+//                        OrderId = order.Id,
+//                        VaccineId = vaccineItem.VaccineId,
+//                        Quantity = vaccineItem.Quantity,
+//                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
+//                    };
 
-                // Tạo Order entity từ DTO
-                var order = new Order
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    ProfileId = request.ProfileId,
-                    PurchaseDate = request.PurchaseDate,
-                    TotalAmount = 0,
-                    TotalOrderPrice = 0,
-                    Status = "Pending",
-                };
+//                    await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
+//                    vaccine.QuantityAvailable -= vaccineItem.Quantity;
+//                    await _vaccineRepository.UpdateAsync(vaccine);
 
-                await _orderRepository.InsertAsync(order);
-                await _unitOfWork.SaveAsync();
+//                    totalAmount += vaccineItem.Quantity;
+//                    totalOrderPrice += orderVaccineDetail.TotalPrice;
+//                }
 
-                int totalAmount = 0;
-                int totalOrderPrice = 0;
+//                foreach (var packageItem in request.VaccinePackages)
+//                {
+//                    var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
+//                    if (package == null)
+//                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
 
-                // Xử lý vaccine lẻ
-                foreach (var vaccineItem in request.Vaccines)
-                {
-                    var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
-                    if (vaccine == null)
-                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
-                    if (vaccine.QuantityAvailable < vaccineItem.Quantity)
-                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
+//                    var packagePrice = await _vaccinePackageDetailRepository.Entities
+//                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
+//                        .SumAsync(d => d.PackagePrice);
 
-                    var orderVaccineDetail = new OrderVaccineDetails
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        OrderId = order.Id,
-                        VaccineId = vaccineItem.VaccineId,
-                        Quantity = vaccineItem.Quantity,
-                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
-                    };
+//                    var orderPackageDetail = new OrderPackageDetails
+//                    {
+//                        Id = Guid.NewGuid().ToString(),
+//                        OrderId = order.Id,
+//                        VaccinePackageId = packageItem.VaccinePackageId,
+//                        Quantity = packageItem.Quantity,
+//                        TotalPrice = packagePrice * packageItem.Quantity,
+//                    };
 
-                    await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
+//                    await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
 
-                    vaccine.QuantityAvailable -= vaccineItem.Quantity;
-                    await _vaccineRepository.UpdateAsync(vaccine);
+//                    totalAmount += packageItem.Quantity;
+//                    totalOrderPrice += orderPackageDetail.TotalPrice;
+//                }
 
-                    totalAmount += vaccineItem.Quantity;
-                    totalOrderPrice += orderVaccineDetail.TotalPrice;
-                }
+//                order.TotalAmount = totalAmount;
+//                order.TotalOrderPrice = totalOrderPrice;
+//                await _orderRepository.UpdateAsync(order);
+//                await _unitOfWork.SaveAsync();
 
-                // Xử lý vaccine gói
-                foreach (var packageItem in request.VaccinePackages)
-                {
-                    var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
-                    if (package == null)
-                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
+//                await _unitOfWork.CommitTransactionAsync();
 
-                    var packagePrice = await _vaccinePackageDetailRepository.Entities
-                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
-                        .SumAsync(d => d.PackagePrice);
+//                return await GetOrderByIdAsync(order.Id);
+//            }
+//            catch (Exception ex)
+//            {
+//                await _unitOfWork.RollbackTransactionAsync();
+//                throw new Exception(ex.Message);
+//            }
+//        }
 
-                    var orderPackageDetail = new OrderPackageDetails
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        OrderId = order.Id,
-                        VaccinePackageId = packageItem.VaccinePackageId,
-                        Quantity = packageItem.Quantity,
-                        TotalPrice = packagePrice * packageItem.Quantity,
-                    };
+//        public async Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request)
+//        {
+//            await _unitOfWork.BeginTransactionAsync();
+//            try
+//            {
+//                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+//                if (order == null)
+//                    throw new Exception("Order không tồn tại.");
 
-                    await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
+//                foreach (var vaccineItem in request.Vaccines)
+//                {
+//                    var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
+//                    if (vaccine == null)
+//                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
+//                    if (vaccine.QuantityAvailable < vaccineItem.Quantity)
+//                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
 
-                    totalAmount += packageItem.Quantity;
-                    totalOrderPrice += orderPackageDetail.TotalPrice;
-                }
+//                    var orderVaccineDetail = new OrderVaccineDetails
+//                    {
+//                        Id = Guid.NewGuid().ToString(),
+//                        OrderId = order.Id,
+//                        VaccineId = vaccineItem.VaccineId,
+//                        Quantity = vaccineItem.Quantity,
+//                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
+//                    };
 
-                // Cập nhật TotalAmount và TotalOrderPrice
-                order.TotalAmount = totalAmount;
-                order.TotalOrderPrice = totalOrderPrice;
+//                    await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
+//                    vaccine.QuantityAvailable -= vaccineItem.Quantity;
+//                    await _vaccineRepository.UpdateAsync(vaccine);
+//                }
 
+//                foreach (var packageItem in request.Packages)
+//                {
+//                    var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
+//                    if (package == null)
+//                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
 
-                await _orderRepository.UpdateAsync(order);
-                await _unitOfWork.SaveAsync();
+//                    var packagePrice = await _vaccinePackageDetailRepository.Entities
+//                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
+//                        .SumAsync(d => d.PackagePrice);
 
-                await _unitOfWork.CommitTransactionAsync();
+//                    var orderPackageDetail = new OrderPackageDetails
+//                    {
+//                        Id = Guid.NewGuid().ToString(),
+//                        OrderId = order.Id,
+//                        VaccinePackageId = packageItem.VaccinePackageId,
+//                        Quantity = packageItem.Quantity,
+//                        TotalPrice = packagePrice * packageItem.Quantity,
+//                    };
 
-                // Fetch chi tiết OrderVaccineDetails và OrderPackageDetails
-                var vaccineDetails = await _orderVaccineDetailsRepository.Entities
-                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        VaccineId = vd.VaccineId,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice
-                    })
-                    .ToListAsync();
+//                    await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
+//                }
 
-                var packageDetails = await _orderPackageDetailsRepository.Entities
-                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        VaccinePackageId = pd.VaccinePackageId,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    })
-                    .ToListAsync();
+//                var vaccineDetails = await _orderVaccineDetailsRepository.Entities
+//                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+//                    .ToListAsync();
+//                var packageDetails = await _orderPackageDetailsRepository.Entities
+//                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+//                    .ToListAsync();
 
-                // Ánh xạ sang ResponseDTO
-                return new OrderResponseDTO
-                {
-                    OrderId = order.Id,
-                    ProfileId = order.ProfileId,
-                    PurchaseDate = order.PurchaseDate,
-                    TotalAmount = order.TotalAmount,
-                    TotalOrderPrice = order.TotalOrderPrice,
-                    Status = order.Status,
-                    VaccineDetails = vaccineDetails,
-                    PackageDetails = packageDetails
-                };
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception(ex.Message);
-            }
-        }
+//                order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
+//                order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
+//                await _orderRepository.UpdateAsync(order);
+//                await _unitOfWork.SaveAsync();
 
-    }
-}
+//                await _unitOfWork.CommitTransactionAsync();
+
+//                return await GetOrderByIdAsync(order.Id);
+//            }
+//            catch (Exception ex)
+//            {
+//                await _unitOfWork.RollbackTransactionAsync();
+//                throw new Exception($"Thêm Order Details thất bại: {ex.Message}");
+//            }
+//        }
+
+//        public async Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request)
+//        {
+//            await _unitOfWork.BeginTransactionAsync();
+//            try
+//            {
+//                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+//                if (order == null)
+//                    throw new Exception("Order không tồn tại.");
+
+//                foreach (var detailId in request.VaccineDetailIds)
+//                {
+//                    var detail = await _orderVaccineDetailsRepository.GetByIdAsync(detailId);
+//                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+//                    {
+//                        var vaccine = await _vaccineRepository.GetByIdAsync(detail.VaccineId);
+//                        if (vaccine != null)
+//                        {
+//                            vaccine.QuantityAvailable += detail.Quantity;
+//                            await _vaccineRepository.UpdateAsync(vaccine);
+//                        }
+//                        detail.DeletedTime = DateTime.Now;
+//                        await _orderVaccineDetailsRepository.UpdateAsync(detail);
+//                    }
+//                }
+
+//                foreach (var detailId in request.PackageDetailIds)
+//                {
+//                    var detail = await _orderPackageDetailsRepository.GetByIdAsync(detailId);
+//                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+//                    {
+//                        detail.DeletedTime = DateTime.Now;
+//                        await _orderPackageDetailsRepository.UpdateAsync(detail);
+//                    }
+//                }
+
+//                var vaccineDetails = await _orderVaccineDetailsRepository.Entities
+//                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+//                    .ToListAsync();
+//                var packageDetails = await _orderPackageDetailsRepository.Entities
+//                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+//                    .ToListAsync();
+
+//                order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
+//                order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
+//                await _orderRepository.UpdateAsync(order);
+//                await _unitOfWork.SaveAsync();
+
+//                await _unitOfWork.CommitTransactionAsync();
+
+//                return await GetOrderByIdAsync(order.Id);
+//            }
+//            catch (Exception ex)
+//            {
+//                await _unitOfWork.RollbackTransactionAsync();
+//                throw new Exception($"Xóa Order Details thất bại: {ex.Message}");
+//            }
+//        }
+
+//        public async Task<OrderResponseDTO> SetPayLaterAsync(PayLaterRequestDTO request)
+//        {
+//            await _unitOfWork.BeginTransactionAsync();
+//            try
+//            {
+//                var order = await _orderRepository.GetByIdAsync(request.OrderId);
+//                if (order == null)
+//                    throw new Exception("Order không tồn tại.");
+
+//                if (order.Status != "Pending")
+//                    throw new Exception("Chỉ có thể chuyển sang PayLater từ trạng thái Pending.");
+
+//                order.Status = "PayLater";
+//                order.LastUpdatedTime = DateTime.Now;
+
+//                await _orderRepository.UpdateAsync(order);
+//                await _unitOfWork.SaveAsync();
+
+//                await _unitOfWork.CommitTransactionAsync();
+
+//                return await GetOrderByIdAsync(order.Id);
+//            }
+//            catch (Exception ex)
+//            {
+//                await _unitOfWork.RollbackTransactionAsync();
+//                throw new Exception($"Chuyển trạng thái sang PayLater thất bại: {ex.Message}");
+//            }
+//        }
+//    }
+//}

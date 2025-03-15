@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ModelViews.Requests.Auth
 {
-    //public class ResetPasswordRequestDTO
-    //{
-    //    public string Email { get; set; }
-    //    public string Otp { get; set; }
-    //    public string NewPassword { get; set; }
-    //}
+    public class ResetPasswordRequestDTO
+    {
+        public string Email { get; set; }
+        public string Otp { get; set; }
+        public string NewPassword { get; set; }
+    }
 }

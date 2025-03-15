@@ -9,7 +9,12 @@ namespace ModelViews.Responses.Order
 {
     public class PaymentDetailsResponseDTO
     {
+
         public string OrderId { get; set; }
+
+        public string PaymentId { get; set; }
+        public string TransactionId { get; set; }
+
         public string PaymentName { get; set; }
         public string PaymentMethod { get; set; }
         public DateTime PaymentDate { get; set; }

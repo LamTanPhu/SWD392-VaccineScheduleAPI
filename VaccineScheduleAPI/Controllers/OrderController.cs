@@ -1,6 +1,7 @@
 ﻿using IServices.Interfaces.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ModelViews.Requests;
 using ModelViews.Requests.Order;
 using ModelViews.Responses.Order;
 using Services.Services.Orders;
@@ -48,5 +49,37 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = order.OrderId }, order);
         }
 
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("details/add")]
+        public async Task<ActionResult<OrderResponseDTO>> AddOrderDetails([FromBody] AddOrderDetailsRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.AddOrderDetailsAsync(request);
+            return Ok(updatedOrder);
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("details/remove")]
+        public async Task<ActionResult<OrderResponseDTO>> RemoveOrderDetails([FromBody] RemoveOrderDetailsRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.RemoveOrderDetailsAsync(request);
+            return Ok(updatedOrder);
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("pay-later")]
+        public async Task<ActionResult<OrderResponseDTO>> SetPayLater([FromBody] PayLaterRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedOrder = await _orderService.SetPayLaterAsync(request);
+            return Ok(updatedOrder);
+        }
     }
 }

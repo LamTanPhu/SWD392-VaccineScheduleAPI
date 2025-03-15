@@ -1,4 +1,4 @@
-﻿using ModelViews.Requests.History;
+using ModelViews.Requests.History;
 using ModelViews.Responses.History;
 using System;
 using System.Collections.Generic;

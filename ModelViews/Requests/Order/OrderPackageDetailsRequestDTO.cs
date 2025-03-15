@@ -17,5 +17,6 @@ namespace ModelViews.Requests.Order
         public int Quantity { get; set; }
         [Required]
         public int TotalPrice { get; set; }
+
     }
 }

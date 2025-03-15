@@ -8,11 +8,13 @@ using System.IdentityModel.Tokens.Jwt;
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Repositories;
+using ModelViews.Config;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services from DependencyInjection.cs
-builder.Services.AddDatabaseContext(builder.Configuration);
+
+//Register Configuaration for VNPay
+builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("VNPay"));
+
 // Register HttpClient 
 builder.Services.AddHttpClient();
 
@@ -57,7 +59,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // ✅ Add support for file uploads in Swagger
-    //options.OperationFilter<SwaggerFileOperationFilter>();
+    options.OperationFilter<SwaggerFileOperationFilter>();
 });
 
 // Add CORS policy
@@ -74,9 +76,9 @@ builder.Services.AddCors(options =>
 // Register database context
 // If you were using SQL Server or another database provider, you could configure it here as needed
 // Example:
-builder.Services.AddDbContext<DatabaseContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+// builder.Services.AddDbContext<DatabaseContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+// );
 
 // Register custom services and repositories
 builder.Services.AddConfig(builder.Configuration); // Registers services and repositories

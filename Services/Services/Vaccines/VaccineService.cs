@@ -31,7 +31,9 @@ namespace Services.Services.Vaccines
         public async Task<IEnumerable<VaccineResponseDTO>> GetAllVaccinesAsync()
         {
             var vaccines = await _repository.Entities
-                .Where(v => v.Status != "0") // Chỉ lấy các vaccine active
+                .Where(v => v.Status != "0") // Only active vaccines
+                .Include(v => v.Batch) // Include Batch
+                .ThenInclude(b => b.Manufacturer) // Then include Manufacturer
                 .ToListAsync();
 
             return vaccines.Select(v => new VaccineResponseDTO
@@ -50,7 +52,10 @@ namespace Services.Services.Vaccines
                 Status = v.Status,
                 VaccineCategoryId = v.VaccineCategoryId,
                 BatchId = v.BatchId,
-                Image = v.Image
+                Image = v.Image,
+                // Map Manufacturer details
+                ManufacturerName = v.Batch?.Manufacturer?.Name,
+                ManufacturerCountry = v.Batch?.Manufacturer?.CountryName
             }).ToList();
         }
 

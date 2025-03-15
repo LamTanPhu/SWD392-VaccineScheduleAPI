@@ -1,4 +1,4 @@
-﻿using IRepositories.Entity.Schedules;
+using IRepositories.Entity.Schedules;
 using IRepositories.IRepository;
 using IRepositories.IRepository.Schedules;
 using IServices.Interfaces.Schedules;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModelViews.Requests.Mail
+namespace Core.Utils
 {
     public class EmailSettings
     {

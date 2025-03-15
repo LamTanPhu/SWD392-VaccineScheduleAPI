@@ -15,7 +15,6 @@ using IServices.Interfaces.Schedules;
 using Services.Services.Schedules;
 using IServices.Interfaces.Orders;
 using Services.Services.Orders;
-using ModelViews.Requests.Mail;
 
 namespace VaccineScheduleAPI
 {
@@ -44,12 +43,15 @@ namespace VaccineScheduleAPI
             services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<IOrderPackageDetailsService, OrderPackageDetailsServices>();
             services.AddScoped<IOrderVaccineDetailsService, OrderVaccineDetailsService>();
-            services.AddScoped<IOrderService, OrderService>();
+            //services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRegistrationService, RegistrationService>();
             services.AddScoped<IUserProfileService, UserProfileService>();
             services.AddScoped<IVaccinationScheduleService, VaccinationScheduleService>();
-            services.AddScoped<IVaccineHistoryService, VaccineHistoryService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IAccountAssignmentService, AccountAssignmentService>();
+            services.AddScoped<IAccountUpdateService, AccountUpdateService>();
+            services.AddScoped<IVaccineReactionService, VaccineReactionService>();
 
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));

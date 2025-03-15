@@ -1,4 +1,7 @@
-﻿using System;
+
+﻿using ModelViews.Responses.Vaccine;
+using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +16,8 @@ namespace ModelViews.Responses.VaccineCategory
         public string? Description { get; set; }
         public string Status { get; set; }
         public string? ParentCategoryId { get; set; }
+
+        public List<VaccineResponseDTO> Vaccines { get; set; } = new List<VaccineResponseDTO>();
+
     }
 }

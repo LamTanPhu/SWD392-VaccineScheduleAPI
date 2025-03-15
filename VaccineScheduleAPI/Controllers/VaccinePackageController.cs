@@ -19,7 +19,7 @@ namespace VaccineScheduleAPI.Controllers
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VaccinePackageResponseDTO>>> GetAll()
         {

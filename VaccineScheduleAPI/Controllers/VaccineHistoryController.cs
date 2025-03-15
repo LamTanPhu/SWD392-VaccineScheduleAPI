@@ -1,3 +1,4 @@
+
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using IServices.Interfaces.Schedules;
@@ -68,6 +69,7 @@ namespace VaccineScheduleAPI.Controllers
         {
             await _service.UpdateAsync(id, requestDto);
             return NoContent();
+
         }
     }
 }

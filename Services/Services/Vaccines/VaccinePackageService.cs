@@ -30,7 +30,7 @@
         public async Task<IEnumerable<VaccinePackageResponseDTO>> GetAllPackagesAsync()
         {
             var packages = await _vaccinePackageRepository.Entities
-                .Where(p => p.PackageStatus) // Chỉ lấy package active
+                .Where(p => p.PackageStatus) // only active packages
                 .Include(p => p.PackageDetails)
                 .ThenInclude(pd => pd.Vaccine)
                 .ToListAsync();

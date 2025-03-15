@@ -18,29 +18,12 @@ namespace Repositories
 
             services.AddDbContext<DatabaseContext>(options =>
             {
-                options.UseSqlServer(connectionString);
-                // Nếu cần Lazy Loading
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                // Enable lazy loading here if needed:
                 // options.UseLazyLoadingProxies();
             });
 
             return services;
         }
-        //public static IServiceCollection AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
-        //{
-        //    var connectionString = configuration.GetConnectionString("DefaultConnection");
-        //    if (string.IsNullOrEmpty(connectionString))
-        //    {
-        //        throw new InvalidOperationException("Connection string 'DefaultConnection' not found in configuration.");
-        //    }
-
-        //    services.AddDbContext<DatabaseContext>(options =>
-        //    {
-        //        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-        //        // Enable lazy loading here if needed:
-        //        // options.UseLazyLoadingProxies();
-        //    });
-
-        //    return services;
-        //}
     }
 }

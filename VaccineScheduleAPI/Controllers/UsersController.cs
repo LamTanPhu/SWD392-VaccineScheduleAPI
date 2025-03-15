@@ -5,6 +5,8 @@ using IRepositories.Entity.Accounts;
 using IServices.Interfaces.Accounts;
 using System.Security.Claims;
 using ModelViews.Responses.Auth;
+using ModelViews.Requests.Auth;
+
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -13,6 +15,8 @@ namespace VaccineScheduleAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserProfileService _userProfileService;
+        private readonly IAccountUpdateService _accountUpdateService;
+
         private readonly IJwtService _jwtService;
 
         public UsersController(
@@ -33,24 +37,32 @@ namespace VaccineScheduleAPI.Controllers
             if (string.IsNullOrEmpty(authHeader))
                 return Unauthorized(new { Message = "Token is required." });
 
-            // Use the ClaimsPrincipal from the middleware (already validated)
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             Console.WriteLine($"Middleware Extracted Username: '{username}'");
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
-            // Optional: Double-check with JwtService if needed
             var token = authHeader.Trim();
             var expired = _jwtService.IsTokenExpired(token);
             Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
             if (expired)
                 return Unauthorized(new { Message = "Token has expired." });
 
-            var profile = await _userProfileService.GetProfileByUsernameAsync(username);
-            if (profile == null)
+            var profileData = await _userProfileService.GetProfileByUsernameAsync(username);
+            if (profileData == null)
                 return NotFound(new { Message = "User not found or deleted." });
 
-            return Ok(profile);
+            var response = new ProfileResponseDTO
+            {
+                Username = profileData.Username,
+                Email = profileData.Email ?? "Not provided",
+                Role = profileData.Role,
+                Status = profileData.Status ?? "Active",
+                VaccineCenter = profileData.VaccineCenter,
+                ChildrenProfiles = profileData.ChildrenProfiles
+            };
+            Console.WriteLine($"Final Response DTO: Username={response.Username}, Email={response.Email}, Status={response.Status}, Role={response.Role}");
+            return new JsonResult(response); // Force DTO
         }
 
         [Authorize(Roles = "Admin, Staff, Parent")]
@@ -65,6 +77,26 @@ namespace VaccineScheduleAPI.Controllers
                 return NotFound(new { Message = "User not found or deleted." });
 
             return Ok(user);
+        }
+
+
+        [HttpPut("update-profile")]
+        [Authorize] //will restrict roles later
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateAccountRequestDTO request)
+        {
+            try
+            {
+                var username = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (string.IsNullOrEmpty(username))
+                    return Unauthorized(new { Message = "Invalid token payload." });
+
+                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(username, request);
+                return Ok(updatedProfile);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }
