@@ -8,5 +8,7 @@ namespace IServices.Interfaces.Accounts
     {
         Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request);
         Task<LoginResponseDTO> LoginWithGoogleAsync(string idToken);
+
+        Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request);
     }
 }
