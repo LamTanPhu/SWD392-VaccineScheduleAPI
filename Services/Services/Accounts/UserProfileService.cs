@@ -34,6 +34,19 @@ namespace Services.Services.Accounts
             return dto;
         }
 
+        public async Task<ProfileResponseDTO?> GetProfileByEmailAsync(string email)
+        {
+            var account = await _accountRepository.GetByEmailAsync(email);
+            if (account == null || account.DeletedTime != null)
+            {
+                Console.WriteLine($"Account null or deleted for username: {email}");
+                return null;
+            }
+
+            var dto = MapToProfileResponseDTO(account);
+            return dto;
+        }
+
         public async Task<Account?> GetByUsernameAsync(string username)
         {
             if (string.IsNullOrEmpty(username))
@@ -87,6 +100,7 @@ namespace Services.Services.Accounts
         {
             return new ProfileResponseDTO
             {
+                AccountId = account.Id,
                 Username = account.Username,
                 Email = account.Email,
                 Role = account.Role.ToString(),
