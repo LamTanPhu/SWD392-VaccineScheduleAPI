@@ -32,12 +32,12 @@ namespace Services.Services.Accounts
         }
 
 
-        public async Task<ProfileResponseDTO> UpdateAccountAsync(string userName, UpdateAccountRequestDTO request)
+        public async Task<ProfileResponseDTO> UpdateAccountAsync(string email, UpdateAccountRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var account = await _accountRepository.GetByUsernameAsync(userName);
+                var account = await _accountRepository.GetByEmailAsync(email);
                 if (account == null)
                     throw new Exception("Tài khoản không tồn tại.");
 

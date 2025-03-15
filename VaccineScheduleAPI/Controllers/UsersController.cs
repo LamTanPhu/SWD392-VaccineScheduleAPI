@@ -38,9 +38,9 @@ namespace VaccineScheduleAPI.Controllers
             if (string.IsNullOrEmpty(authHeader))
                 return Unauthorized(new { Message = "Token is required." });
 
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            Console.WriteLine($"Middleware Extracted Username: '{username}'");
-            if (string.IsNullOrEmpty(username))
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            Console.WriteLine($"Middleware Extracted email: '{email}'");
+            if (string.IsNullOrEmpty(email))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
             var token = authHeader.Trim();
@@ -49,12 +49,13 @@ namespace VaccineScheduleAPI.Controllers
             if (expired)
                 return Unauthorized(new { Message = "Token has expired." });
 
-            var profileData = await _userProfileService.GetProfileByUsernameAsync(username);
+            var profileData = await _userProfileService.GetProfileByEmailAsync(email);
             if (profileData == null)
                 return NotFound(new { Message = "User not found or deleted." });
 
             var response = new ProfileResponseDTO
             {
+                AccountId = profileData.AccountId,
                 Username = profileData.Username,
                 Email = profileData.Email ?? "Not provided",
                 Role = profileData.Role,
@@ -87,11 +88,11 @@ namespace VaccineScheduleAPI.Controllers
         {
             try
             {
-                var username = User.FindFirst(ClaimTypes.Name)?.Value;
-                if (string.IsNullOrEmpty(username))
+                var email = User.FindFirst(ClaimTypes.Email)?.Value;
+                if (string.IsNullOrEmpty(email))
                     return Unauthorized(new { Message = "Invalid token payload." });
 
-                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(username, request);
+                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(email, request);
                 return Ok(updatedProfile);
             }
             catch (Exception ex)
