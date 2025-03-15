@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using IServices.Interfaces.Accounts;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -55,6 +56,17 @@ namespace VaccineScheduleAPI.Controllers
                 return Unauthorized(new { Message = "Invalid Google token." });
 
             return Ok(response);
+        }
+
+        [HttpPost("reset-password")]
+        [Authorize(Roles = "Admin")] // Giới hạn quyền, chỉ Admin được reset
+        public async Task<ActionResult<ResetPasswordResponseDTO>> ResetPasswordAsync([FromBody] ResetPasswordRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
+
+            var response = await _authService.ResetPasswordAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
     }
 }

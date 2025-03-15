@@ -1,10 +1,12 @@
 ﻿using BCrypt.Net;
 using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
+using IRepositories.IRepository;
 using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
+using Repositories.Repository;
 using System;
 using System.Threading.Tasks;
 
@@ -15,15 +17,18 @@ namespace Services.Services.Accounts
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
         private readonly IFirebaseAuthService _firebaseAuthService;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuthService(
             IAccountRepository accountRepository,
             IJwtService jwtService,
-            IFirebaseAuthService firebaseAuthService)
+            IFirebaseAuthService firebaseAuthService,
+            IUnitOfWork unitOfWork)
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _firebaseAuthService = firebaseAuthService ?? throw new ArgumentNullException(nameof(firebaseAuthService));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
         public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
@@ -100,5 +105,54 @@ namespace Services.Services.Accounts
                 Expiration = expiration
             };
         }
+
+        public async Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request)
+        {
+            if (request == null)
+                return new ResetPasswordResponseDTO { Success = false, Message = "Request cannot be null." };
+
+            if (string.IsNullOrEmpty(request.AccountId) || string.IsNullOrEmpty(request.NewPassword) || string.IsNullOrEmpty(request.ConfirmPassword))
+                return new ResetPasswordResponseDTO { Success = false, Message = "All fields are required." };
+
+            if (request.NewPassword != request.ConfirmPassword)
+                return new ResetPasswordResponseDTO { Success = false, Message = "Passwords do not match." };
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var account = await _accountRepository.GetByIdAsync(request.AccountId);
+                if (account == null || account.DeletedTime != null)
+                    return new ResetPasswordResponseDTO { Success = false, Message = "Account not found or has been deleted." };
+
+                // Hash mật khẩu mới với BCrypt (tương tự RegistrationService)
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+                // Cập nhật mật khẩu và thời gian chỉnh sửa
+                account.PasswordHash = hashedPassword;
+                account.LastUpdatedTime = DateTime.Now;
+                account.LastUpdatedBy = "System"; // Có thể thay bằng user thực hiện reset nếu có context
+
+                await _accountRepository.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return new ResetPasswordResponseDTO
+                {
+                    Success = true,
+                    Message = "Password reset successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return new ResetPasswordResponseDTO
+                {
+                    Success = false,
+                    Message = $"Failed to reset password: {ex.Message}"
+                };
+            }
+        }
+
     }
 }

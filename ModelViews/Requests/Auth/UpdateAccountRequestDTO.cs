@@ -8,9 +8,9 @@ namespace ModelViews.Requests.Auth
 {
     public class UpdateAccountRequestDTO
     {
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Status { get; set; }
+        public string? Username { get; set; }
+        public string PhoneNumber { get; set; }
+        public string ImageProfile { get; set; }
         public string? VaccineCenterId { get; set; } // Nullable to allow clearing the assignment
     }
 }

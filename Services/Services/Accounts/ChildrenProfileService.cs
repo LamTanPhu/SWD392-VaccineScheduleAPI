@@ -66,11 +66,11 @@ namespace Services.Services.Accounts
             };
         }
 
-        public async Task AddProfileAsync(ChildrenProfileRequestDTO profileDto)
+        public async Task<ChildrenProfileResponseDTO> AddProfileAsync(string accountId, ChildrenProfileCreateUpdateDTO profileDto)
         {
             var profile = new ChildrenProfile
             {
-                AccountId = profileDto.AccountId,
+                AccountId = accountId,
                 FullName = profileDto.FullName,
                 DateOfBirth = profileDto.DateOfBirth,
                 Gender = profileDto.Gender,
@@ -79,9 +79,20 @@ namespace Services.Services.Accounts
             };
             await _repository.InsertAsync(profile);
             await _unitOfWork.SaveAsync();
+            Console.WriteLine($"Saved profile: Id={profile.Id}, Address={profile.Address}");
+            return new ChildrenProfileResponseDTO
+            {
+                Id = profile.Id,
+                AccountId = profile.AccountId,
+                FullName = profile.FullName,
+                DateOfBirth = profile.DateOfBirth,
+                Gender = profile.Gender,
+                Status = profile.Status,
+                Address = profile.Address
+            };
         }
 
-        public async Task UpdateProfileAsync(string id, ChildrenProfileRequestDTO profileDto)
+        public async Task UpdateProfileAsync(string id, ChildrenProfileCreateUpdateDTO profileDto)
         {
             var existingProfile = await _repository.GetByIdAsync(id);
             if (existingProfile == null)
@@ -91,7 +102,7 @@ namespace Services.Services.Accounts
             existingProfile.DateOfBirth = profileDto.DateOfBirth;
             existingProfile.Gender = profileDto.Gender;
             existingProfile.Status = profileDto.Status;
-            existingProfile.Address = profileDto.Address;
+            existingProfile.Address = profileDto.Address; // Ensure this updates
             await _repository.UpdateAsync(existingProfile);
             await _unitOfWork.SaveAsync();
         }
