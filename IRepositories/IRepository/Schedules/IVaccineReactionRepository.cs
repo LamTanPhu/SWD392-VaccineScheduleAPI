@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IRepositories.IRepository.Schedules
 {
-    public interface IVaccineReactionRepository :IGenericRepository<VaccineReaction>
+    public interface IVaccineReactionRepository : IGenericRepository<VaccineReaction>
     {
 
     }
