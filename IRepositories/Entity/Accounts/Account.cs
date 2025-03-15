@@ -28,6 +28,9 @@ namespace IRepositories.Entity.Accounts
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public RoleEnum Role { get; set; }
 
+        public string PhoneNumber { get; set; }
+
+        public string ImageProfile {  get; set; }
         // Add OTP properties
         //public string? OTP { get; set; }
         //public DateTime? OTPExpired { get; set; }

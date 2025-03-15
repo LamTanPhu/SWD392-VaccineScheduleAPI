@@ -46,6 +46,8 @@ namespace Services.Services.Accounts
                 Email = request.Email,
                 PasswordHash = hashedPassword,
                 Role = request.Role,
+                PhoneNumber = "Not Update",
+                ImageProfile = "Not Update ",
                 Status = "Active",
                 CreatedBy = "System", // Should be set to the registering user if available
                 LastUpdatedBy = "System"

@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250312124303_InitialCreate")]
+    [Migration("20250314125336_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,6 +46,10 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("ImageProfile")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("longtext");
 
@@ -53,6 +57,10 @@ namespace Repositories.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("longtext");
 
