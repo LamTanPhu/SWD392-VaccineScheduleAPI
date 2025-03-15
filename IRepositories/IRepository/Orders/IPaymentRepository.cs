@@ -14,5 +14,6 @@ namespace IRepositories.IRepository.Orders
         Task<Payment?> GetByPaymentnameAsync(string name);
         Task<bool> AddPaymentAsync(Payment payment);
         Task UpdatePaymentAsync(Payment payment);
+       
     }
 }
