@@ -11,7 +11,5 @@ namespace IServices.Interfaces.Schedules
     public interface IVaccineHistoryService
     {
         Task<VaccineHistoryResponseDTO> CreateVaccineHistoryAsync(CreateVaccineHistoryRequestDTO request, string accountId);
-       
     }
 }
-
