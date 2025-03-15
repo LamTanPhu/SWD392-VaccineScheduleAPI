@@ -9,6 +9,5 @@ namespace IRepositories.IRepository.Schedules
 {
     public interface IVaccineReactionRepository :IGenericRepository<VaccineReaction>
     {
-
     }
 }
