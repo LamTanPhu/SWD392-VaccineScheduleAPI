@@ -76,8 +76,54 @@ namespace Services.Services.Schedules
                 throw new Exception($"Tạo VaccineHistory thất bại: {ex.Message}");
             }
         }
+        //---------------------------------------------------------------------------------
+        public async Task<VaccineHistoryResponseDTO> GetVaccineHistoryByIdAsync(string id)
+        {
+            var history = await _unitOfWork.GetRepository<VaccineHistory>().GetByIdAsync(id);
+            if (history == null)
+                throw new Exception("Lịch sử vaccine không tồn tại.");
 
+            return MapToResponseDTO(history);
+        }
 
+        public async Task<IEnumerable<VaccineHistoryResponseDTO>> GetAllVaccineHistoriesAsync()
+        {
+            var histories = await _unitOfWork.GetRepository<VaccineHistory>().GetAllAsync();
+            return histories.Select(MapToResponseDTO);
+        }
+
+        public async Task<VaccineHistoryResponseDTO> UpdateVaccineHistoryAsync(string id, UpdateVaccineHistoryRequestDTO request)
+        {
+            var history = await _unitOfWork.GetRepository<VaccineHistory>().GetByIdAsync(id);
+            if (history == null)
+                throw new Exception("Lịch sử vaccine không tồn tại.");
+
+            history.AdministeredDate = request.AdministeredDate;
+            history.AdministeredBy = request.AdministeredBy;
+            history.DocumentationProvided = request.DocumentationProvided.ToString(); 
+            history.Notes = request.Notes;
+            history.VerifiedStatus = request.VerifiedStatus;
+            history.VaccinedStatus = request.VaccinedStatus;
+            history.DosedNumber = request.DosedNumber;
+            history.LastUpdatedTime = DateTime.Now;
+
+            _unitOfWork.GetRepository<VaccineHistory>().Update(history);
+            await _unitOfWork.SaveAsync();
+
+            return MapToResponseDTO(history);
+        }
+
+        public async Task<bool> DeleteVaccineHistoryAsync(string id)
+        {
+            var history = await _unitOfWork.GetRepository<VaccineHistory>().GetByIdAsync(id);
+            if (history == null)
+                throw new Exception("Lịch sử vaccine không tồn tại.");
+
+            _unitOfWork.GetRepository<VaccineHistory>().Delete(history);
+            await _unitOfWork.SaveAsync();
+            return true;
+        }
+        //---------------------------------------------------------------------------------
         private VaccineHistoryResponseDTO MapToResponseDTO(VaccineHistory entity)
         {
             return new VaccineHistoryResponseDTO
