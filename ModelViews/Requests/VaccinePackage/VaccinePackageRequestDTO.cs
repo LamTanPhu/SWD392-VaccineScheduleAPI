@@ -14,7 +14,7 @@ namespace ModelViews.Requests.VaccinePackage
         public string? PackageDescription { get; set; }
 
         [Required]
-        public List<string> VaccineIds { get; set; } // Danh sách VaccineId để tạo package
+        public List<string> VaccineIds { get; set; } // THE LIST OF VACCINE IDS TO CREATE THE PACKAGE
     }
 
 
