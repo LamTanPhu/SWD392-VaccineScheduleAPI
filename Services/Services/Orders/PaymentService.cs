@@ -254,6 +254,22 @@ namespace Services.Services.Orders
                 PayAmount = payment.PayAmount,
             };
         }
+        public async Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByIdAsync(string id)
+        {
+            var payment = await _paymentRepository.GetByIdAsync(id);    
+            if (payment == null) return null;
+            return new PaymentDetailsResponseDTO
+            {
+                PaymentId = payment.Id,
+                OrderId = payment.OrderId,
+                TransactionId = payment.TransactionId,
+                PaymentName = payment.PaymentName,
+                PaymentMethod = payment.PaymentMethod,
+                PaymentDate = payment.PaymentDate,
+                PaymentStatus = payment.PaymentStatus,
+                PayAmount = payment.PayAmount,
+            };
+        }
 
         public async Task<PaymentDetailsResponseDTO> PayAtFacilityAsync(PayAtFacilityRequestDTO request)
         {
@@ -312,7 +328,7 @@ namespace Services.Services.Orders
                 throw new Exception($"Thanh toán tại cơ sở thất bại: {ex.Message}");
             }
         }
-
+       
     }
 
 }

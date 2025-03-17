@@ -24,11 +24,11 @@ namespace VaccineScheduleAPI.Controllers
         [HttpGet("my-children")]
         public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetMyChildrenAsync()
         {
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
-            var profile = await _userProfileService.GetProfileByUsernameAsync(username);
+            var profile = await _userProfileService.GetProfileByEmailAsync(email);
             if (profile == null)
                 return NotFound(new { Message = "User profile not found." });
 
@@ -39,11 +39,11 @@ namespace VaccineScheduleAPI.Controllers
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] ChildrenProfileCreateUpdateDTO profileDto)
         {
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var username = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
-            var account = await _userProfileService.GetByUsernameAsync(username);
+            var account = await _userProfileService.GetByEmailAsync(username);
             if (account == null)
                 return NotFound(new { Message = "User not found." });
 
@@ -55,7 +55,7 @@ namespace VaccineScheduleAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, [FromBody] ChildrenProfileCreateUpdateDTO profileDto)
         {
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var username = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
@@ -63,7 +63,7 @@ namespace VaccineScheduleAPI.Controllers
             if (existingProfile == null)
                 return NotFound();
 
-            var account = await _userProfileService.GetByUsernameAsync(username);
+            var account = await _userProfileService.GetByEmailAsync(username);
             if (existingProfile.AccountId != account?.Id)
                 return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only update your own children's profiles." });
 
@@ -75,7 +75,7 @@ namespace VaccineScheduleAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var username = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized(new { Message = "Invalid token payload." });
 
@@ -83,7 +83,7 @@ namespace VaccineScheduleAPI.Controllers
             if (existingProfile == null)
                 return NotFound();
 
-            var account = await _userProfileService.GetByUsernameAsync(username);
+            var account = await _userProfileService.GetByEmailAsync(username);
             if (existingProfile.AccountId != account?.Id)
                 return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only delete your own children's profiles." });
 

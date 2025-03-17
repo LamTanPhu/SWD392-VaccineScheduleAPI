@@ -121,7 +121,8 @@ namespace Services.Services.Accounts
                     FullName = cp.FullName,
                     DateOfBirth = cp.DateOfBirth,
                     Gender = cp.Gender,
-                    Status = cp.Status
+                    Status = cp.Status,
+                    Address = cp.Address
                 }).ToList() : null
             };
         }
