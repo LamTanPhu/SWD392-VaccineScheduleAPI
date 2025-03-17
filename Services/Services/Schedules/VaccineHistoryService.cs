@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IServices.Interfaces.Schedules;
+using IRepositories.IRepository.Schedules;
+using Repositories.Repository.Schedules;
 
 namespace Services.Services.Schedules
 {
@@ -19,63 +21,76 @@ namespace Services.Services.Schedules
         private readonly IVaccineRepository _vaccineRepository;
         private readonly IChildrenProfileRepository _childrenProfileRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IVaccineHistoryRepository _vaccineHistoryRepository;
 
         public VaccineHistoryService(IUnitOfWork unitOfWork,
                                      IVaccineRepository vaccineRepository,
                                      IChildrenProfileRepository childrenProfileRepository,
-                                     IAccountRepository accountRepository)
+                                     IAccountRepository accountRepository,
+                                     IVaccineHistoryRepository vaccineHistoryRepository)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _vaccineRepository = vaccineRepository ?? throw new ArgumentNullException(nameof(vaccineRepository));
             _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
+            _vaccineHistoryRepository = vaccineHistoryRepository ?? throw new ArgumentNullException(nameof(vaccineHistoryRepository));
         }
 
-        public async Task<VaccineHistoryResponseDTO> CreateVaccineHistoryAsync(CreateVaccineHistoryRequestDTO request, string accountId)
+        public async Task<CreateVaccineHistoryResponseDTO> AddVaccineHistoryAsync(AddVaccineHistoryRequestDTO request)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+
+            if (string.IsNullOrEmpty(request.ProfileId))
+                throw new ArgumentException("ProfileId is required.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-
+                // Kiểm tra ProfileId có tồn tại không
                 var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
-                if (profile == null || profile.AccountId != accountId)
-                    throw new Exception("ChildrenProfile không tồn tại hoặc không thuộc tài khoản này.");
+                if (profile == null || profile.DeletedTime != null)
+                    throw new Exception("Children profile not found or has been deleted.");
 
-                var account = await _accountRepository.GetByIdAsync(accountId);
-                if (account == null || account.Role != IRepositories.Enum.RoleEnum.Parent)
-                    throw new Exception("Tài khoản không hợp lệ hoặc không phải Parent.");
-
-                // Tạo VaccineHistory
+                // Tạo mới VaccineHistory
                 var vaccineHistory = new VaccineHistory
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProfileId = request.ProfileId,
-                    AccountId = accountId,
-                    CenterId = null, // Không thuộc VaccineCenter trong hệ thống
-                    AdministeredDate = request.AdministeredDate,
-                    AdministeredBy = request.AdministeredBy,
                     DocumentationProvided = request.DocumentationProvided,
                     Notes = request.Notes,
-                    VerifiedStatus = 0, // Chưa duyệt
-                    VaccinedStatus = 1, // Đã tiêm (giả định)
-                    DosedNumber = request.DosedNumber,
-                    CreatedTime = DateTime.Now,
-                    LastUpdatedTime = DateTime.Now
+                    VerifiedStatus = request.VerifiedStatus,
+                    VaccineId = null, 
+                    AccountId = profile.AccountId, 
+                    CenterId = null, 
+                    AdministeredDate = DateTime.Now,
+                    AdministeredBy = "Unknow", 
+                    VaccinedStatus = 0, 
+                    DosedNumber = 0, 
                 };
 
-                await _unitOfWork.GetRepository<VaccineHistory>().InsertAsync(vaccineHistory);
+                await _vaccineHistoryRepository.InsertAsync(vaccineHistory);
                 await _unitOfWork.SaveAsync();
 
                 await _unitOfWork.CommitTransactionAsync();
 
-                return MapToResponseDTO(vaccineHistory);
+                // Trả về response
+                return new CreateVaccineHistoryResponseDTO
+                {
+                    Id = vaccineHistory.Id,
+                    ProfileId = vaccineHistory.ProfileId,
+                    DocumentationProvided = vaccineHistory.DocumentationProvided,
+                    Notes = vaccineHistory.Notes,
+                    VerifiedStatus = vaccineHistory.VerifiedStatus,
+                };
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception($"Tạo VaccineHistory thất bại: {ex.Message}");
+                throw new Exception($"Failed to add vaccine history: {ex.Message}");
             }
         }
+
         //---------------------------------------------------------------------------------
         public async Task<VaccineHistoryResponseDTO> GetVaccineHistoryByIdAsync(string id)
         {
