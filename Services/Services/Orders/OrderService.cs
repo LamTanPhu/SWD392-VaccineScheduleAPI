@@ -128,6 +128,63 @@ namespace Services.Services.Orders
             };
         }
 
+        public async Task<IEnumerable<OrderResponseDTO>> GetOrdersByParentIdAsync(string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+                throw new ArgumentException("Parent ID cannot be null or empty.");
+
+            // Lấy tất cả ChildrenProfiles của Parent
+            var childrenProfiles = await _childrenProfileRepository.Entities
+                .Where(cp => cp.AccountId == parentId && cp.DeletedTime == null)
+                .ToListAsync();
+
+            if (!childrenProfiles.Any())
+                return new List<OrderResponseDTO>(); // Trả về danh sách rỗng nếu không có profile nào
+
+            // Lấy tất cả Order của các ChildrenProfiles
+            var profileIds = childrenProfiles.Select(cp => cp.Id).ToList();
+            var orders = await _orderRepository.Entities
+                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                .Where(o => profileIds.Contains(o.ProfileId) && o.DeletedTime == null)
+                .ToListAsync();
+
+            // Ánh xạ sang OrderResponseDTO
+            return orders.Select(o => new OrderResponseDTO
+            {
+                OrderId = o.Id,
+                ProfileId = o.ProfileId,
+                PurchaseDate = o.PurchaseDate,
+                TotalAmount = o.TotalAmount,
+                TotalOrderPrice = o.TotalOrderPrice,
+                Status = o.Status,
+                VaccineDetails = o.OrderVaccineDetails
+                    .Where(vd => vd.DeletedTime == null)
+                    .Select(vd => new OrderVaccineDetailResponseDTO
+                    {
+                        OrderVaccineId = vd.Id,
+                        VaccineId = vd.VaccineId,
+                        VaccineName = vd.Vaccine?.Name,
+                        Quantity = vd.Quantity,
+                        TotalPrice = vd.TotalPrice,
+                        Image = vd.Vaccine?.Image
+                    }).ToList(),
+                PackageDetails = o.OrderPackageDetails
+                    .Where(pd => pd.DeletedTime == null)
+                    .Select(pd => new OrderPackageDetailResponseDTO
+                    {
+                        OrderPackageId = pd.Id,
+                        VaccinePackageId = pd.VaccinePackageId,
+                        VaccinePackageName = pd.VaccinePackage?.PackageName,
+                        Description = pd.VaccinePackage?.PackageDescription,
+                        Quantity = pd.Quantity,
+                        TotalPrice = pd.TotalPrice
+                    }).ToList()
+            }).ToList();
+        }
+
+
+
         public async Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();

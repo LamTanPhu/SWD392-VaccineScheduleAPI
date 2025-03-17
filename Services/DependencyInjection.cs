@@ -37,6 +37,7 @@ namespace Services
             services.AddScoped<IVaccineScheduleRepository, VaccineScheduleRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IVaccineReactionRepository, VaccineReactionRepository>();
+            services.AddScoped<IVaccineHistoryRepository, VaccineHistoryRepository>();
 
         }
     }

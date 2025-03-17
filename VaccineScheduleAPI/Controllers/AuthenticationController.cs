@@ -68,5 +68,7 @@ namespace VaccineScheduleAPI.Controllers
             var response = await _authService.ResetPasswordAsync(request);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+
     }
 }
