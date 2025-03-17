@@ -18,17 +18,17 @@ namespace VaccineScheduleAPI.Controllers
             _vaccineHistoryService = vaccineHistoryService ?? throw new ArgumentNullException(nameof(vaccineHistoryService));
         }
 
-        //[Authorize(Roles = "Parent, Admin")]
-        [HttpPost("create")]
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> CreateVaccineHistory([FromBody] CreateVaccineHistoryRequestDTO request)
+        [HttpPost("send-document")]
+        [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Staff và Admin
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineDocument([FromBody] AddVaccineHistoryRequestDTO request)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
+            var response = await _vaccineHistoryService.AddVaccineHistoryAsync(request);
+            return Ok(response);
 
-            var accountId = User.FindFirst("Id")?.Value; // Lấy AccountId từ JWT
-            var response = await _vaccineHistoryService.CreateVaccineHistoryAsync(request, accountId);
-            return CreatedAtAction(nameof(CreateVaccineHistory), new { id = response.Id }, response);
         }
+
         //--------------------------------------------------------------------------------------
 
         //[Authorize(Roles = "Parent, Admin")]

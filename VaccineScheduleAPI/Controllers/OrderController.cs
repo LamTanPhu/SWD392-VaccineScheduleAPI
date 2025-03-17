@@ -36,6 +36,31 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(order);
         }
 
+        [HttpGet("by-parent/{parentId}")]
+        [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Parent và Admin
+        public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetOrdersByParentId(string parentId)
+        {
+            try
+            {
+                // Kiểm tra quyền: Parent chỉ xem được đơn hàng của chính mình
+                var currentUserId = User.FindFirst("Id")?.Value;
+                var userRole = User.FindFirst("Role")?.Value;
+                if (userRole == "Parent" && currentUserId != parentId)
+                    return Forbid("You can only view orders of your own children.");
+
+                var orders = await _orderService.GetOrdersByParentIdAsync(parentId);
+                return Ok(orders);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
         [Authorize(Roles = "Admin, Parent")]
         [HttpPost]
         public async Task<ActionResult<OrderResponseDTO>> CreateOrder([FromBody] OrderRequestDTO orderDto)
