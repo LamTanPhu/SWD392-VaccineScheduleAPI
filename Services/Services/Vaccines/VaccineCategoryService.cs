@@ -108,13 +108,24 @@ namespace Services.Services.Vaccines
 
         public async Task AddCategoryAsync(VaccineCategoryRequestDTO categoryDto)
         {
+            // Validate ParentCategoryId if provided
+            if (!string.IsNullOrEmpty(categoryDto.ParentCategoryId))
+            {
+                var parentCategory = await _categoryRepository.GetByIdAsync(categoryDto.ParentCategoryId);
+                if (parentCategory == null || parentCategory.DeletedTime != null)
+                {
+                    throw new Exception($"Parent category with ID {categoryDto.ParentCategoryId} does not exist or has been deleted.");
+                }
+            }
+
             var category = new VaccineCategory
             {
                 CategoryName = categoryDto.CategoryName,
                 Description = categoryDto.Description,
                 Status = categoryDto.Status,
-                ParentCategoryId = categoryDto.ParentCategoryId
+                ParentCategoryId = string.IsNullOrEmpty(categoryDto.ParentCategoryId) ? null : categoryDto.ParentCategoryId
             };
+
             await _categoryRepository.InsertAsync(category);
             await _unitOfWork.SaveAsync();
         }
@@ -122,19 +133,43 @@ namespace Services.Services.Vaccines
         public async Task UpdateCategoryAsync(string id, VaccineCategoryRequestDTO categoryDto)
         {
             var existingCategory = await _categoryRepository.GetByIdAsync(id);
-            if (existingCategory == null)
-                throw new Exception("Vaccine category not found.");
+            if (existingCategory == null || existingCategory.DeletedTime != null)
+            {
+                throw new Exception("Vaccine category not found or has been deleted.");
+            }
+
+            // Validate ParentCategoryId if provided
+            if (!string.IsNullOrEmpty(categoryDto.ParentCategoryId))
+            {
+                var parentCategory = await _categoryRepository.GetByIdAsync(categoryDto.ParentCategoryId);
+                if (parentCategory == null || parentCategory.DeletedTime != null)
+                {
+                    throw new Exception($"Parent category with ID {categoryDto.ParentCategoryId} does not exist or has been deleted.");
+                }
+                // Prevent self-referencing
+                if (categoryDto.ParentCategoryId == id)
+                {
+                    throw new Exception("A category cannot be its own parent.");
+                }
+            }
 
             existingCategory.CategoryName = categoryDto.CategoryName;
             existingCategory.Description = categoryDto.Description;
             existingCategory.Status = categoryDto.Status;
-            existingCategory.ParentCategoryId = categoryDto.ParentCategoryId;
+            existingCategory.ParentCategoryId = string.IsNullOrEmpty(categoryDto.ParentCategoryId) ? null : categoryDto.ParentCategoryId;
+
             await _categoryRepository.UpdateAsync(existingCategory);
             await _unitOfWork.SaveAsync();
         }
 
         public async Task DeleteCategoryAsync(string id)
         {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null || category.DeletedTime != null)
+            {
+                throw new Exception("Vaccine category not found or has been deleted.");
+            }
+
             await _categoryRepository.DeleteAsync(id);
             await _unitOfWork.SaveAsync();
         }
