@@ -173,12 +173,7 @@ namespace Services.Services.Accounts
             if (account == null || account.DeletedTime != null)
                 return new ForgotPasswordResponseDTO { Success = false, Message = "Email not found or account deleted." };
 
-            var claims = new[]
-            {
-                new Claim("AccountId", account.Id),
-                new Claim("exp", DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds().ToString())
-            };
-            var resetToken = _jwtService.GenerateShortLivedJwtToken(claims);
+            var resetToken = _jwtService.GenerateShortLivedJwtToken(account); // Truyền Account thay vì Claim[]
 
             await SendResetEmail(account.Email, resetToken);
 
@@ -196,7 +191,7 @@ namespace Services.Services.Accounts
                 if (principal == null || _jwtService.IsTokenExpired(request.Token))
                     return new VerifyResetResponseDTO { Success = false, Message = "Invalid or expired token." };
 
-                var accountId = principal.FindFirst("AccountId")?.Value;
+                var accountId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value; 
                 if (string.IsNullOrEmpty(accountId))
                     return new VerifyResetResponseDTO { Success = false, Message = "Invalid token: AccountId not found." };
 
@@ -219,14 +214,10 @@ namespace Services.Services.Accounts
 
         private async Task SendResetEmail(string email, string token)
         {
-            Console.WriteLine($"SMTP Host: {_smtpSettings.Host}");
-            Console.WriteLine($"SMTP Port: {_smtpSettings.Port}");
-            Console.WriteLine($"SMTP Username: {_smtpSettings.Username}");
-            Console.WriteLine($"SMTP Password: {_smtpSettings.Password}");
             if (string.IsNullOrEmpty(_smtpSettings.Host) || string.IsNullOrEmpty(_smtpSettings.Username) || string.IsNullOrEmpty(_smtpSettings.Password))
                 throw new InvalidOperationException("SMTP settings are not properly configured.");
 
-            var verifyLink = $"https://your-app.com/verify-reset?token={token}";
+            var verifyLink = $"http://localhost:5184/api/Authentication/verify-reset?token={token}";
             var smtpClient = new SmtpClient(_smtpSettings.Host)
             {
                 Port = _smtpSettings.Port,

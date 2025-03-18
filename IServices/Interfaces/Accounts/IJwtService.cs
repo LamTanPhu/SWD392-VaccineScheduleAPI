@@ -17,7 +17,7 @@ namespace IServices.Interfaces.Accounts
         IEnumerable<Claim> ExtractAllClaims(string token);
 
         /////
-        string GenerateShortLivedJwtToken(Claim[] claims);
+        string GenerateShortLivedJwtToken(Account account);
         ClaimsPrincipal ValidateJwtToken(string token);
     }
 }

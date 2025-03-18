@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using IRepositories.IRepository;
 using IServices.Interfaces.Accounts;
 using IRepositories.Entity.Accounts;
+using System.Security.Principal;
 
 namespace Services.Services.Accounts
 {
@@ -120,17 +121,27 @@ namespace Services.Services.Accounts
         }
 
 
-        public string GenerateShortLivedJwtToken(Claim[] claims)
+        public string GenerateShortLivedJwtToken(Account account)
         {
-            var key = new SymmetricSecurityKey(_key); // Tái sử dụng _key cũ
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, account.Username ?? "reset-user"), // Thêm Name
+                new Claim(ClaimTypes.Role, account.Role.ToString()),         // Thêm Role
+                new Claim(ClaimTypes.Email, account.Email),                  // Thêm Email
+                new Claim(ClaimTypes.NameIdentifier, account.Id)             // Thêm NameIdentifier (AccountId)
+            };
+
+            var key = new SymmetricSecurityKey(_key);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddMinutes(5),
                 signingCredentials: creds);
-            return _tokenHandler.WriteToken(token);
+            var tokenString = _tokenHandler.WriteToken(token);
+            Console.WriteLine($"Generated Short-Lived Token: '{tokenString}'"); // Log để kiểm tra
+            return tokenString;
         }
 
         public ClaimsPrincipal ValidateJwtToken(string token)
