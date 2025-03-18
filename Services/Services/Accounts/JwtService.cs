@@ -10,15 +10,17 @@ using Microsoft.IdentityModel.Tokens;
 using IRepositories.IRepository;
 using IServices.Interfaces.Accounts;
 using IRepositories.Entity.Accounts;
+using System.Security.Principal;
 
 namespace Services.Services.Accounts
 {
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-        //Forgot Password
-        private readonly byte[] _key;
+        //
         private readonly JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
+        private readonly byte[] _key;
+
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -122,12 +124,12 @@ namespace Services.Services.Accounts
         public string GenerateShortLivedJwtToken(Account account)
         {
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, account.Username ?? "reset-user"), // Thêm Name
-        new Claim(ClaimTypes.Role, account.Role.ToString()),         // Thêm Role
-        new Claim(ClaimTypes.Email, account.Email),                  // Thêm Email
-        new Claim(ClaimTypes.NameIdentifier, account.Id)             // Thêm NameIdentifier (AccountId)
-    };
+            {
+                new Claim(ClaimTypes.Name, account.Username ?? "reset-user"), // Thêm Name
+                new Claim(ClaimTypes.Role, account.Role.ToString()),         // Thêm Role
+                new Claim(ClaimTypes.Email, account.Email),                  // Thêm Email
+                new Claim(ClaimTypes.NameIdentifier, account.Id)             // Thêm NameIdentifier (AccountId)
+            };
 
             var key = new SymmetricSecurityKey(_key);
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -165,8 +167,6 @@ namespace Services.Services.Accounts
                 return null;
             }
         }
-
-
 
     }
 }
