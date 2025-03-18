@@ -103,12 +103,6 @@ namespace Services.Services.Orders
 
                 if (response.IsSuccess)
                 {
-                    var order = await _orderRepository.GetByIdAsync(response.OrderId);
-                    if (order != null)
-                        throw new Exception("Order not found");
-                    //Chuyển Order Status -> Complated vì thanh toán thành công nhá
-                    order.Status = "Paid";
-                    await _orderRepository.UpdateAsync(order);
                    
                     var payment = new Payment
                     {
