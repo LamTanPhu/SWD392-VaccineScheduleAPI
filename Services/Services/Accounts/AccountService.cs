@@ -1,6 +1,7 @@
 ﻿using BCrypt.Net;
 using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
+using IRepositories.IRepository;
 using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
 using ModelViews.Requests.Auth;
@@ -16,12 +17,14 @@ namespace Services.Services.Accounts
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
         private readonly IFirebaseAuthService _firebaseAuthService; // New dependency for Firebase token validation
+        
 
-        public AccountService(IAccountRepository accountRepository, IJwtService jwtService, IFirebaseAuthService firebaseAuthService)
+        public AccountService(IAccountRepository accountRepository, IJwtService jwtService, IFirebaseAuthService firebaseAuthService, IUnitOfWork unitOfWork)
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _firebaseAuthService = firebaseAuthService ?? throw new ArgumentNullException(nameof(firebaseAuthService));
+            
 
         }
 
@@ -168,5 +171,6 @@ namespace Services.Services.Accounts
             return await _accountRepository.GetByUsernameOrEmailAsync(usernameOrEmail);
         }
 
+  
     }
 }

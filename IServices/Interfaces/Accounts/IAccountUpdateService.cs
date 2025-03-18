@@ -10,6 +10,6 @@ namespace IServices.Interfaces.Accounts
 {
     public interface IAccountUpdateService
     {
-        Task<ProfileResponseDTO> UpdateAccountAsync(string username, UpdateAccountRequestDTO request);
+        Task<ProfileResponseDTO> UpdateAccountAsync(string userName, UpdateAccountRequestDTO request);
     }
 }

@@ -13,8 +13,12 @@ namespace IServices.Interfaces.Accounts
         Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesAsync();
         Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesByAccountIdAsync(string accountId);
         Task<ChildrenProfileResponseDTO?> GetProfileByIdAsync(string id);
-        Task AddProfileAsync(ChildrenProfileRequestDTO profileDto);
-        Task UpdateProfileAsync(string id, ChildrenProfileRequestDTO profileDto);
+        //Task AddProfileAsync(ChildrenProfileRequestDTO profileDto);
+        //Task<ChildrenProfileResponseDTO> AddProfileAsync(ChildrenProfileRequestDTO profileDto);
+        //Task UpdateProfileAsync(string id, ChildrenProfileRequestDTO profileDto);
+        Task UpdateProfileAsync(string id, ChildrenProfileCreateUpdateDTO profileDto);
+        Task<ChildrenProfileResponseDTO> AddProfileAsync(string accountId, ChildrenProfileCreateUpdateDTO profileDto);
+
         Task DeleteProfileAsync(string id);
     }
 }

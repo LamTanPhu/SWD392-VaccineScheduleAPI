@@ -18,5 +18,7 @@ namespace IServices.Interfaces.Accounts
         Task<Account?> GetUserByEmailAsync(string email); 
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail);
+
+        
     }
 }
