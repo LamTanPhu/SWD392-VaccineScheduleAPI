@@ -1,5 +1,7 @@
 ﻿using ModelViews.Requests.Auth;
+using ModelViews.Requests.Forgot_Password;
 using ModelViews.Responses.Auth;
+using ModelViews.Responses.Forgot_Password;
 using System.Threading.Tasks;
 
 namespace IServices.Interfaces.Accounts
@@ -10,5 +12,8 @@ namespace IServices.Interfaces.Accounts
         Task<LoginResponseDTO> LoginWithGoogleAsync(string idToken);
 
         Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request);
+
+        Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request);
+        Task<VerifyResetResponseDTO> VerifyResetAsync(VerifyResetRequestDTO request);
     }
 }

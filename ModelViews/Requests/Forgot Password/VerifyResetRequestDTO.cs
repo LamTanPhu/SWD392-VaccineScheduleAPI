@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModelViews.Requests.Auth
+namespace ModelViews.Requests.Forgot_Password
 {
     public class VerifyResetRequestDTO
     {
