@@ -20,7 +20,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpPost("order")]
         public async Task<ActionResult<List<ScheduleResponseDTO>>> CreateOrderSchedules([FromBody] ScheduleRequestDTO request)
         {
@@ -29,7 +29,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpPost]
         public async Task<ActionResult<ScheduleResponseDTO>> CreateSchedule([FromBody] CreateScheduleRequestDTO request)
         {
@@ -38,7 +38,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpGet]
         public async Task<ActionResult<List<ScheduleResponseDTO>>> GetAllSchedules()
         {
@@ -47,7 +47,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ScheduleResponseDTO>> GetScheduleById(string id)
         {
@@ -56,7 +56,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
 
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpPut]
         public async Task<IActionResult> UpdateSchedule(string scheduleId, [FromBody] UpdateScheduleRequestDTO request)
         {
@@ -65,7 +65,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
     
-        [Authorize(Roles = "Admin, Staff")]
+        [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSchedule(string id)
         {

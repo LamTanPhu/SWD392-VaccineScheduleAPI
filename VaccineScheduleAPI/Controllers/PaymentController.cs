@@ -21,7 +21,7 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        private readonly DatabaseContext _context; //Why did this belongs here? how?
+        private readonly DatabaseContext _context; //Why did this belongs here? how? who did this?
         private readonly IPaymentService _paymentService;
 
         public PaymentController(IPaymentService paymentService)
