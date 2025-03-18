@@ -101,45 +101,55 @@ namespace Services.Services.Orders
                     IsSuccess = isValid && vnpParams["vnp_ResponseCode"] == "00"
                 };
 
-                if (response.IsSuccess)
+                var payment = new Payment
                 {
-                   
-                    var payment = new Payment
-                    {
-                        Id = Guid.NewGuid().ToString(), 
-                        OrderId = response.OrderId,
-                        TransactionId = response.TransactionId,
-                        PaymentName = "VNPay",
-                        PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
-                        PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
-                        PaymentStatus = "Success",
-                        PayAmount = response.Amount,
-                        CreatedTime = DateTime.Now,
-                        LastUpdatedTime = DateTime.Now
-                    };
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = response.OrderId,
+                    TransactionId = response.TransactionId,
+                    PaymentName = "VNPay",
+                    PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
+                    PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
+                    PayAmount = response.Amount,
+                    CreatedTime = DateTime.Now,
+                    LastUpdatedTime = DateTime.Now
+                };
 
-                    // Lưu vào DB
-                    await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
-                    await _unitOfWork.SaveAsync();
+                if (response.IsSuccess)
+                {                   
+                    //var payment = new Payment
+                    //{
+                    //    Id = Guid.NewGuid().ToString(), 
+                    //    OrderId = response.OrderId,
+                    //    TransactionId = response.TransactionId,
+                    //    PaymentName = "VNPay",
+                    //    PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
+                    //    PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
+                    //    PaymentStatus = "Success",
+                    //    PayAmount = response.Amount,
+                    //    CreatedTime = DateTime.Now,
+                    //    LastUpdatedTime = DateTime.Now
+                    //};
+                    payment.PaymentStatus = "Success";
+
+                    // Cập nhật trạng thái Order thành "Paid"
+                    var order = await _orderRepository.GetByIdAsync(response.OrderId);
+                    if (order == null)
+                        throw new Exception($"Order with ID {response.OrderId} not found.");
+
+                    if (order.Status != "Pending" && order.Status != "PayLater")
+                        throw new Exception($"Order {response.OrderId} is already in {order.Status} status and cannot be updated to Paid.");
+
+                    order.Status = "Paid";
+                    order.LastUpdatedTime = DateTime.Now;
+                    await _orderRepository.UpdateAsync(order);
                 }
                 else
                 {
-                    var payment = new Payment
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        OrderId = response.OrderId,
-                        TransactionId = response.TransactionId,
-                        PaymentName = "VNPay",
-                        PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
-                        PaymentDate = DateTime.Now, // Nếu thất bại, không có vnp_PayDate chính xác
-                        PaymentStatus = "Failed",
-                        PayAmount = response.Amount,
-                        CreatedTime = DateTime.Now,
-                        LastUpdatedTime = DateTime.Now
-                    };
-                    await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
-                    await _unitOfWork.SaveAsync();
+                    payment.PaymentStatus = "Failed";
                 }
+
+                await _unitOfWork.GetRepository<Payment>().InsertAsync(payment);
+                await _unitOfWork.SaveAsync();
 
                 await _unitOfWork.CommitTransactionAsync();
                 return response;
