@@ -114,5 +114,56 @@ namespace Services.Services.Accounts
                 return Enumerable.Empty<Claim>();
             }
         }
+
+
+        public string GenerateShortLivedJwtToken(Account account)
+        {
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, account.Username ?? "reset-user"), // Thêm Name
+        new Claim(ClaimTypes.Role, account.Role.ToString()),         // Thêm Role
+        new Claim(ClaimTypes.Email, account.Email),                  // Thêm Email
+        new Claim(ClaimTypes.NameIdentifier, account.Id)             // Thêm NameIdentifier (AccountId)
+    };
+
+            var key = new SymmetricSecurityKey(_key);
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(5),
+                signingCredentials: creds);
+            var tokenString = _tokenHandler.WriteToken(token);
+            Console.WriteLine($"Generated Short-Lived Token: '{tokenString}'"); // Log để kiểm tra
+            return tokenString;
+        }
+
+        public ClaimsPrincipal ValidateJwtToken(string token)
+        {
+            try
+            {
+                var principal = _tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(_key),
+                    ClockSkew = TimeSpan.Zero
+                }, out _);
+                return principal;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ValidateJwtToken failed: {ex.Message}");
+                return null;
+            }
+        }
+
+
+
     }
 }
