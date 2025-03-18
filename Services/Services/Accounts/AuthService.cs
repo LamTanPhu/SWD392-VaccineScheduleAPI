@@ -19,6 +19,7 @@ namespace Services.Services.Accounts
         private readonly IFirebaseAuthService _firebaseAuthService;
         private readonly IUnitOfWork _unitOfWork;
 
+
         public AuthService(
             IAccountRepository accountRepository,
             IJwtService jwtService,
@@ -153,6 +154,10 @@ namespace Services.Services.Accounts
                 };
             }
         }
+
+
+
+
 
     }
 }
