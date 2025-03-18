@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ModelViews.Config;
+using Services.Services.Accounts;
 
 var builder = WebApplication.CreateBuilder(args);
 
