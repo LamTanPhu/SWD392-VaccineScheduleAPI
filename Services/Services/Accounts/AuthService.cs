@@ -14,7 +14,7 @@ using System;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using VaccineScheduleAPI;
+
 
 namespace Services.Services.Accounts
 {
