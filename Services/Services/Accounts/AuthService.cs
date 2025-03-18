@@ -8,9 +8,11 @@ using IServices.Interfaces.Accounts;
 using ModelViews.Requests.Auth;
 using ModelViews.Requests.Forgot_Password;
 using ModelViews.Responses.Auth;
+using ModelViews.Responses.Forgot_Password;
 using Repositories.Repository;
 using System;
 using System.Net.Mail;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 
@@ -22,7 +24,7 @@ namespace Services.Services.Accounts
         private readonly IJwtService _jwtService;
         private readonly IFirebaseAuthService _firebaseAuthService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly SmtpSettings smtpSettings;
+        private readonly SmtpSettings _smtpSettings;
 
         public AuthService(
             IAccountRepository accountRepository,
@@ -35,7 +37,7 @@ namespace Services.Services.Accounts
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _firebaseAuthService = firebaseAuthService ?? throw new ArgumentNullException(nameof(firebaseAuthService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
+            _smtpSettings = _smtpSettings ?? throw new ArgumentNullException(nameof(_smtpSettings));
         }
 
         public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
@@ -203,7 +205,37 @@ namespace Services.Services.Accounts
             return new ForgotPasswordResponseDTO { Success = true, Message = "Reset password link sent to your email." };
         }
 
+        public async Task<VerifyResetResponseDTO> VerifyResetAsync(VerifyResetRequestDTO request)
+        {
+            if (string.IsNullOrEmpty(request.Token))
+                return new VerifyResetResponseDTO { Success = false, Message = "Token is required." };
 
+            try
+            {
+                var principal = _jwtService.ValidateJwtToken(request.Token);
+                if (principal == null || _jwtService.IsTokenExpired(request.Token))
+                    return new VerifyResetResponseDTO { Success = false, Message = "Invalid or expired token." };
+
+                var accountId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(accountId))
+                    return new VerifyResetResponseDTO { Success = false, Message = "Invalid token: AccountId not found." };
+
+                var account = await _accountRepository.GetByIdAsync(accountId);
+                if (account == null || account.DeletedTime != null)
+                    return new VerifyResetResponseDTO { Success = false, Message = "Account not found or deleted." };
+
+                return new VerifyResetResponseDTO
+                {
+                    Success = true,
+                    Message = "Verification successful. Proceed to reset password.",
+                    AccountId = accountId
+                };
+            }
+            catch (Exception ex)
+            {
+                return new VerifyResetResponseDTO { Success = false, Message = $"Token validation failed: {ex.Message}" };
+            }
+        }
 
 
     }

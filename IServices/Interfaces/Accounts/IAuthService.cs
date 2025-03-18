@@ -12,8 +12,9 @@ namespace IServices.Interfaces.Accounts
         Task<LoginResponseDTO> LoginWithGoogleAsync(string idToken);
 
         Task<ResetPasswordResponseDTO> ResetPasswordAsync(ResetPasswordRequestDTO request);
-
         Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request);
         Task<VerifyResetResponseDTO> VerifyResetAsync(VerifyResetRequestDTO request);
+
+
     }
 }
