@@ -16,10 +16,14 @@ namespace Services.Services.Accounts
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
+        //
+        private readonly JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
+        private readonly byte[] _key;
 
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-secret-key-with-at-least-16-chars");
         }
 
         public string GenerateJwtToken(Account account)
@@ -114,5 +118,44 @@ namespace Services.Services.Accounts
                 return Enumerable.Empty<Claim>();
             }
         }
+
+
+        public string GenerateShortLivedJwtToken(Claim[] claims)
+        {
+            var key = new SymmetricSecurityKey(_key); // Tái sử dụng _key cũ
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(15),
+                signingCredentials: creds);
+            return _tokenHandler.WriteToken(token);
+        }
+
+        public ClaimsPrincipal ValidateJwtToken(string token)
+        {
+            try
+            {
+                var principal = _tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(_key),
+                    ClockSkew = TimeSpan.Zero
+                }, out _);
+                return principal;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ValidateJwtToken failed: {ex.Message}");
+                return null;
+            }
+        }
+
     }
 }

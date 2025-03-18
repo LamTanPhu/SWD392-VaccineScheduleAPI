@@ -15,5 +15,9 @@ namespace IServices.Interfaces.Accounts
         bool IsTokenExpired(string token);
         DateTime ExtractExpiration(string token);
         IEnumerable<Claim> ExtractAllClaims(string token);
+
+        /////
+        string GenerateShortLivedJwtToken(Claim[] claims);
+        ClaimsPrincipal ValidateJwtToken(string token);
     }
 }

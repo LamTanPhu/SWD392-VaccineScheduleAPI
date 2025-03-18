@@ -4,6 +4,8 @@ using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using IServices.Interfaces.Accounts;
 using Microsoft.AspNetCore.Authorization;
+using ModelViews.Requests.Forgot_Password;
+using ModelViews.Responses.Forgot_Password;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -58,8 +60,26 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<ForgotPasswordResponseDTO>> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
+
+            var response = await _authService.ForgotPasswordAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpGet("verify-reset")]
+        public async Task<ActionResult<VerifyResetResponseDTO>> VerifyReset([FromQuery] string token)
+        {
+            var request = new VerifyResetRequestDTO { Token = token };
+            var response = await _authService.VerifyResetAsync(request);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
         [HttpPost("reset-password")]
-        [Authorize(Roles = "Admin")] // Giới hạn quyền, chỉ Admin được reset
+        [Authorize(Roles = "Admin")] 
         public async Task<ActionResult<ResetPasswordResponseDTO>> ResetPasswordAsync([FromBody] ResetPasswordRequestDTO request)
         {
             if (!ModelState.IsValid)
