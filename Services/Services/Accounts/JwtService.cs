@@ -16,7 +16,9 @@ namespace Services.Services.Accounts
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
+        //Forgot Password
         private readonly byte[] _key;
+        private readonly JwtSecurityTokenHandler _tokenHandler = new JwtSecurityTokenHandler();
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));

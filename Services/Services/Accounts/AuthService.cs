@@ -1,14 +1,18 @@
 ﻿using BCrypt.Net;
+using Core.Utils;
 using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
 using IRepositories.IRepository;
 using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
 using ModelViews.Requests.Auth;
+using ModelViews.Requests.Forgot_Password;
 using ModelViews.Responses.Auth;
 using Repositories.Repository;
 using System;
+using System.Net.Mail;
 using System.Threading.Tasks;
+
 
 namespace Services.Services.Accounts
 {
@@ -18,18 +22,20 @@ namespace Services.Services.Accounts
         private readonly IJwtService _jwtService;
         private readonly IFirebaseAuthService _firebaseAuthService;
         private readonly IUnitOfWork _unitOfWork;
-
+        private readonly SmtpSettings smtpSettings;
 
         public AuthService(
             IAccountRepository accountRepository,
             IJwtService jwtService,
             IFirebaseAuthService firebaseAuthService,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            EmailSettings emailSettings)
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _firebaseAuthService = firebaseAuthService ?? throw new ArgumentNullException(nameof(firebaseAuthService));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
         }
 
         public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
@@ -155,6 +161,47 @@ namespace Services.Services.Accounts
             }
         }
 
+        private async Task SendResetEmail(string email, string token)
+        {
+            if (string.IsNullOrEmpty(_smtpSettings.Host) || string.IsNullOrEmpty(_smtpSettings.Username) || string.IsNullOrEmpty(_smtpSettings.Password))
+                throw new InvalidOperationException("SMTP settings are not properly configured.");
+
+            var verifyLink = $"http://localhost:5184/api/Authentication/verify-reset?token={token}";
+            var smtpClient = new SmtpClient(_smtpSettings.Host)
+            {
+                Port = _smtpSettings.Port,
+                Credentials = new System.Net.NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
+                EnableSsl = true,
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpSettings.Username),
+                Subject = "Reset Your Password",
+                Body = $"Click the link to verify and reset your password: <a href='{verifyLink}'>{verifyLink}</a>",
+                IsBodyHtml = true,
+            };
+            mailMessage.To.Add(email);
+
+            await smtpClient.SendMailAsync(mailMessage);
+        }
+
+
+        public async Task<ForgotPasswordResponseDTO> ForgotPasswordAsync(ForgotPasswordRequestDTO request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+                return new ForgotPasswordResponseDTO { Success = false, Message = "Email is required." };
+
+            var account = await _accountRepository.GetByEmailAsync(request.Email);
+            if (account == null || account.DeletedTime != null)
+                return new ForgotPasswordResponseDTO { Success = false, Message = "Email not found or account deleted." };
+
+            var resetToken = _jwtService.GenerateShortLivedJwtToken(account); // Truyền Account thay vì Claim[]
+
+            await SendResetEmail(account.Email, resetToken);
+
+            return new ForgotPasswordResponseDTO { Success = true, Message = "Reset password link sent to your email." };
+        }
 
 
 
