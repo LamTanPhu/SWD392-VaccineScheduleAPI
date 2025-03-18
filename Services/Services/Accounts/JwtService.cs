@@ -16,10 +16,11 @@ namespace Services.Services.Accounts
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-
+        private readonly byte[] _key;
         public JwtService(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-secret-key-with-at-least-16-chars");
         }
 
         public string GenerateJwtToken(Account account)
