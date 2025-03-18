@@ -115,7 +115,20 @@ namespace Services.Services.Orders
                 };
 
                 if (response.IsSuccess)
-                {
+                {                   
+                    //var payment = new Payment
+                    //{
+                    //    Id = Guid.NewGuid().ToString(), 
+                    //    OrderId = response.OrderId,
+                    //    TransactionId = response.TransactionId,
+                    //    PaymentName = "VNPay",
+                    //    PaymentMethod = vnpParams.ContainsKey("vnp_CardType") ? vnpParams["vnp_CardType"] : "VNPay",
+                    //    PaymentDate = DateTime.ParseExact(vnpParams["vnp_PayDate"], "yyyyMMddHHmmss", null),
+                    //    PaymentStatus = "Success",
+                    //    PayAmount = response.Amount,
+                    //    CreatedTime = DateTime.Now,
+                    //    LastUpdatedTime = DateTime.Now
+                    //};
                     payment.PaymentStatus = "Success";
 
                     // Cập nhật trạng thái Order thành "Paid"
