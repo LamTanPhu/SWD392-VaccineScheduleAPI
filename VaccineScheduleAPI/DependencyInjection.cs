@@ -54,7 +54,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IVaccineReactionService, VaccineReactionService>();
             services.AddScoped<IVaccineHistoryService, VaccineHistoryService>();
 
-
+            services.AddHttpContextAccessor();
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
