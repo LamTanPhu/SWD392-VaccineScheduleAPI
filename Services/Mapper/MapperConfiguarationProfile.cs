@@ -5,11 +5,13 @@ using IRepositories.Entity.Vaccines;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Requests.Vaccine;
+using ModelViews.Requests.VaccineBatch;
 using ModelViews.Requests.VaccineCategory;
 using ModelViews.Responses.Auth;
 using ModelViews.Responses.ChildrenProfile;
 using ModelViews.Responses.Manufacturer;
 using ModelViews.Responses.Vaccine;
+using ModelViews.Responses.VaccineBatch;
 using ModelViews.Responses.VaccineCategory;
 using System;
 using System.Collections.Generic;
@@ -43,7 +45,11 @@ namespace IServices.Mapper
                             .ForMember(dest => dest.Status, opt => opt.Ignore());
             CreateMap<ChildrenProfile, ChildrenProfileResponseDTO>();
 
-
+            // VaccineBatch
+            CreateMap<AddVaccineBatchRequestDTO, VaccineBatch>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore());
+            CreateMap<VaccineBatch, VaccineBatchResponseDTO>();
 
         }
     }
