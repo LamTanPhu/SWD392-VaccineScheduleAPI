@@ -7,12 +7,14 @@ using ModelViews.Requests.Manufacturer;
 using ModelViews.Requests.Vaccine;
 using ModelViews.Requests.VaccineBatch;
 using ModelViews.Requests.VaccineCategory;
+using ModelViews.Requests.VaccineCenter;
 using ModelViews.Responses.Auth;
 using ModelViews.Responses.ChildrenProfile;
 using ModelViews.Responses.Manufacturer;
 using ModelViews.Responses.Vaccine;
 using ModelViews.Responses.VaccineBatch;
 using ModelViews.Responses.VaccineCategory;
+using ModelViews.Responses.VaccineCenter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +50,12 @@ namespace IServices.Mapper
             CreateMap<AddVaccineBatchRequestDTO, VaccineBatch>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
             CreateMap<VaccineBatch, VaccineBatchResponseDTO>();
+
+            // VaccineCenter
+            CreateMap<VaccineCenterRequestDTO, VaccineCenter>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+            CreateMap<VaccineCenterUpdateDTO, VaccineCenter>();
+            CreateMap<VaccineCenter, VaccineCenterResponseDTO>();
 
         }
     }

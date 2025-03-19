@@ -32,13 +32,13 @@ namespace Services.Services.Inventory
         {
             var batches = await _vaccineBatchRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(
-                batches.Where(b => b.ActiveStatus == "1"));
+                batches.Where(b => b.ActiveStatus != "0"));
         }
 
         public async Task<VaccineBatchResponseDTO?> GetByBatchNumberAsync(string batchNumber)
         {
             var batch = await _vaccineBatchRepository.GetByBatchNumberAsync(batchNumber);
-            if (batch == null || batch.ActiveStatus != "1")
+            if (batch == null || batch.ActiveStatus != "0")
                 return null;
             return _mapper.Map<VaccineBatchResponseDTO>(batch);
         }
@@ -48,7 +48,7 @@ namespace Services.Services.Inventory
             var batches = await _vaccineBatchRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(
                 batches.Where(b => b.BatchNumber.Contains(name, StringComparison.OrdinalIgnoreCase)
-                    && b.ActiveStatus == "1"));
+                    && b.ActiveStatus != "0"));
         }
 
         public async Task<VaccineBatchResponseDTO> CreateAsync(AddVaccineBatchRequestDTO request)
@@ -78,7 +78,7 @@ namespace Services.Services.Inventory
             try
             {
                 var batch = await _vaccineBatchRepository.GetByIdAsync(id);
-                if (batch == null || batch.ActiveStatus != "1")
+                if (batch == null || batch.ActiveStatus == "0")
                     throw new Exception("Vaccine batch not found or is inactive.");
 
                 batch.ActiveStatus = "0";

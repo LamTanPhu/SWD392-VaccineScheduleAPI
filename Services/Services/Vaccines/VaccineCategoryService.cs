@@ -31,13 +31,13 @@ namespace Services.Services.Vaccines
         {
             var categories = await _categoryRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<VaccineCategoryResponseDTO>>(
-                categories.Where(c => c.Status == "1"));
+                categories.Where(c => c.Status != "0"));
         }
 
         public async Task<VaccineCategoryResponseDTO?> GetByIdAsync(string id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null || category.Status != "1")
+            if (category == null || category.Status != "0")
                 return null;
             return _mapper.Map<VaccineCategoryResponseDTO>(category);
         }
@@ -50,7 +50,7 @@ namespace Services.Services.Vaccines
                 if (!string.IsNullOrEmpty(categoryDto.ParentCategoryId))
                 {
                     var parentCategory = await _categoryRepository.GetByIdAsync(categoryDto.ParentCategoryId);
-                    if (parentCategory == null || parentCategory.Status != "1")
+                    if (parentCategory == null || parentCategory.Status == "0")
                         throw new Exception($"Parent category with ID {categoryDto.ParentCategoryId} does not exist or is inactive.");
                 }
 
@@ -76,13 +76,13 @@ namespace Services.Services.Vaccines
             try
             {
                 var existingCategory = await _categoryRepository.GetByIdAsync(id);
-                if (existingCategory == null || existingCategory.Status != "1")
+                if (existingCategory == null || existingCategory.Status == "0")
                     throw new Exception("Vaccine category not found or is inactive.");
 
                 if (!string.IsNullOrEmpty(categoryDto.ParentCategoryId))
                 {
                     var parentCategory = await _categoryRepository.GetByIdAsync(categoryDto.ParentCategoryId);
-                    if (parentCategory == null || parentCategory.Status != "1")
+                    if (parentCategory == null || parentCategory.Status == "0")
                         throw new Exception($"Parent category with ID {categoryDto.ParentCategoryId} does not exist or is inactive.");
                     if (categoryDto.ParentCategoryId == id)
                         throw new Exception("A category cannot be its own parent.");
@@ -107,7 +107,7 @@ namespace Services.Services.Vaccines
             try
             {
                 var category = await _categoryRepository.GetByIdAsync(id);
-                if (category == null || category.Status != "1")
+                if (category == null || category.Status == "0")
                     throw new Exception("Vaccine category not found or is inactive.");
 
                 category.Status = "0"; // Soft delete chỉ dùng Status

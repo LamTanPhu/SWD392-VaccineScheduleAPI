@@ -1,177 +1,129 @@
-﻿using ModelViews.Requests.VaccineCenter;
-using ModelViews.Responses.VaccineCenter;
+﻿using AutoMapper;
+using IRepositories.Entity.Inventory;
 using IRepositories.IRepository;
+using IRepositories.IRepository.Inventory;
+using IServices.Interfaces.Inventory;
+using ModelViews.Requests.VaccineCenter;
+using ModelViews.Responses.VaccineCenter;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IServices.Interfaces.Inventory;
-using IRepositories.Entity.Inventory;
 
 namespace Services.Services.Inventory
 {
     public class VaccineCenterService : IVaccineCenterService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<VaccineCenter> _vaccineCenterRepository;
+        private readonly IVaccineCenterRepository _vaccineCenterRepository;
+        private readonly IMapper _mapper;
 
-        public VaccineCenterService(IUnitOfWork unitOfWork)
+        public VaccineCenterService(
+            IUnitOfWork unitOfWork,
+            IVaccineCenterRepository vaccineCenterRepository,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _vaccineCenterRepository = _unitOfWork.GetRepository<VaccineCenter>();
+            _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        }
+
+        public async Task<IList<VaccineCenterResponseDTO>> GetAllAsync()
+        {
+            var centers = await _vaccineCenterRepository.GetAllAsync();
+            return _mapper.Map<IList<VaccineCenterResponseDTO>>(
+                centers.Where(c => c.Status == "1"));
+        }
+
+        public async Task<VaccineCenterResponseDTO?> GetByIdAsync(string id)
+        {
+            var center = await _vaccineCenterRepository.GetByIdAsync(id);
+            if (center == null || center.Status != "1")
+                return null;
+            return _mapper.Map<VaccineCenterResponseDTO>(center);
         }
 
         public async Task<VaccineCenterResponseDTO> AddAsync(VaccineCenterRequestDTO centerDto)
         {
             var existingCenter = (await _vaccineCenterRepository.GetAllAsync())
-                .FirstOrDefault(vc => vc.Name == centerDto.Name);
+                .FirstOrDefault(c => c.Name == centerDto.Name && c.Status == "1");
 
             if (existingCenter != null)
-            {
                 throw new Exception("A vaccine center with this name already exists.");
-            }
 
-            var newCenter = new VaccineCenter
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = centerDto.Name,
-                Location = centerDto.Location,
-                ContactNumber = centerDto.ContactNumber,
-                Email = centerDto.Email,
-                Status = centerDto.Status
-            };
-
-            // Begin transaction
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var newCenter = _mapper.Map<VaccineCenter>(centerDto);
+                newCenter.Status = "1"; // Gán thủ công Status
+
                 await _vaccineCenterRepository.InsertAsync(newCenter);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return new VaccineCenterResponseDTO
-                {
-                    Id = newCenter.Id,
-                    Name = newCenter.Name,
-                    Location = newCenter.Location,
-                    ContactNumber = newCenter.ContactNumber,
-                    Email = newCenter.Email,
-                    Status = newCenter.Status
-                };
+                return _mapper.Map<VaccineCenterResponseDTO>(newCenter);
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to create vaccine center: " + ex.Message, ex);
             }
         }
 
         public async Task UpdateAsync(VaccineCenterUpdateDTO centerDto)
         {
             var existingCenter = await _vaccineCenterRepository.GetByIdAsync(centerDto.Id);
-            if (existingCenter == null)
-            {
-                throw new Exception("Vaccine center not found.");
-            }
+            if (existingCenter == null || existingCenter.Status != "1")
+                throw new Exception("Vaccine center not found or is inactive.");
 
-            // Begin transaction
+            var duplicateCenter = (await _vaccineCenterRepository.GetAllAsync())
+                .FirstOrDefault(c => c.Name == centerDto.Name && c.Id != centerDto.Id && c.Status == "1");
+            if (duplicateCenter != null)
+                throw new Exception("Another vaccine center with this name already exists.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                existingCenter.Name = centerDto.Name;
-                existingCenter.Location = centerDto.Location;
-                existingCenter.ContactNumber = centerDto.ContactNumber;
-                existingCenter.Email = centerDto.Email;
-                existingCenter.Status = centerDto.Status;
+                _mapper.Map(centerDto, existingCenter);
 
                 await _vaccineCenterRepository.UpdateAsync(existingCenter);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to update vaccine center: " + ex.Message, ex);
             }
-        }
-
-        public async Task<VaccineCenterResponseDTO?> GetByIdAsync(string id)
-        {
-            var center = await _vaccineCenterRepository.GetByIdAsync(id);
-            if (center == null) return null;
-
-            return new VaccineCenterResponseDTO
-            {
-                Id = center.Id,
-                Name = center.Name,
-                Location = center.Location,
-                ContactNumber = center.ContactNumber,
-                Email = center.Email,
-                Status = center.Status
-            };
         }
 
         public async Task DeleteAsync(VaccineCenterDeleteDTO centerDto)
         {
             var existingCenter = await _vaccineCenterRepository.GetByIdAsync(centerDto.Id);
-            if (existingCenter == null)
-            {
-                throw new Exception("Vaccine center not found.");
-            }
+            if (existingCenter == null || existingCenter.Status != "1")
+                throw new Exception("Vaccine center not found or is inactive.");
 
-            // Begin transaction
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _vaccineCenterRepository.DeleteAsync(centerDto.Id);
+                existingCenter.Status = "0"; // Soft delete chỉ dùng Status
+
+                await _vaccineCenterRepository.UpdateAsync(existingCenter);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to delete vaccine center: " + ex.Message, ex);
             }
-        }
-
-        public async Task<IList<VaccineCenterResponseDTO>> GetAllAsync()
-        {
-            var centers = await _vaccineCenterRepository.GetAllAsync();
-
-            // Map VaccineCenter entities to VaccineCenterResponseDTO
-            var centerDtos = centers.Select(center => new VaccineCenterResponseDTO
-            {
-                Id = center.Id,
-                Name = center.Name,
-                Location = center.Location,
-                ContactNumber = center.ContactNumber,
-                Email = center.Email,
-                Status = center.Status
-            }).ToList();
-
-            return centerDtos;
         }
 
         public async Task<IList<VaccineCenterResponseDTO>> GetByNameAsync(string name)
         {
-            var centers = (await _vaccineCenterRepository.GetAllAsync())
-                          .Where(vc => vc.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
-                          .ToList();
-
-            if (centers.Count == 0)
-            {
-                return new List<VaccineCenterResponseDTO>();
-            }
-
-            return centers.Select(center => new VaccineCenterResponseDTO
-            {
-                Id = center.Id,
-                Name = center.Name,
-                Location = center.Location,
-                ContactNumber = center.ContactNumber,
-                Email = center.Email,
-                Status = center.Status
-            }).ToList();
+            var centers = await _vaccineCenterRepository.GetAllAsync();
+            return _mapper.Map<IList<VaccineCenterResponseDTO>>(
+                centers.Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase) && c.Status == "1"));
         }
-
     }
 }
