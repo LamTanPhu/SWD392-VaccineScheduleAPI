@@ -5,6 +5,7 @@ using IRepositories.IRepository.Orders;
 using IRepositories.IRepository.Schedules;
 using IRepositories.IRepository.Vaccines;
 using IServices.Interfaces.Schedules;
+using IServices.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 using Repositories.Repository;
 using Repositories.Repository.Accounts;
@@ -38,6 +39,9 @@ namespace Services
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IVaccineReactionRepository, VaccineReactionRepository>();
             services.AddScoped<IVaccineHistoryRepository, VaccineHistoryRepository>();
+
+            //Mapper Configuration
+            services.AddAutoMapper(typeof(MapperConfigurationsProfile));
 
         }
     }

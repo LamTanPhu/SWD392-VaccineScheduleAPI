@@ -15,6 +15,7 @@ using IServices.Interfaces.Schedules;
 using Services.Services.Schedules;
 using IServices.Interfaces.Orders;
 using Services.Services.Orders;
+using ModelViews.Config;
 
 namespace VaccineScheduleAPI
 {
@@ -25,6 +26,7 @@ namespace VaccineScheduleAPI
             services.AddDatabaseContext(configuration); // Call the repository layer's method
             services.AddRepositories();                 // Registers Repositories from Services Project
             services.AddServices(configuration);        // Registers Services (API-Specific)
+
         }
 
         private static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -60,6 +62,12 @@ namespace VaccineScheduleAPI
 
             // Register Email Service
             services.AddTransient<IEmailService, EmailService>();
+
+            //Send forgot password configuaration for Email
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+
+            //Register Configuaration for VNPay
+            services.Configure<VNPayConfig>(configuration.GetSection("VNPay"));
         }
     }
 }
