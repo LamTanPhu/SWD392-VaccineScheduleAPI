@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Services.Services.Vaccines
 {
-    public class ImgBBImageUploadService : IImageUploadService
+    public class ImageUploadService : IImageUploadService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private const string ImgBBApiKey = "bae68497dea95ef8d4911c8d98f34b5c";
 
-        public ImgBBImageUploadService(IHttpClientFactory httpClientFactory)
+        public ImageUploadService(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
         }

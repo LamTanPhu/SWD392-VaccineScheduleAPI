@@ -5,6 +5,7 @@ using IRepositories.IRepository.Orders;
 using IRepositories.IRepository.Schedules;
 using IRepositories.IRepository.Vaccines;
 using IServices.Interfaces.Schedules;
+using IServices.Interfaces.Vaccines;
 using IServices.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 using Repositories.Repository;

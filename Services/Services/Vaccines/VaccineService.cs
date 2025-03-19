@@ -9,6 +9,7 @@ using ModelViews.Responses.Vaccine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 
 namespace Services.Services.Vaccines
@@ -62,8 +63,7 @@ namespace Services.Services.Vaccines
                 string imageUrl = vaccineDto.Image != null ? await _imageUploadService.UploadImageAsync(vaccineDto.Image) : null;
 
                 var vaccine = _mapper.Map<Vaccine>(vaccineDto);
-                vaccine.Id = Guid.NewGuid().ToString();
-                vaccine.Status = "1"; // Mặc định active
+                vaccine.Status = "1"; 
                 vaccine.Image = imageUrl;
 
                 await _repository.InsertAsync(vaccine);
@@ -79,14 +79,14 @@ namespace Services.Services.Vaccines
             }
         }
 
-        public async Task UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto)
+        public async Task<VaccineResponseDTO?> UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var existingVaccine = await _repository.GetByIdAsync(id);
                 if (existingVaccine == null || existingVaccine.Status == "0")
-                    throw new Exception("Vaccine not found.");
+                    return null; 
 
                 string imageUrl = vaccineDto.Image != null ? await _imageUploadService.UploadImageAsync(vaccineDto.Image) : existingVaccine.Image;
 
@@ -96,11 +96,13 @@ namespace Services.Services.Vaccines
                 await _repository.UpdateAsync(existingVaccine);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<VaccineResponseDTO>(existingVaccine);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to update vaccine.", ex);
+                throw new Exception("Failed to update vaccine: " + ex.Message, ex);
             }
         }
 
@@ -113,7 +115,8 @@ namespace Services.Services.Vaccines
                 if (vaccine == null || vaccine.Status == "0")
                     throw new Exception("Vaccine not found.");
 
-                await _repository.DeleteAsync(id); 
+                vaccine.Status = "0";
+                await _repository.UpdateAsync(vaccine);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
             }
