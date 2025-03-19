@@ -33,7 +33,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
-            services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
+            //services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
             services.AddScoped<IVaccineService, VaccineService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();

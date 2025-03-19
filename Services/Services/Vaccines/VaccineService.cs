@@ -19,7 +19,7 @@ namespace Services.Services.Vaccines
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVaccineRepository _repository;
         private readonly IHttpClientFactory _httpClientFactory;
-        private const string ImgBBApiKey = "bae68497dea95ef8d4911c8d98f34b5c"; // Thay bằng API key của bạn
+        private const string ImgBBApiKey = "bae68497dea95ef8d4911c8d98f34b5c"; 
 
         public VaccineService(IUnitOfWork unitOfWork, IVaccineRepository repository, IHttpClientFactory httpClientFactory)
         {
