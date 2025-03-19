@@ -34,21 +34,20 @@ namespace IServices.Mapper
                 .ForMember(dest => dest.ManufacturerName, opt => opt.MapFrom(src => src.Batch.Manufacturer.Name))
                 .ForMember(dest => dest.ManufacturerCountry, opt => opt.MapFrom(src => src.Batch.Manufacturer.CountryName));
 
-            // VaccineCategory (ví dụ)
-            CreateMap<VaccineCategoryRequestDTO, VaccineCategory>();
+            // VaccineCategory
+            CreateMap<VaccineCategoryRequestDTO, VaccineCategory>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
             CreateMap<VaccineCategory, VaccineCategoryResponseDTO>();
 
             //Children Profile
             CreateMap<ChildrenProfileCreateUpdateDTO, ChildrenProfile>()
                             .ForMember(dest => dest.Id, opt => opt.Ignore())
-                            .ForMember(dest => dest.AccountId, opt => opt.Ignore())
-                            .ForMember(dest => dest.Status, opt => opt.Ignore());
+                            .ForMember(dest => dest.AccountId, opt => opt.Ignore());
             CreateMap<ChildrenProfile, ChildrenProfileResponseDTO>();
 
             // VaccineBatch
             CreateMap<AddVaccineBatchRequestDTO, VaccineBatch>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.ActiveStatus, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
             CreateMap<VaccineBatch, VaccineBatchResponseDTO>();
 
         }

@@ -54,8 +54,7 @@ namespace Services.Services.Inventory
             try
             {
                 var batch = _mapper.Map<VaccineBatch>(request);
-                // Status mặc định là "1" từ BaseEntity, không cần gán lại
-
+                batch.ActiveStatus = "1";
                 await _vaccineBatchRepository.InsertAsync(batch);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
