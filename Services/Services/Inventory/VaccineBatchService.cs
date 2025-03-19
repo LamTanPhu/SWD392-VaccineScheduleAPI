@@ -31,13 +31,15 @@ namespace Services.Services.Inventory
         public async Task<IEnumerable<VaccineBatchResponseDTO>> GetAllAsync()
         {
             var batches = await _vaccineBatchRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(batches.Where(b => b.ActiveStatus != "0"));
+            return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(
+                batches.Where(b => b.ActiveStatus == "1"));
         }
 
         public async Task<VaccineBatchResponseDTO?> GetByBatchNumberAsync(string batchNumber)
         {
             var batch = await _vaccineBatchRepository.GetByBatchNumberAsync(batchNumber);
-            if (batch == null || batch.ActiveStatus == "0") return null;
+            if (batch == null || batch.ActiveStatus != "1")
+                return null;
             return _mapper.Map<VaccineBatchResponseDTO>(batch);
         }
 
@@ -45,7 +47,8 @@ namespace Services.Services.Inventory
         {
             var batches = await _vaccineBatchRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(
-                batches.Where(b => b.BatchNumber.Contains(name, StringComparison.OrdinalIgnoreCase) && b.ActiveStatus != "0"));
+                batches.Where(b => b.BatchNumber.Contains(name, StringComparison.OrdinalIgnoreCase)
+                    && b.ActiveStatus == "1"));
         }
 
         public async Task<VaccineBatchResponseDTO> CreateAsync(AddVaccineBatchRequestDTO request)
@@ -54,7 +57,8 @@ namespace Services.Services.Inventory
             try
             {
                 var batch = _mapper.Map<VaccineBatch>(request);
-                batch.ActiveStatus = "1";
+                batch.ActiveStatus = "1"; // Gán thủ công ActiveStatus
+
                 await _vaccineBatchRepository.InsertAsync(batch);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
@@ -65,6 +69,28 @@ namespace Services.Services.Inventory
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 throw new Exception("Failed to create vaccine batch: " + ex.Message, ex);
+            }
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var batch = await _vaccineBatchRepository.GetByIdAsync(id);
+                if (batch == null || batch.ActiveStatus != "1")
+                    throw new Exception("Vaccine batch not found or is inactive.");
+
+                batch.ActiveStatus = "0";
+
+                await _vaccineBatchRepository.UpdateAsync(batch);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to delete vaccine batch: " + ex.Message, ex);
             }
         }
     }

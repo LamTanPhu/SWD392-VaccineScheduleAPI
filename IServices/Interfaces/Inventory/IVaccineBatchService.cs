@@ -15,5 +15,6 @@ namespace IServices.Interfaces.Inventory
         Task<VaccineBatchResponseDTO?> GetByBatchNumberAsync(string batchNumber);
         Task<IEnumerable<VaccineBatchResponseDTO>> SearchByNameAsync(string name);
         Task<VaccineBatchResponseDTO> CreateAsync(AddVaccineBatchRequestDTO request);
+        Task DeleteAsync(string id);
     }
 }

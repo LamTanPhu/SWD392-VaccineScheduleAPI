@@ -53,5 +53,7 @@ namespace VaccineScheduleAPI.Controllers
             var createdBatch = await _vaccineBatchService.CreateAsync(batchDto);
             return CreatedAtAction(nameof(GetByBatchNumber), new { batchNumber = createdBatch.BatchNumber }, createdBatch);
         }
+
+
     }
 }
