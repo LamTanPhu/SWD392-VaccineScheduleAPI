@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
+using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
 using IRepositories.Entity.Vaccines;
+using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Requests.Vaccine;
 using ModelViews.Requests.VaccineCategory;
+using ModelViews.Responses.Auth;
+using ModelViews.Responses.ChildrenProfile;
 using ModelViews.Responses.Manufacturer;
 using ModelViews.Responses.Vaccine;
 using ModelViews.Responses.VaccineCategory;
@@ -31,6 +35,13 @@ namespace IServices.Mapper
             // VaccineCategory (ví dụ)
             CreateMap<VaccineCategoryRequestDTO, VaccineCategory>();
             CreateMap<VaccineCategory, VaccineCategoryResponseDTO>();
+
+            //Children Profile
+            CreateMap<ChildrenProfileCreateUpdateDTO, ChildrenProfile>()
+                            .ForMember(dest => dest.Id, opt => opt.Ignore())
+                            .ForMember(dest => dest.AccountId, opt => opt.Ignore())
+                            .ForMember(dest => dest.Status, opt => opt.Ignore());
+            CreateMap<ChildrenProfile, ChildrenProfileResponseDTO>();
 
 
 

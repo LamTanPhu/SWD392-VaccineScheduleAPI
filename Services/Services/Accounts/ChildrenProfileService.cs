@@ -1,116 +1,127 @@
-﻿using IRepositories.Entity.Accounts;
-using IRepositories.IRepository.Accounts;
+﻿using AutoMapper;
+using IRepositories.Entity.Accounts;
 using IRepositories.IRepository;
+using IRepositories.IRepository.Accounts;
 using IServices.Interfaces.Accounts;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Responses.ChildrenProfile;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services.Services.Accounts
 {
     public class ChildrenProfileService : IChildrenProfileService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IChildrenProfileRepository _repository;
+        private readonly IChildrenProfileRepository _childrenProfileRepository;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IMapper _mapper;
 
-        public ChildrenProfileService(IUnitOfWork unitOfWork, IChildrenProfileRepository repository)
+        public ChildrenProfileService(
+            IUnitOfWork unitOfWork,
+            IChildrenProfileRepository childrenProfileRepository,
+            IAccountRepository accountRepository,
+            IMapper mapper)
         {
-            _unitOfWork = unitOfWork;
-            _repository = repository;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
+            _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesAsync()
+        public async Task<IEnumerable<ChildrenProfileResponseDTO>> GetMyChildrenProfilesAsync(string userEmail)
         {
-            var profiles = await _repository.GetAllAsync();
-            return profiles.Select(p => new ChildrenProfileResponseDTO
+            var account = await _accountRepository.GetByEmailAsync(userEmail);
+            if (account == null)
+                throw new Exception("User not found.");
+
+            var profiles = await _childrenProfileRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ChildrenProfileResponseDTO>>(
+                profiles.Where(p => p.AccountId == account.Id && p.Status != "0"));
+        }
+
+        public async Task<ChildrenProfileResponseDTO> CreateProfileAsync(string userEmail, ChildrenProfileCreateUpdateDTO profileDto)
+        {
+            var account = await _accountRepository.GetByEmailAsync(userEmail);
+            if (account == null)
+                throw new Exception("User not found.");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                Id = p.Id,
-                AccountId = p.AccountId,
-                FullName = p.FullName,
-                DateOfBirth = p.DateOfBirth,
-                Gender = p.Gender,
-                Status = p.Status,
-                Address = p.Address
-            }).ToList();
-        }
+                var profile = _mapper.Map<ChildrenProfile>(profileDto);
+                profile.AccountId = account.Id;
 
-        public async Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesByAccountIdAsync(string accountId)
-        {
-            var profiles = await _repository.GetAllAsync();
-            return profiles
-                .Where(p => p.AccountId == accountId)
-                .Select(p => new ChildrenProfileResponseDTO
-                {
-                    Id = p.Id,
-                    AccountId = p.AccountId,
-                    FullName = p.FullName,
-                    DateOfBirth = p.DateOfBirth,
-                    Gender = p.Gender,
-                    Status = p.Status,
-                    Address = p.Address
-                }).ToList();
-        }
+                await _childrenProfileRepository.InsertAsync(profile);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
-        public async Task<ChildrenProfileResponseDTO?> GetProfileByIdAsync(string id)
-        {
-            var profile = await _repository.GetByIdAsync(id);
-            if (profile == null) return null;
-            return new ChildrenProfileResponseDTO
+                return _mapper.Map<ChildrenProfileResponseDTO>(profile);
+            }
+            catch (Exception ex)
             {
-                Id = profile.Id,
-                AccountId = profile.AccountId,
-                FullName = profile.FullName,
-                DateOfBirth = profile.DateOfBirth,
-                Gender = profile.Gender,
-                Status = profile.Status,
-                Address = profile.Address
-            };
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to create children profile: " + ex.Message, ex);
+            }
         }
 
-        public async Task<ChildrenProfileResponseDTO> AddProfileAsync(string accountId, ChildrenProfileCreateUpdateDTO profileDto)
+        public async Task UpdateProfileAsync(string id, string userEmail, ChildrenProfileCreateUpdateDTO profileDto)
         {
-            var profile = new ChildrenProfile
-            {
-                AccountId = accountId,
-                FullName = profileDto.FullName,
-                DateOfBirth = profileDto.DateOfBirth,
-                Gender = profileDto.Gender,
-                Status = profileDto.Status,
-                Address = profileDto.Address
-            };
-            await _repository.InsertAsync(profile);
-            await _unitOfWork.SaveAsync();
-            Console.WriteLine($"Saved profile: Id={profile.Id}, Address={profile.Address}");
-            return new ChildrenProfileResponseDTO
-            {
-                Id = profile.Id,
-                AccountId = profile.AccountId,
-                FullName = profile.FullName,
-                DateOfBirth = profile.DateOfBirth,
-                Gender = profile.Gender,
-                Status = profile.Status,
-                Address = profile.Address
-            };
-        }
+            var account = await _accountRepository.GetByEmailAsync(userEmail);
+            if (account == null)
+                throw new Exception("User not found.");
 
-        public async Task UpdateProfileAsync(string id, ChildrenProfileCreateUpdateDTO profileDto)
-        {
-            var existingProfile = await _repository.GetByIdAsync(id);
-            if (existingProfile == null)
+            var profile = await _childrenProfileRepository.GetByIdAsync(id);
+            if (profile == null || profile.Status == "0")
                 throw new Exception("Children profile not found.");
 
-            existingProfile.FullName = profileDto.FullName;
-            existingProfile.DateOfBirth = profileDto.DateOfBirth;
-            existingProfile.Gender = profileDto.Gender;
-            existingProfile.Status = profileDto.Status;
-            existingProfile.Address = profileDto.Address; // Ensure this updates
-            await _repository.UpdateAsync(existingProfile);
-            await _unitOfWork.SaveAsync();
+            if (profile.AccountId != account.Id)
+                throw new Exception("You can only update your own children's profiles.");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                _mapper.Map(profileDto, profile);
+
+                await _childrenProfileRepository.UpdateAsync(profile);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to update children profile: " + ex.Message, ex);
+            }
         }
 
-        public async Task DeleteProfileAsync(string id)
+        public async Task DeleteProfileAsync(string id, string userEmail)
         {
-            await _repository.DeleteAsync(id);
-            await _unitOfWork.SaveAsync();
+            var account = await _accountRepository.GetByEmailAsync(userEmail);
+            if (account == null)
+                throw new Exception("User not found.");
+
+            var profile = await _childrenProfileRepository.GetByIdAsync(id);
+            if (profile == null || profile.Status == "0")
+                throw new Exception("Children profile not found.");
+
+            if (profile.AccountId != account.Id)
+                throw new Exception("You can only delete your own children's profiles.");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                profile.Status = "0"; // Soft delete
+                await _childrenProfileRepository.UpdateAsync(profile);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to delete children profile: " + ex.Message, ex);
+            }
         }
     }
 }

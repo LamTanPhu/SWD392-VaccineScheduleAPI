@@ -11,63 +11,52 @@ namespace VaccineScheduleAPI.Controllers
     [ApiController]
     public class ChildrenProfileController : ControllerBase
     {
-        private readonly IUserProfileService _userProfileService;
         private readonly IChildrenProfileService _childrenProfileService;
 
-        public ChildrenProfileController(IUserProfileService userProfileService, IChildrenProfileService childrenProfileService)
+        public ChildrenProfileController(IChildrenProfileService childrenProfileService)
         {
-            _userProfileService = userProfileService;
-            _childrenProfileService = childrenProfileService;
+            _childrenProfileService = childrenProfileService ?? throw new ArgumentNullException(nameof(childrenProfileService));
         }
 
         [Authorize(Roles = "Parent")]
         [HttpGet("my-children")]
-        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetMyChildrenAsync()
+        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetMyChildren()
         {
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(email))
-                return Unauthorized(new { Message = "Invalid token payload." });
+                return Unauthorized("Invalid token payload.");
 
-            var profile = await _userProfileService.GetProfileByEmailAsync(email);
-            if (profile == null)
-                return NotFound(new { Message = "User profile not found." });
-
-            return Ok(profile.ChildrenProfiles ?? new List<ChildrenProfileResponseDTO>());
+            var profiles = await _childrenProfileService.GetMyChildrenProfilesAsync(email);
+            return Ok(profiles);
         }
 
         [Authorize(Roles = "Parent")]
         [HttpPost]
-        public async Task<ActionResult> Create([FromBody] ChildrenProfileCreateUpdateDTO profileDto)
+        public async Task<ActionResult<ChildrenProfileResponseDTO>> Create([FromBody] ChildrenProfileCreateUpdateDTO profileDto)
         {
-            var username = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { Message = "Invalid token payload." });
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var account = await _userProfileService.GetByEmailAsync(username);
-            if (account == null)
-                return NotFound(new { Message = "User not found." });
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized("Invalid token payload.");
 
-            var createdProfile = await _childrenProfileService.AddProfileAsync(account.Id, profileDto);
-            return Created(new Uri("/api/ChildrenProfile/my-children", UriKind.Relative), createdProfile);
+            var createdProfile = await _childrenProfileService.CreateProfileAsync(email, profileDto);
+            return CreatedAtAction(nameof(GetMyChildren), new { id = createdProfile.Id }, createdProfile);
         }
 
         [Authorize(Roles = "Parent")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(string id, [FromBody] ChildrenProfileCreateUpdateDTO profileDto)
         {
-            var username = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { Message = "Invalid token payload." });
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var existingProfile = await _childrenProfileService.GetProfileByIdAsync(id);
-            if (existingProfile == null)
-                return NotFound();
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized("Invalid token payload.");
 
-            var account = await _userProfileService.GetByEmailAsync(username);
-            if (existingProfile.AccountId != account?.Id)
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only update your own children's profiles." });
-
-            await _childrenProfileService.UpdateProfileAsync(id, profileDto);
+            await _childrenProfileService.UpdateProfileAsync(id, email, profileDto);
             return NoContent();
         }
 
@@ -75,19 +64,11 @@ namespace VaccineScheduleAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            var username = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized(new { Message = "Invalid token payload." });
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized("Invalid token payload.");
 
-            var existingProfile = await _childrenProfileService.GetProfileByIdAsync(id);
-            if (existingProfile == null)
-                return NotFound();
-
-            var account = await _userProfileService.GetByEmailAsync(username);
-            if (existingProfile.AccountId != account?.Id)
-                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You can only delete your own children's profiles." });
-
-            await _childrenProfileService.DeleteProfileAsync(id);
+            await _childrenProfileService.DeleteProfileAsync(id, email);
             return NoContent();
         }
     }
