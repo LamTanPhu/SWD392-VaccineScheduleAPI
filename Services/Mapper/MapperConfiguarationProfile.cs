@@ -48,7 +48,7 @@ namespace IServices.Mapper
             // VaccineBatch
             CreateMap<AddVaccineBatchRequestDTO, VaccineBatch>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.Ignore());
+                .ForMember(dest => dest.ActiveStatus, opt => opt.Ignore());
             CreateMap<VaccineBatch, VaccineBatchResponseDTO>();
 
         }

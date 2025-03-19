@@ -31,13 +31,13 @@ namespace Services.Services.Inventory
         public async Task<IEnumerable<VaccineBatchResponseDTO>> GetAllAsync()
         {
             var batches = await _vaccineBatchRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(batches.Where(b => b.Status != "0"));
+            return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(batches.Where(b => b.ActiveStatus != "0"));
         }
 
         public async Task<VaccineBatchResponseDTO?> GetByBatchNumberAsync(string batchNumber)
         {
             var batch = await _vaccineBatchRepository.GetByBatchNumberAsync(batchNumber);
-            if (batch == null || batch.Status == "0") return null;
+            if (batch == null || batch.ActiveStatus == "0") return null;
             return _mapper.Map<VaccineBatchResponseDTO>(batch);
         }
 
@@ -45,7 +45,7 @@ namespace Services.Services.Inventory
         {
             var batches = await _vaccineBatchRepository.GetAllAsync();
             return _mapper.Map<IEnumerable<VaccineBatchResponseDTO>>(
-                batches.Where(b => b.BatchNumber.Contains(name, StringComparison.OrdinalIgnoreCase) && b.Status != "0"));
+                batches.Where(b => b.BatchNumber.Contains(name, StringComparison.OrdinalIgnoreCase) && b.ActiveStatus != "0"));
         }
 
         public async Task<VaccineBatchResponseDTO> CreateAsync(AddVaccineBatchRequestDTO request)
