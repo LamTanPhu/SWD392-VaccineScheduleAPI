@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.VaccineBatch;
 using ModelViews.Responses.VaccineBatch;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -17,80 +14,44 @@ namespace VaccineScheduleAPI.Controllers
 
         public VaccineBatchController(IVaccineBatchService vaccineBatchService)
         {
-            _vaccineBatchService = vaccineBatchService;
+            _vaccineBatchService = vaccineBatchService ?? throw new ArgumentNullException(nameof(vaccineBatchService));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VaccineBatchResponseDTO>>> GetAllVaccineBatches()
+        public async Task<ActionResult<IEnumerable<VaccineBatchResponseDTO>>> GetAll()
         {
-            try
-            {
-                var batches = await _vaccineBatchService.SearchByNameAsync("");
-                return Ok(batches);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var batches = await _vaccineBatchService.GetAllAsync();
+            return Ok(batches);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("{batchNumber}")]
-        public async Task<ActionResult<VaccineBatchResponseDTO>> GetVaccineBatchByNumber(string batchNumber)
+        public async Task<ActionResult<VaccineBatchResponseDTO>> GetByBatchNumber(string batchNumber)
         {
-            try
-            {
-                var batch = await _vaccineBatchService.GetByBatchNumberAsync(batchNumber);
-                if (batch == null)
-                {
-                    return NotFound($"Vaccine batch with number {batchNumber} not found.");
-                }
-                return Ok(batch);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var batch = await _vaccineBatchService.GetByBatchNumberAsync(batchNumber);
+            if (batch == null)
+                return NotFound($"Vaccine batch with number {batchNumber} not found.");
+            return Ok(batch);
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet("by-name/{name}")]
-        public async Task<ActionResult<IEnumerable<VaccineBatchResponseDTO>>> SearchVaccineBatchByName(string name)
+        [HttpGet("search/{name}")]
+        public async Task<ActionResult<IEnumerable<VaccineBatchResponseDTO>>> SearchByName(string name)
         {
-            try
-            {
-                var batches = await _vaccineBatchService.SearchByNameAsync(name);
-                return Ok(batches);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var batches = await _vaccineBatchService.SearchByNameAsync(name);
+            return Ok(batches);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult> AddVaccineBatch([FromBody] AddVaccineBatchRequestDTO batchDto)
+        public async Task<ActionResult<VaccineBatchResponseDTO>> Create([FromBody] AddVaccineBatchRequestDTO batchDto)
         {
-            if (batchDto == null)
-            {
-                return BadRequest("Vaccine batch data is null.");
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            try
-            {
-                var response = await _vaccineBatchService.AddBatchAsync(batchDto);
-                if (!response.Success)
-                {
-                    return BadRequest(response.Message);
-                }
-                return CreatedAtAction(nameof(GetVaccineBatchByNumber), new { batchNumber = response.BatchNumber }, response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var createdBatch = await _vaccineBatchService.CreateAsync(batchDto);
+            return CreatedAtAction(nameof(GetByBatchNumber), new { batchNumber = createdBatch.BatchNumber }, createdBatch);
         }
     }
 }
