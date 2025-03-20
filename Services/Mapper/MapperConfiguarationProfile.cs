@@ -117,7 +117,8 @@ namespace IServices.Mapper
             CreateMap<OrderRequestDTO, Order>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.PurchaseDate, opt => opt.Ignore());
+                .ForMember(dest => dest.TotalAmount, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalOrderPrice, opt => opt.Ignore());
             CreateMap<Order, OrderResponseDTO>()
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.VaccineDetails, opt => opt.MapFrom(src => src.OrderVaccineDetails))
