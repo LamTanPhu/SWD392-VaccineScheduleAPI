@@ -57,6 +57,11 @@ namespace IServices.Mapper
             CreateMap<VaccineCenterUpdateDTO, VaccineCenter>();
             CreateMap<VaccineCenter, VaccineCenterResponseDTO>();
 
+            // Manufacturer
+            CreateMap<ManufacturerRequestDto, Manufacturer>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+            CreateMap<Manufacturer, ManufacturerResponseDto>();
+
         }
     }
 }
