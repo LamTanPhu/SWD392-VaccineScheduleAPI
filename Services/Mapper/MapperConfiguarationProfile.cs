@@ -136,6 +136,17 @@ namespace IServices.Mapper
                 .ForMember(dest => dest.VaccinePackageName, opt => opt.MapFrom(src => src.VaccinePackage.PackageName))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.VaccinePackage.PackageDescription));
 
+            // Payment
+            CreateMap<Payment, PaymentDetailsResponseDTO>()
+                .ForMember(dest => dest.PaymentId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.OrderId))
+                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.TransactionId))
+                .ForMember(dest => dest.PaymentName, opt => opt.MapFrom(src => src.PaymentName))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod))
+                .ForMember(dest => dest.PaymentDate, opt => opt.MapFrom(src => src.PaymentDate))
+                .ForMember(dest => dest.PaymentStatus, opt => opt.MapFrom(src => src.PaymentStatus))
+                .ForMember(dest => dest.PayAmount, opt => opt.MapFrom(src => src.PayAmount));
+
         }
     }
 }
