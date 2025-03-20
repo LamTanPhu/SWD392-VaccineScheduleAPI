@@ -435,5 +435,60 @@ namespace Services.Services.Orders
                 throw new Exception($"Chuyển trạng thái sang PayLater thất bại: {ex.Message}");
             }
         }
+
+        public async Task<IEnumerable<OrderResponseDTO>> GetPaidOrdersByParentIdAsync(string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+                throw new ArgumentException("Parent ID cannot be null or empty.");
+
+            // Fetch all ChildrenProfiles for the Parent
+            var childrenProfiles = await _childrenProfileRepository.Entities
+                .Where(cp => cp.AccountId == parentId && cp.DeletedTime == null)
+                .ToListAsync();
+
+            if (!childrenProfiles.Any())
+                return new List<OrderResponseDTO>(); // Return empty list if no profiles exist
+
+            // Fetch all "Paid" Orders for the ChildrenProfiles
+            var profileIds = childrenProfiles.Select(cp => cp.Id).ToList();
+            var orders = await _orderRepository.Entities
+                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                .Where(o => profileIds.Contains(o.ProfileId) && o.Status == "Paid" && o.DeletedTime == null)
+                .ToListAsync();
+
+            // Map to OrderResponseDTO
+            return orders.Select(o => new OrderResponseDTO
+            {
+                OrderId = o.Id,
+                ProfileId = o.ProfileId,
+                PurchaseDate = o.PurchaseDate,
+                TotalAmount = o.TotalAmount,
+                TotalOrderPrice = o.TotalOrderPrice,
+                Status = o.Status,
+                VaccineDetails = o.OrderVaccineDetails
+                    .Where(vd => vd.DeletedTime == null)
+                    .Select(vd => new OrderVaccineDetailResponseDTO
+                    {
+                        OrderVaccineId = vd.Id,
+                        VaccineId = vd.VaccineId,
+                        VaccineName = vd.Vaccine?.Name,
+                        Quantity = vd.Quantity,
+                        TotalPrice = vd.TotalPrice,
+                        Image = vd.Vaccine?.Image
+                    }).ToList(),
+                PackageDetails = o.OrderPackageDetails
+                    .Where(pd => pd.DeletedTime == null)
+                    .Select(pd => new OrderPackageDetailResponseDTO
+                    {
+                        OrderPackageId = pd.Id,
+                        VaccinePackageId = pd.VaccinePackageId,
+                        VaccinePackageName = pd.VaccinePackage?.PackageName,
+                        Description = pd.VaccinePackage?.PackageDescription,
+                        Quantity = pd.Quantity,
+                        TotalPrice = pd.TotalPrice
+                    }).ToList()
+            }).ToList();
+        }
     }
 }

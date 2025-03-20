@@ -18,7 +18,7 @@ namespace IServices.Interfaces.Orders
         Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request);
         Task<OrderResponseDTO> SetPayLaterAsync(PayLaterRequestDTO request);
         Task<IEnumerable<OrderResponseDTO>> GetOrdersByParentIdAsync(string parentId);
-
+        Task<IEnumerable<OrderResponseDTO>> GetPaidOrdersByParentIdAsync(string parentId); // New method
 
     }
 }
