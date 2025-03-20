@@ -15,6 +15,8 @@ namespace IRepositories.Entity.Vaccines
         public string PackageDescription { get; set; }
         public bool PackageStatus { get; set; }
 
+        public int PackagePrice { get; set; }
+
         // Navigation property
         public virtual ICollection<VaccinePackageDetail> PackageDetails { get; set; }
     }

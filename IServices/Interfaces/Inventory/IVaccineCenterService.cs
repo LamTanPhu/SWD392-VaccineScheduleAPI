@@ -7,12 +7,12 @@ namespace IServices.Interfaces.Inventory
 {
     public interface IVaccineCenterService
     {
-        Task<IList<VaccineCenterResponseDTO>> GetAllAsync(); // Read all
-        Task<VaccineCenterResponseDTO?> GetByIdAsync(string id); // Read by ID
+        Task<IList<VaccineCenterResponseDTO>> GetAllAsync();
+        Task<IList<object>> GetAllPublicAsync();
+        Task<VaccineCenterResponseDTO?> GetByIdAsync(string id);
         Task<VaccineCenterResponseDTO> AddAsync(VaccineCenterRequestDTO model);
-
-        Task UpdateAsync(VaccineCenterUpdateDTO center); // Update
-        Task DeleteAsync(VaccineCenterDeleteDTO center); // Delete
+        Task UpdateAsync(string id, VaccineCenterUpdateDTO model);
+        Task DeleteAsync(string id); 
         Task<IList<VaccineCenterResponseDTO>> GetByNameAsync(string name);
     }
 }

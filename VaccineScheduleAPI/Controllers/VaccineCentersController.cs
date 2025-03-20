@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.VaccineCenter;
 using ModelViews.Responses.VaccineCenter;
-using Microsoft.AspNetCore.Authorization;
 using IServices.Interfaces.Inventory;
 
 namespace VaccineScheduleAPI.Controllers
@@ -16,13 +14,11 @@ namespace VaccineScheduleAPI.Controllers
 
         public VaccineCentersController(IVaccineCenterService vaccineCenterService)
         {
-            _vaccineCenterService = vaccineCenterService;
+            _vaccineCenterService = vaccineCenterService ?? throw new ArgumentNullException(nameof(vaccineCenterService));
         }
 
-        // Allow any authenticated user to access this method
-        //[Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAllVaccineCenters()
+        public async Task<ActionResult<IList<VaccineCenterResponseDTO>>> GetAllVaccineCenters()
         {
             try
             {
@@ -35,22 +31,12 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Public endpoint for fetching vaccine centers (no authentication required)
-        //[AllowAnonymous] // Uncommented to allow public access
         [HttpGet("public")]
-        public async Task<IActionResult> GetAllVaccineCentersPublic()
+        public async Task<ActionResult<IList<object>>> GetAllVaccineCentersPublic()
         {
             try
             {
-                var vaccineCenters = await _vaccineCenterService.GetAllAsync();
-                // Return only necessary fields (id and name) for public access
-                var filteredCenters = vaccineCenters
-                    .Select(vc => new
-                    {
-                        id = vc.Id,
-                        name = vc.Name
-                    })
-                    .ToList();
+                var filteredCenters = await _vaccineCenterService.GetAllPublicAsync();
                 return Ok(filteredCenters);
             }
             catch (Exception ex)
@@ -59,18 +45,16 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Only Admin can access this method
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetVaccineCenterById(string id)
+        public async Task<ActionResult<VaccineCenterResponseDTO>> GetVaccineCenterById(string id)
         {
             try
             {
                 var vaccineCenter = await _vaccineCenterService.GetByIdAsync(id);
                 if (vaccineCenter == null)
-                {
-                    return NotFound(new { message = "Vaccine center not found." });
-                }
+                    return NotFound(new { message = $"Vaccine center with ID {id} not found." });
+
                 return Ok(vaccineCenter);
             }
             catch (Exception ex)
@@ -79,17 +63,15 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Only Admin can access this method
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateVaccineCenter([FromBody] VaccineCenterRequestDTO model)
+        public async Task<ActionResult<VaccineCenterResponseDTO>> CreateVaccineCenter([FromBody] VaccineCenterRequestDTO model)
         {
             try
             {
-                if (model == null)
-                {
-                    return BadRequest(new { message = "Vaccine center data is required." });
-                }
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
                 var createdVaccineCenter = await _vaccineCenterService.AddAsync(model);
                 return CreatedAtAction(nameof(GetVaccineCenterById), new { id = createdVaccineCenter.Id }, createdVaccineCenter);
             }
@@ -99,18 +81,16 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Only Admin can access this method
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVaccineCenter(string id, [FromBody] VaccineCenterUpdateDTO model)
+        public async Task<ActionResult> UpdateVaccineCenter(string id, [FromBody] VaccineCenterUpdateDTO model)
         {
             try
             {
-                if (id != model.Id)
-                {
-                    return BadRequest(new { message = "Vaccine center ID mismatch." });
-                }
-                await _vaccineCenterService.UpdateAsync(model);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                await _vaccineCenterService.UpdateAsync(id, model);
                 return NoContent();
             }
             catch (Exception ex)
@@ -119,14 +99,13 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Only Admin can access this method
         [Authorize(Roles = "Admin")]
-        [HttpDelete]
-        public async Task<IActionResult> DeleteVaccineCenter([FromBody] VaccineCenterDeleteDTO model)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteVaccineCenter(string id)
         {
             try
             {
-                await _vaccineCenterService.DeleteAsync(model);
+                await _vaccineCenterService.DeleteAsync(id);
                 return NoContent();
             }
             catch (Exception ex)
@@ -135,18 +114,16 @@ namespace VaccineScheduleAPI.Controllers
             }
         }
 
-        // Only Admin can access this method
         [Authorize(Roles = "Admin")]
         [HttpGet("byname/{name}")]
-        public async Task<IActionResult> GetVaccineCentersByName(string name)
+        public async Task<ActionResult<IList<VaccineCenterResponseDTO>>> GetVaccineCentersByName(string name)
         {
             try
             {
                 var vaccineCenters = await _vaccineCenterService.GetByNameAsync(name);
                 if (vaccineCenters.Count == 0)
-                {
                     return NotFound(new { message = "No matching vaccine centers found." });
-                }
+
                 return Ok(vaccineCenters);
             }
             catch (Exception ex)

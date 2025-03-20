@@ -9,14 +9,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ModelViews.Config;
+using Services.Services.Accounts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Send forgot password configuaration for Email
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-
-//Register Configuaration for VNPay
-builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("VNPay"));
 
 // Register HttpClient 
 builder.Services.AddHttpClient();

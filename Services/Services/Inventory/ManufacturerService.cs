@@ -1,4 +1,5 @@
-﻿using IRepositories.Entity.Inventory;
+﻿using AutoMapper;
+using IRepositories.Entity.Inventory;
 using IRepositories.IRepository;
 using IRepositories.IRepository.Inventory;
 using IServices.Interfaces.Inventory;
@@ -7,7 +8,6 @@ using ModelViews.Responses.Manufacturer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Services.Inventory
@@ -16,123 +16,132 @@ namespace Services.Services.Inventory
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IManufacturerRepository _manufacturerRepository;
+        private readonly IMapper _mapper;
 
-        public ManufacturerService(IUnitOfWork unitOfWork, IManufacturerRepository manufacturerRepository)
+        public ManufacturerService(
+            IUnitOfWork unitOfWork,
+            IManufacturerRepository manufacturerRepository,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _manufacturerRepository = manufacturerRepository ?? throw new ArgumentNullException(nameof(manufacturerRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<IEnumerable<ManufacturerResponseDto>> GetAllManufacturersAsync()
+        public async Task<IList<ManufacturerResponseDto>> GetAllManufacturersAsync()
         {
             var manufacturers = await _manufacturerRepository.GetAllAsync();
-            return manufacturers.Select(m => new ManufacturerResponseDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Description = m.Description,
-                CountryName = m.CountryName,
-                CountryCode = m.CountryCode,
-                ActiveStatus = m.ActiveStatus
-            }).ToList();
+            return _mapper.Map<IList<ManufacturerResponseDto>>(
+                manufacturers.Where(m => m.ActiveStatus == true));
         }
 
         public async Task<ManufacturerResponseDto?> GetManufacturerByIdAsync(string id)
         {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("Manufacturer ID is required.");
+
             var manufacturer = await _manufacturerRepository.GetByIdAsync(id);
-            if (manufacturer == null) return null;
-            return new ManufacturerResponseDto
-            {
-                Id = manufacturer.Id,
-                Name = manufacturer.Name,
-                Description = manufacturer.Description,
-                CountryName = manufacturer.CountryName,
-                CountryCode = manufacturer.CountryCode,
-                ActiveStatus = manufacturer.ActiveStatus
-            };
+            if (manufacturer == null || manufacturer.ActiveStatus != true)
+                return null;
+
+            return _mapper.Map<ManufacturerResponseDto>(manufacturer);
         }
 
         public async Task<ManufacturerResponseDto?> GetManufacturerByNameAsync(string name)
         {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("Manufacturer name is required.");
+
             var manufacturer = await _manufacturerRepository.GetByNameAsync(name);
-            if (manufacturer == null) return null;
-            return new ManufacturerResponseDto
-            {
-                Id = manufacturer.Id,
-                Name = manufacturer.Name,
-                Description = manufacturer.Description,
-                CountryName = manufacturer.CountryName,
-                CountryCode = manufacturer.CountryCode,
-                ActiveStatus = manufacturer.ActiveStatus
-            };
+            if (manufacturer == null || manufacturer.ActiveStatus != true)
+                return null;
+
+            return _mapper.Map<ManufacturerResponseDto>(manufacturer);
         }
 
-        public async Task AddManufacturerAsync(ManufacturerRequestDto manufacturerDto)
+        public async Task<ManufacturerResponseDto> AddManufacturerAsync(ManufacturerRequestDto manufacturerDto)
         {
-            var manufacturer = new Manufacturer
-            {
-                Name = manufacturerDto.Name,
-                Description = manufacturerDto.Description,
-                CountryName = manufacturerDto.CountryName,
-                CountryCode = manufacturerDto.CountryCode,
-                ActiveStatus = manufacturerDto.ActiveStatus
-            };
+            if (manufacturerDto == null)
+                throw new ArgumentNullException(nameof(manufacturerDto), "Manufacturer data is required.");
+
+            var existingManufacturer = (await _manufacturerRepository.GetAllAsync())
+                .FirstOrDefault(m => m.Name == manufacturerDto.Name && m.ActiveStatus == true);
+            if (existingManufacturer != null)
+                throw new InvalidOperationException("A manufacturer with this name already exists.");
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var manufacturer = _mapper.Map<Manufacturer>(manufacturerDto);
+                manufacturer.ActiveStatus = true; // Gán thủ công ActiveStatus
+
                 await _manufacturerRepository.InsertAsync(manufacturer);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<ManufacturerResponseDto>(manufacturer);
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to create manufacturer: " + ex.Message, ex);
             }
         }
 
         public async Task UpdateManufacturerAsync(string id, ManufacturerRequestDto manufacturerDto)
         {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("Manufacturer ID is required.");
+            if (manufacturerDto == null)
+                throw new ArgumentNullException(nameof(manufacturerDto), "Manufacturer data is required.");
+
             var existingManufacturer = await _manufacturerRepository.GetByIdAsync(id);
-            if (existingManufacturer == null)
-            {
-                throw new Exception("Manufacturer not found.");
-            }
+            if (existingManufacturer == null || existingManufacturer.ActiveStatus != true)
+                throw new InvalidOperationException("Manufacturer not found or is inactive.");
+
+            var duplicateManufacturer = (await _manufacturerRepository.GetAllAsync())
+                .FirstOrDefault(m => m.Name == manufacturerDto.Name && m.Id != id && m.ActiveStatus == true);
+            if (duplicateManufacturer != null)
+                throw new InvalidOperationException("Another manufacturer with this name already exists.");
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                existingManufacturer.Name = manufacturerDto.Name;
-                existingManufacturer.Description = manufacturerDto.Description;
-                existingManufacturer.CountryName = manufacturerDto.CountryName;
-                existingManufacturer.CountryCode = manufacturerDto.CountryCode;
-                existingManufacturer.ActiveStatus = manufacturerDto.ActiveStatus;
+                _mapper.Map(manufacturerDto, existingManufacturer);
 
                 await _manufacturerRepository.UpdateAsync(existingManufacturer);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to update manufacturer: " + ex.Message, ex);
             }
         }
 
         public async Task DeleteManufacturerAsync(string id)
         {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("Manufacturer ID is required.");
+
+            var existingManufacturer = await _manufacturerRepository.GetByIdAsync(id);
+            if (existingManufacturer == null || existingManufacturer.ActiveStatus != true)
+                throw new InvalidOperationException("Manufacturer not found or is inactive.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _manufacturerRepository.DeleteAsync(id);
+                existingManufacturer.ActiveStatus = false; // Soft delete với ActiveStatus
+
+                await _manufacturerRepository.UpdateAsync(existingManufacturer);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception("Failed to delete manufacturer: " + ex.Message, ex);
             }
         }
     }

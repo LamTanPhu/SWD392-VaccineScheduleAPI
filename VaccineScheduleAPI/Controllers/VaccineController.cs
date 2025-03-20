@@ -17,11 +17,11 @@ namespace VaccineScheduleAPI.Controllers
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
-        //[Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VaccineResponseDTO>>> GetAll()
         {
-            return Ok(await _service.GetAllVaccinesAsync());
+            var vaccines = await _service.GetAllVaccinesAsync();
+            return Ok(vaccines);
         }
 
         [Authorize(Roles = "Admin")]
@@ -37,16 +37,25 @@ namespace VaccineScheduleAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<VaccineResponseDTO>> Create([FromForm] VaccineRequestDTO vaccineDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var createdVaccine = await _service.AddVaccineAsync(vaccineDto);
             return CreatedAtAction(nameof(GetById), new { id = createdVaccine.Id }, createdVaccine);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, [FromForm] VaccineRequestDTO vaccineDto)
+        public async Task<ActionResult<VaccineResponseDTO>> Update(string id, [FromForm] VaccineRequestDTO vaccineDto)
         {
-            await _service.UpdateVaccineAsync(id, vaccineDto);
-            return NoContent();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updatedVaccine = await _service.UpdateVaccineAsync(id, vaccineDto);
+            if (updatedVaccine == null)
+                return NotFound();
+
+            return Ok(updatedVaccine); 
         }
 
         [Authorize(Roles = "Admin")]

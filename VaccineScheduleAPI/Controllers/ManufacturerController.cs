@@ -1,28 +1,24 @@
-﻿using IServices.Interfaces.Inventory;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Responses.Manufacturer;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using IServices.Interfaces.Inventory;
+
 namespace VaccineScheduleAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ManufacturerController : ControllerBase
+    public class ManufacturersController : ControllerBase
     {
         private readonly IManufacturerService _manufacturerService;
 
-        public ManufacturerController(IManufacturerService manufacturerService)
+        public ManufacturersController(IManufacturerService manufacturerService)
         {
-            _manufacturerService = manufacturerService;
+            _manufacturerService = manufacturerService ?? throw new ArgumentNullException(nameof(manufacturerService));
         }
 
-        // Get all manufacturers
-        [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ManufacturerResponseDto>>> GetAllManufacturers()
+        public async Task<ActionResult<IList<ManufacturerResponseDto>>> GetAllManufacturers()
         {
             try
             {
@@ -31,11 +27,10 @@ namespace VaccineScheduleAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // Get manufacturer by ID
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ManufacturerResponseDto>> GetManufacturerById(string id)
@@ -44,80 +39,70 @@ namespace VaccineScheduleAPI.Controllers
             {
                 var manufacturer = await _manufacturerService.GetManufacturerByIdAsync(id);
                 if (manufacturer == null)
-                {
-                    return NotFound($"Manufacturer with ID {id} not found.");
-                }
+                    return NotFound(new { message = $"Manufacturer with ID {id} not found." });
+
                 return Ok(manufacturer);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // Get manufacturer by name
         [Authorize(Roles = "Admin")]
-        [HttpGet("by-name/{name}")]
+        [HttpGet("byname/{name}")]
         public async Task<ActionResult<ManufacturerResponseDto>> GetManufacturerByName(string name)
         {
             try
             {
                 var manufacturer = await _manufacturerService.GetManufacturerByNameAsync(name);
                 if (manufacturer == null)
-                {
-                    return NotFound($"Manufacturer with name {name} not found.");
-                }
+                    return NotFound(new { message = $"Manufacturer with name {name} not found." });
+
                 return Ok(manufacturer);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // Add new manufacturer
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult> AddManufacturer([FromBody] ManufacturerRequestDto manufacturerDto)
+        public async Task<ActionResult<ManufacturerResponseDto>> CreateManufacturer([FromBody] ManufacturerRequestDto manufacturerDto)
         {
-            if (manufacturerDto == null)
-            {
-                return BadRequest("Manufacturer data is null.");
-            }
-
             try
             {
-                await _manufacturerService.AddManufacturerAsync(manufacturerDto);
-                return CreatedAtAction(nameof(GetManufacturerById), new { id = manufacturerDto.Name }, manufacturerDto);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var createdManufacturer = await _manufacturerService.AddManufacturerAsync(manufacturerDto);
+                return CreatedAtAction(nameof(GetManufacturerById), new { id = createdManufacturer.Id }, createdManufacturer);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // Update existing manufacturer
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateManufacturer(string id, [FromBody] ManufacturerRequestDto manufacturerDto)
         {
-            if (manufacturerDto == null)
-            {
-                return BadRequest("Manufacturer data is null.");
-            }
-
             try
             {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
                 await _manufacturerService.UpdateManufacturerAsync(id, manufacturerDto);
-                return NoContent();  // 204 No Content
+                return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
 
-        // Delete manufacturer
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteManufacturer(string id)
@@ -125,11 +110,11 @@ namespace VaccineScheduleAPI.Controllers
             try
             {
                 await _manufacturerService.DeleteManufacturerAsync(id);
-                return NoContent();  // 204 No Content
+                return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

@@ -600,14 +600,12 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("AdministeredBy")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTime>("AdministeredDate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("CenterId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedBy")
@@ -623,7 +621,6 @@ namespace Repositories.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("DocumentationProvided")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<int>("DosedNumber")
@@ -644,7 +641,6 @@ namespace Repositories.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("VaccineId")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<int>("VaccinedStatus")
@@ -868,6 +864,9 @@ namespace Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("PackagePrice")
+                        .HasColumnType("int");
+
                     b.Property<bool>("PackageStatus")
                         .HasColumnType("tinyint(1)");
 
@@ -899,9 +898,6 @@ namespace Repositories.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("PackagePrice")
-                        .HasColumnType("int");
-
                     b.Property<string>("VaccineId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
@@ -909,6 +905,9 @@ namespace Repositories.Migrations
                     b.Property<string>("VaccinePackageId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("doseNumber")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1078,8 +1077,7 @@ namespace Repositories.Migrations
                     b.HasOne("IRepositories.Entity.Inventory.VaccineCenter", "Center")
                         .WithMany()
                         .HasForeignKey("CenterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("IRepositories.Entity.Accounts.ChildrenProfile", "Profile")
                         .WithMany()
@@ -1090,8 +1088,7 @@ namespace Repositories.Migrations
                     b.HasOne("IRepositories.Entity.Vaccines.Vaccine", "Vaccine")
                         .WithMany()
                         .HasForeignKey("VaccineId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Account");
 

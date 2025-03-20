@@ -11,10 +11,10 @@ namespace IServices.Interfaces.Inventory
 {
     public interface IManufacturerService
     {
-        Task<IEnumerable<ManufacturerResponseDto>> GetAllManufacturersAsync();
+        Task<IList<ManufacturerResponseDto>> GetAllManufacturersAsync();
         Task<ManufacturerResponseDto?> GetManufacturerByIdAsync(string id);
         Task<ManufacturerResponseDto?> GetManufacturerByNameAsync(string name);
-        Task AddManufacturerAsync(ManufacturerRequestDto manufacturerDto);
+        Task<ManufacturerResponseDto> AddManufacturerAsync(ManufacturerRequestDto manufacturerDto);
         Task UpdateManufacturerAsync(string id, ManufacturerRequestDto manufacturerDto);
         Task DeleteManufacturerAsync(string id);
     }
