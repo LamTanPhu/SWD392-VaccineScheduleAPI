@@ -19,7 +19,7 @@ namespace Controllers
         }
 
         [HttpPost("assign-to-vaccine-center")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         // Maybe Admin is the only one allowed to use this, commented out authorize for testing
         public async Task<IActionResult> AssignAccountToVaccineCenter([FromBody] AssignAccountToVaccineCenterRequestDTO request)
         {

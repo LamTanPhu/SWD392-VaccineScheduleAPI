@@ -2,6 +2,7 @@
 using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
 using IRepositories.Entity.Vaccines;
+using ModelViews.Requests.Auth;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Requests.Vaccine;
@@ -98,6 +99,17 @@ namespace IServices.Mapper
             CreateMap<ManufacturerRequestDto, Manufacturer>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
             CreateMap<Manufacturer, ManufacturerResponseDto>();
+
+            // Account (Thêm mapping cho UserProfileService và AccountUpdateService)
+            CreateMap<UpdateAccountRequestDTO, Account>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.DeletedTime, opt => opt.Ignore());
+            CreateMap<Account, ProfileResponseDTO>()
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email ?? "Not provided"))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "1"));
 
         }
     }
