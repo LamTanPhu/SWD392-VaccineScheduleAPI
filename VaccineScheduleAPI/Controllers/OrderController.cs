@@ -37,14 +37,13 @@ namespace VaccineScheduleAPI.Controllers
         }
 
         [HttpGet("by-parent/{parentId}")]
-        [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Parent và Admin
+        [Authorize(Roles = "Parent, Admin")]
         public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetOrdersByParentId(string parentId)
         {
             try
             {
-                // Kiểm tra quyền: Parent chỉ xem được đơn hàng của chính mình
-                var currentUserId = User.FindFirst("Id")?.Value;
-                var userRole = User.FindFirst("Role")?.Value;
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                 if (userRole == "Parent" && currentUserId != parentId)
                     return Forbid("You can only view orders of your own children.");
 
@@ -107,7 +106,29 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(updatedOrder);
         }
 
+        [HttpGet("paid-by-parent/{parentId}")]
+        [Authorize(Roles = "Parent, Admin")]
+        public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetPaidOrdersByParentId(string parentId)
+        {
+            try
+            {
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                if (userRole == "Parent" && currentUserId != parentId)
+                    return Forbid("You can only view your own paid orders.");
 
+                var orders = await _orderService.GetPaidOrdersByParentIdAsync(parentId);
+                return Ok(orders);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = $"An error occurred: {ex.Message}" });
+            }
+        }
 
 
     }
