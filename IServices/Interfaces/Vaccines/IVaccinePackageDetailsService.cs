@@ -10,9 +10,9 @@ namespace IServices.Interfaces.Vaccines
 {
     public interface IVaccinePackageDetailsService
     {
-        Task<IEnumerable<VaccinePackageDetailsResponseDTO>> GetAllDetailsAsync();
-        Task<VaccinePackageDetailsResponseDTO?> GetDetailByIdAsync(string id);
-        Task AddDetailAsync(VaccinePackageDetailsRequestDTO detail);
+        Task<IList<VaccinePackageDetailsResponseDTO>> GetAllDetailsAsync();
+        Task<VaccinePackageDetailsResponseDTO> GetDetailByIdAsync(string id);
+        Task<VaccinePackageDetailsResponseDTO> AddDetailAsync(VaccinePackageDetailsRequestDTO detailDto);
         Task UpdateDetailAsync(string id, VaccinePackageDetailsRequestDTO detailDto);
         Task DeleteDetailAsync(string id);
     }

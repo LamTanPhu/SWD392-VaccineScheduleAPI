@@ -12,5 +12,8 @@ namespace ModelViews.Requests.VaccinePackage
     {
         [Required]
         public string VaccineId { get; set; }
+
+        [Required]
+        public int DoseNumber { get; set; }
     }
 }

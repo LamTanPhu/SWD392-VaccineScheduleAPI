@@ -18,7 +18,7 @@ namespace VaccineScheduleAPI.Controllers
             _vaccineHistoryService = vaccineHistoryService ?? throw new ArgumentNullException(nameof(vaccineHistoryService));
         }
 
-        [HttpPost("send-document")]
+        [HttpPost("sendDocument")]
         [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Staff và Admin
         public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineDocument([FromBody] AddVaccineHistoryRequestDTO request)
         {

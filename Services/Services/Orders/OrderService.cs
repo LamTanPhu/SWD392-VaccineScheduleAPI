@@ -6,9 +6,9 @@ using IRepositories.IRepository.Vaccines;
 using IRepositories.IRepository;
 using IServices.Interfaces.Orders;
 using ModelViews.Requests.Order;
-using ModelViews.Requests;
 using ModelViews.Responses.Order;
 using Microsoft.EntityFrameworkCore;
+using ModelViews.Requests.Payment;
 
 namespace Services.Services.Orders
 {

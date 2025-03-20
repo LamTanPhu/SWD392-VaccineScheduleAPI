@@ -1,8 +1,8 @@
 ﻿using IServices.Interfaces.Orders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ModelViews.Requests;
 using ModelViews.Requests.Order;
+using ModelViews.Requests.Payment;
 using ModelViews.Responses.Order;
 using Services.Services.Orders;
 

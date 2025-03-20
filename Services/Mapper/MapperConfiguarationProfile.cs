@@ -8,6 +8,7 @@ using ModelViews.Requests.Vaccine;
 using ModelViews.Requests.VaccineBatch;
 using ModelViews.Requests.VaccineCategory;
 using ModelViews.Requests.VaccineCenter;
+using ModelViews.Requests.VaccinePackage;
 using ModelViews.Responses.Auth;
 using ModelViews.Responses.ChildrenProfile;
 using ModelViews.Responses.Manufacturer;
@@ -15,6 +16,7 @@ using ModelViews.Responses.Vaccine;
 using ModelViews.Responses.VaccineBatch;
 using ModelViews.Responses.VaccineCategory;
 using ModelViews.Responses.VaccineCenter;
+using ModelViews.Responses.VaccinePackage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +36,41 @@ namespace IServices.Mapper
             CreateMap<Vaccine, VaccineResponseDTO>()
                 .ForMember(dest => dest.ManufacturerName, opt => opt.MapFrom(src => src.Batch.Manufacturer.Name))
                 .ForMember(dest => dest.ManufacturerCountry, opt => opt.MapFrom(src => src.Batch.Manufacturer.CountryName));
+
+            //Vaccine Package
+            CreateMap<VaccinePackageRequestDTO, VaccinePackage>()
+                            .ForMember(dest => dest.Id, opt => opt.Ignore())
+                            .ForMember(dest => dest.PackageStatus, opt => opt.Ignore());
+            CreateMap<VaccinePackage, VaccinePackageResponseDTO>()
+                .ForMember(dest => dest.Vaccines, opt => opt.MapFrom(src => src.PackageDetails));
+            CreateMap<VaccinePackageDetail, VaccineWithDoseResponseDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Vaccine.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Vaccine.Name))
+                .ForMember(dest => dest.IngredientsDescription, opt => opt.MapFrom(src => src.Vaccine.IngredientsDescription))
+                .ForMember(dest => dest.UnitOfVolume, opt => opt.MapFrom(src => src.Vaccine.UnitOfVolume))
+                .ForMember(dest => dest.MinAge, opt => opt.MapFrom(src => src.Vaccine.MinAge))
+                .ForMember(dest => dest.MaxAge, opt => opt.MapFrom(src => src.Vaccine.MaxAge))
+                .ForMember(dest => dest.BetweenPeriod, opt => opt.MapFrom(src => src.Vaccine.BetweenPeriod))
+                .ForMember(dest => dest.QuantityAvailable, opt => opt.MapFrom(src => src.Vaccine.QuantityAvailable))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Vaccine.Price))
+                .ForMember(dest => dest.ProductionDate, opt => opt.MapFrom(src => src.Vaccine.ProductionDate))
+                .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => src.Vaccine.ExpirationDate))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Vaccine.Status))
+                .ForMember(dest => dest.VaccineCategoryId, opt => opt.MapFrom(src => src.Vaccine.VaccineCategoryId))
+                .ForMember(dest => dest.BatchId, opt => opt.MapFrom(src => src.Vaccine.BatchId))
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Vaccine.Image))
+                .ForMember(dest => dest.DoseNumber, opt => opt.MapFrom(src => src.doseNumber));
+            CreateMap<VaccineDoseRequestDTO, VaccinePackageDetail>()
+                .ForMember(dest => dest.VaccineId, opt => opt.MapFrom(src => src.VaccineId))
+                .ForMember(dest => dest.doseNumber, opt => opt.MapFrom(src => src.DoseNumber));
+            CreateMap<VaccinePackageUpdateRequestDTO, VaccinePackageDetail>()
+                .ForMember(dest => dest.VaccineId, opt => opt.MapFrom(src => src.VaccineId))
+                .ForMember(dest => dest.doseNumber, opt => opt.MapFrom(src => src.DoseNumber));
+
+            // VaccinePackageDetail
+            CreateMap<VaccinePackageDetailsRequestDTO, VaccinePackageDetail>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+            CreateMap<VaccinePackageDetail, VaccinePackageDetailsResponseDTO>();
 
             // VaccineCategory
             CreateMap<VaccineCategoryRequestDTO, VaccineCategory>()
