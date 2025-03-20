@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ModelViews.Requests
+namespace ModelViews.Requests.Payment
 {
     public class PayLaterRequestDTO
     {

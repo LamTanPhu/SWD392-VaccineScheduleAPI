@@ -11,9 +11,12 @@ namespace ModelViews.Requests.VaccinePackage
     {
         [Required]
         public string VaccineId { get; set; }
+
         [Required]
         public string VaccinePackageId { get; set; }
+
         [Required]
-        public int PackagePrice { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Dose number must be greater than 0.")]
+        public int DoseNumber { get; set; }
     }
 }

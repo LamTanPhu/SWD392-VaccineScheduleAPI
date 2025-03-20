@@ -1,75 +1,65 @@
-﻿using IRepositories.IRepository.Accounts;
-using IRepositories.IRepository.Inventory;
-using IRepositories.IRepository;
+﻿using AutoMapper;
+using IRepositories.Entity.Accounts;
+using IRepositories.IRepository.Accounts;
+using IServices.Interfaces.Accounts;
 using ModelViews.Requests.Auth;
 using ModelViews.Responses.Auth;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using IServices.Interfaces.Accounts;
+using Microsoft.AspNetCore.Http;
 
 namespace Services.Services.Accounts
 {
     public class AccountUpdateService : IAccountUpdateService
     {
         private readonly IAccountRepository _accountRepository;
-        private readonly IVaccineCenterRepository _vaccineCenterRepository;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserProfileService _userProfileService;
+        private readonly IJwtService _jwtService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMapper _mapper;
 
         public AccountUpdateService(
             IAccountRepository accountRepository,
-            IVaccineCenterRepository vaccineCenterRepository,
-            IUnitOfWork unitOfWork,
-            IUserProfileService userProfileService)
+            IJwtService jwtService,
+            IHttpContextAccessor httpContextAccessor,
+            IMapper mapper)
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
-            _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _userProfileService = userProfileService ?? throw new ArgumentNullException(nameof(userProfileService));
+            _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-
-        public async Task<ProfileResponseDTO> UpdateAccountAsync(string email, UpdateAccountRequestDTO request)
+        public async Task<ProfileResponseDTO?> UpdateAccountAsync(UpdateAccountRequestDTO request)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var account = await _accountRepository.GetByEmailAsync(email);
-                if (account == null)
-                    throw new Exception("Tài khoản không tồn tại.");
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), "Update request cannot be null.");
 
-                // Cập nhật các trường từ request
-                account.Username = request.Username ?? account.Username; // Giữ nguyên nếu null
-                account.PhoneNumber = request.PhoneNumber;
-                account.ImageProfile = request.ImageProfile;
-                account.LastUpdatedTime = DateTime.Now; // Cập nhật thời gian chỉnh sửa
+            var authHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString();
+            Console.WriteLine($"Raw Authorization Header: '{authHeader}'");
 
-                await _accountRepository.UpdateAsync(account);
-                await _unitOfWork.SaveAsync();
+            if (string.IsNullOrEmpty(authHeader))
+                throw new UnauthorizedAccessException("Token is required.");
 
-                await _unitOfWork.CommitTransactionAsync();
+            var token = authHeader.Trim();
+            var email = _httpContextAccessor.HttpContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            Console.WriteLine($"Middleware Extracted email: '{email}'");
+            if (string.IsNullOrEmpty(email))
+                throw new UnauthorizedAccessException("Invalid token payload.");
 
-                // Trả về thông tin tài khoản đã cập nhật
-                return new ProfileResponseDTO
-                {
-                    AccountId = account.Id,
-                    Username = account.Username,
-                    Email = account.Email,
-                    PhoneNumber = account.PhoneNumber,
-                    ImageProfile = account.ImageProfile,
-                    Role = account.Role.ToString(),
-                    Status = account.Status
-                };
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception($"Cập nhật tài khoản thất bại: {ex.Message}");
-            }
+            var expired = _jwtService.IsTokenExpired(token);
+            Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
+            if (expired)
+                throw new UnauthorizedAccessException("Token has expired.");
+
+            var account = await _accountRepository.GetByEmailAsync(email);
+            if (account == null || account.DeletedTime != null)
+                return null;
+
+            _mapper.Map(request, account);
+            await _accountRepository.UpdateAsync(account);
+            await _accountRepository.SaveAsync();
+
+            return _mapper.Map<ProfileResponseDTO>(account);
         }
-
     }
 }

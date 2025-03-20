@@ -12,8 +12,10 @@ namespace ModelViews.Responses.VaccinePackage
         public string Id { get; set; }
         public string PackageName { get; set; }
         public string? PackageDescription { get; set; }
-        public bool PackageStatus { get; set; }
-        public List<VaccineResponseDTO> Vaccines { get; set; } = new List<VaccineResponseDTO>();
+        public string PackageStatus { get; set; } // Đồng bộ với entity dùng string
+        public int PackagePrice { get; set; }
+        public List<VaccineWithDoseResponseDTO> Vaccines { get; set; } = new List<VaccineWithDoseResponseDTO>();
     }
-
 }
+
+

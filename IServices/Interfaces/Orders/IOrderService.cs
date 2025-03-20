@@ -1,5 +1,5 @@
-﻿using ModelViews.Requests;
-using ModelViews.Requests.Order;
+﻿using ModelViews.Requests.Order;
+using ModelViews.Requests.Payment;
 using ModelViews.Responses.Order;
 using System;
 using System.Collections.Generic;

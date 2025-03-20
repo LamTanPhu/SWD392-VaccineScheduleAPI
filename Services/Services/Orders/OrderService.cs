@@ -1,14 +1,18 @@
-﻿using IRepositories.Entity.Orders;
+﻿using AutoMapper;
+using IRepositories.Entity.Orders;
+using IRepositories.IRepository;
 using IRepositories.IRepository.Accounts;
-using IRepositories.IRepository.Inventory;
 using IRepositories.IRepository.Orders;
 using IRepositories.IRepository.Vaccines;
-using IRepositories.IRepository;
 using IServices.Interfaces.Orders;
-using ModelViews.Requests.Order;
-using ModelViews.Requests;
-using ModelViews.Responses.Order;
 using Microsoft.EntityFrameworkCore;
+using ModelViews.Requests.Order;
+using ModelViews.Requests.Payment;
+using ModelViews.Responses.Order;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services.Services.Orders
 {
@@ -20,19 +24,18 @@ namespace Services.Services.Orders
         private readonly IOrderPackageDetailsRepository _orderPackageDetailsRepository;
         private readonly IVaccineRepository _vaccineRepository;
         private readonly IVaccinePackageRepository _vaccinePackageRepository;
-        private readonly IVaccinePackageDetailsRepository _vaccinePackageDetailRepository;
         private readonly IChildrenProfileRepository _childrenProfileRepository;
-        private readonly IVaccineCenterRepository _vaccineCenterRepository;
+        private readonly IMapper _mapper;
 
-        public OrderService(IUnitOfWork unitOfWork,
-                           IOrderRepository orderRepository,
-                           IOrderVaccineDetailsRepository orderVaccineDetailsRepository,
-                           IOrderPackageDetailsRepository orderPackageDetailsRepository,
-                           IVaccineRepository vaccineRepository,
-                           IVaccinePackageRepository vaccinePackageRepository,
-                           IVaccinePackageDetailsRepository vaccinePackageDetailRepository,
-                           IChildrenProfileRepository childrenProfileRepository,
-                           IVaccineCenterRepository vaccineCenterRepository)
+        public OrderService(
+            IUnitOfWork unitOfWork,
+            IOrderRepository orderRepository,
+            IOrderVaccineDetailsRepository orderVaccineDetailsRepository,
+            IOrderPackageDetailsRepository orderPackageDetailsRepository,
+            IVaccineRepository vaccineRepository,
+            IVaccinePackageRepository vaccinePackageRepository,
+            IChildrenProfileRepository childrenProfileRepository,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
@@ -40,93 +43,32 @@ namespace Services.Services.Orders
             _orderPackageDetailsRepository = orderPackageDetailsRepository ?? throw new ArgumentNullException(nameof(orderPackageDetailsRepository));
             _vaccineRepository = vaccineRepository ?? throw new ArgumentNullException(nameof(vaccineRepository));
             _vaccinePackageRepository = vaccinePackageRepository ?? throw new ArgumentNullException(nameof(vaccinePackageRepository));
-            _vaccinePackageDetailRepository = vaccinePackageDetailRepository ?? throw new ArgumentNullException(nameof(vaccinePackageDetailRepository));
             _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
-            _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        // Các phương thức không thay đổi: GetAllOrdersAsync, GetOrderByIdAsync, GetOrdersByParentIdAsync
         public async Task<IEnumerable<OrderResponseDTO>> GetAllOrdersAsync()
         {
             var orders = await _orderRepository.Entities
                 .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
                 .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
-                .Where(o => o.DeletedTime == null)
                 .ToListAsync();
 
-            return orders.Select(o => new OrderResponseDTO
-            {
-                OrderId = o.Id,
-                ProfileId = o.ProfileId,
-                PurchaseDate = o.PurchaseDate,
-                TotalAmount = o.TotalAmount,
-                TotalOrderPrice = o.TotalOrderPrice,
-                Status = o.Status,
-                VaccineDetails = o.OrderVaccineDetails
-                    .Where(vd => vd.DeletedTime == null)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        OrderVaccineId = vd.Id,
-                        VaccineId = vd.VaccineId,
-                        VaccineName = vd.Vaccine?.Name,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice,
-                        Image = vd.Vaccine?.Image
-                    }).ToList(),
-                PackageDetails = o.OrderPackageDetails
-                    .Where(pd => pd.DeletedTime == null)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        OrderPackageId = pd.Id,
-                        VaccinePackageId = pd.VaccinePackageId,
-                        VaccinePackageName = pd.VaccinePackage?.PackageName,
-                        Description = pd.VaccinePackage?.PackageDescription,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    }).ToList()
-            }).ToList();
+            return _mapper.Map<IEnumerable<OrderResponseDTO>>(orders);
         }
 
         public async Task<OrderResponseDTO?> GetOrderByIdAsync(string id)
         {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("Order ID cannot be null or empty.");
+
             var order = await _orderRepository.Entities
+                .Where(o => o.Id == id)
                 .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
                 .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
-                .FirstOrDefaultAsync(o => o.Id == id && o.DeletedTime == null);
+                .FirstOrDefaultAsync();
 
-            if (order == null) return null;
-
-            return new OrderResponseDTO
-            {
-                OrderId = order.Id,
-                ProfileId = order.ProfileId,
-                PurchaseDate = order.PurchaseDate,
-                TotalAmount = order.TotalAmount,
-                TotalOrderPrice = order.TotalOrderPrice,
-                Status = order.Status,
-                VaccineDetails = order.OrderVaccineDetails
-                    .Where(vd => vd.DeletedTime == null)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        OrderVaccineId = vd.Id,
-                        VaccineId = vd.VaccineId,
-                        VaccineName = vd.Vaccine?.Name,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice,
-                        Image = vd.Vaccine?.Image
-                    }).ToList(),
-                PackageDetails = order.OrderPackageDetails
-                    .Where(pd => pd.DeletedTime == null)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        OrderPackageId = pd.Id,
-                        VaccinePackageId = pd.VaccinePackageId,
-                        VaccinePackageName = pd.VaccinePackage?.PackageName,
-                        Description = pd.VaccinePackage?.PackageDescription,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    }).ToList()
-            };
+            return order == null ? null : _mapper.Map<OrderResponseDTO>(order);
         }
 
         public async Task<IEnumerable<OrderResponseDTO>> GetOrdersByParentIdAsync(string parentId)
@@ -135,61 +77,55 @@ namespace Services.Services.Orders
                 throw new ArgumentException("Parent ID cannot be null or empty.");
 
             var childrenProfiles = await _childrenProfileRepository.Entities
-                .Where(cp => cp.AccountId == parentId && cp.DeletedTime == null)
+                .Where(cp => cp.AccountId == parentId)
+                .Select(cp => cp.Id)
                 .ToListAsync();
 
             if (!childrenProfiles.Any())
                 return new List<OrderResponseDTO>();
 
-            var profileIds = childrenProfiles.Select(cp => cp.Id).ToList();
             var orders = await _orderRepository.Entities
+                .Where(o => childrenProfiles.Contains(o.ProfileId))
                 .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
                 .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
-                .Where(o => profileIds.Contains(o.ProfileId) && o.DeletedTime == null)
                 .ToListAsync();
 
-            return orders.Select(o => new OrderResponseDTO
-            {
-                OrderId = o.Id,
-                ProfileId = o.ProfileId,
-                PurchaseDate = o.PurchaseDate,
-                TotalAmount = o.TotalAmount,
-                TotalOrderPrice = o.TotalOrderPrice,
-                Status = o.Status,
-                VaccineDetails = o.OrderVaccineDetails
-                    .Where(vd => vd.DeletedTime == null)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        OrderVaccineId = vd.Id,
-                        VaccineId = vd.VaccineId,
-                        VaccineName = vd.Vaccine?.Name,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice,
-                        Image = vd.Vaccine?.Image
-                    }).ToList(),
-                PackageDetails = o.OrderPackageDetails
-                    .Where(pd => pd.DeletedTime == null)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        OrderPackageId = pd.Id,
-                        VaccinePackageId = pd.VaccinePackageId,
-                        VaccinePackageName = pd.VaccinePackage?.PackageName,
-                        Description = pd.VaccinePackage?.PackageDescription,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    }).ToList()
-            }).ToList();
+            return _mapper.Map<IEnumerable<OrderResponseDTO>>(orders);
         }
 
-        // Phương thức đã sửa: CreateOrderAsync
+        public async Task<IEnumerable<OrderResponseDTO>> GetPaidOrdersByParentIdAsync(string parentId)
+        {
+            if (string.IsNullOrEmpty(parentId))
+                throw new ArgumentException("Parent ID cannot be null or empty.");
+
+            var childrenProfiles = await _childrenProfileRepository.Entities
+                .Where(cp => cp.AccountId == parentId)
+                .Select(cp => cp.Id)
+                .ToListAsync();
+
+            if (!childrenProfiles.Any())
+                return new List<OrderResponseDTO>();
+
+            var orders = await _orderRepository.Entities
+                .Where(o => childrenProfiles.Contains(o.ProfileId) && o.Status == "Paid")
+                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<OrderResponseDTO>>(orders);
+        }
+
         public async Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO request)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request), "Order request cannot be null.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var profile = await _childrenProfileRepository.GetByIdAsync(request.ProfileId);
                 if (profile == null)
-                    throw new Exception("Profile không tồn tại.");
+                    throw new Exception("Profile does not exist.");
 
                 var order = new Order
                 {
@@ -198,11 +134,10 @@ namespace Services.Services.Orders
                     PurchaseDate = request.PurchaseDate,
                     TotalAmount = 0,
                     TotalOrderPrice = 0,
-                    Status = "Pending",
+                    Status = "Pending"
                 };
 
                 await _orderRepository.InsertAsync(order);
-                await _unitOfWork.SaveAsync();
 
                 int totalAmount = 0;
                 int totalOrderPrice = 0;
@@ -210,10 +145,10 @@ namespace Services.Services.Orders
                 foreach (var vaccineItem in request.Vaccines)
                 {
                     var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
-                    if (vaccine == null)
-                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
+                    if (vaccine == null || vaccine.Status == "0")
+                        throw new Exception($"Vaccine with Id {vaccineItem.VaccineId} not found or inactive.");
                     if (vaccine.QuantityAvailable < vaccineItem.Quantity)
-                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
+                        throw new Exception($"Insufficient quantity for vaccine {vaccine.Name}.");
 
                     var orderVaccineDetail = new OrderVaccineDetails
                     {
@@ -221,7 +156,7 @@ namespace Services.Services.Orders
                         OrderId = order.Id,
                         VaccineId = vaccineItem.VaccineId,
                         Quantity = vaccineItem.Quantity,
-                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
+                        TotalPrice = vaccine.Price * vaccineItem.Quantity
                     };
 
                     await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
@@ -235,11 +170,8 @@ namespace Services.Services.Orders
                 foreach (var packageItem in request.VaccinePackages)
                 {
                     var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
-                    if (package == null)
-                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
-
-                    // Sửa: Lấy PackagePrice trực tiếp từ VaccinePackage thay vì VaccinePackageDetail
-                    var packagePrice = package.PackagePrice;
+                    if (package == null || !package.PackageStatus)
+                        throw new Exception($"VaccinePackage with Id {packageItem.VaccinePackageId} not found or inactive.");
 
                     var orderPackageDetail = new OrderPackageDetails
                     {
@@ -247,7 +179,7 @@ namespace Services.Services.Orders
                         OrderId = order.Id,
                         VaccinePackageId = packageItem.VaccinePackageId,
                         Quantity = packageItem.Quantity,
-                        TotalPrice = packagePrice * packageItem.Quantity,
+                        TotalPrice = package.PackagePrice * packageItem.Quantity
                     };
 
                     await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
@@ -260,35 +192,42 @@ namespace Services.Services.Orders
                 order.TotalOrderPrice = totalOrderPrice;
                 await _orderRepository.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
-                return await GetOrderByIdAsync(order.Id);
+                var createdOrder = await _orderRepository.Entities
+                    .Where(o => o.Id == order.Id)
+                    .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                    .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                    .FirstOrDefaultAsync();
+
+                return _mapper.Map<OrderResponseDTO>(createdOrder);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception(ex.Message);
+                throw new Exception($"Failed to create order: {ex.Message}", ex);
             }
         }
 
-        // Phương thức đã sửa: AddOrderDetailsAsync
         public async Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request)
         {
+            if (request == null || string.IsNullOrEmpty(request.OrderId))
+                throw new ArgumentException("Order ID and details are required.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var order = await _orderRepository.GetByIdAsync(request.OrderId);
                 if (order == null)
-                    throw new Exception("Order không tồn tại.");
+                    throw new Exception("Order does not exist.");
 
                 foreach (var vaccineItem in request.Vaccines)
                 {
                     var vaccine = await _vaccineRepository.GetByIdAsync(vaccineItem.VaccineId);
-                    if (vaccine == null)
-                        throw new Exception($"Không tìm thấy Vaccine với Id: {vaccineItem.VaccineId}");
+                    if (vaccine == null || vaccine.Status == "0")
+                        throw new Exception($"Vaccine with Id {vaccineItem.VaccineId} not found or inactive.");
                     if (vaccine.QuantityAvailable < vaccineItem.Quantity)
-                        throw new Exception($"Số lượng Vaccine {vaccine.Name} không đủ.");
+                        throw new Exception($"Insufficient quantity for vaccine {vaccine.Name}.");
 
                     var orderVaccineDetail = new OrderVaccineDetails
                     {
@@ -296,7 +235,7 @@ namespace Services.Services.Orders
                         OrderId = order.Id,
                         VaccineId = vaccineItem.VaccineId,
                         Quantity = vaccineItem.Quantity,
-                        TotalPrice = vaccine.Price * vaccineItem.Quantity,
+                        TotalPrice = vaccine.Price * vaccineItem.Quantity
                     };
 
                     await _orderVaccineDetailsRepository.InsertAsync(orderVaccineDetail);
@@ -307,11 +246,8 @@ namespace Services.Services.Orders
                 foreach (var packageItem in request.Packages)
                 {
                     var package = await _vaccinePackageRepository.GetByIdAsync(packageItem.VaccinePackageId);
-                    if (package == null)
-                        throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
-
-                    // Sửa: Lấy PackagePrice trực tiếp từ VaccinePackage thay vì VaccinePackageDetail
-                    var packagePrice = package.PackagePrice;
+                    if (package == null || !package.PackageStatus)
+                        throw new Exception($"VaccinePackage with Id {packageItem.VaccinePackageId} not found or inactive.");
 
                     var orderPackageDetail = new OrderPackageDetails
                     {
@@ -319,49 +255,56 @@ namespace Services.Services.Orders
                         OrderId = order.Id,
                         VaccinePackageId = packageItem.VaccinePackageId,
                         Quantity = packageItem.Quantity,
-                        TotalPrice = packagePrice * packageItem.Quantity,
+                        TotalPrice = package.PackagePrice * packageItem.Quantity
                     };
 
                     await _orderPackageDetailsRepository.InsertAsync(orderPackageDetail);
                 }
 
                 var vaccineDetails = await _orderVaccineDetailsRepository.Entities
-                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+                    .Where(vd => vd.OrderId == order.Id)
                     .ToListAsync();
                 var packageDetails = await _orderPackageDetailsRepository.Entities
-                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+                    .Where(pd => pd.OrderId == order.Id)
                     .ToListAsync();
 
                 order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
                 order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
                 await _orderRepository.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
-                return await GetOrderByIdAsync(order.Id);
+                var updatedOrder = await _orderRepository.Entities
+                    .Where(o => o.Id == order.Id)
+                    .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                    .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                    .FirstOrDefaultAsync();
+
+                return _mapper.Map<OrderResponseDTO>(updatedOrder);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception($"Thêm Order Details thất bại: {ex.Message}");
+                throw new Exception($"Failed to add order details: {ex.Message}", ex);
             }
         }
 
-        // Các phương thức không thay đổi: RemoveOrderDetailsAsync, SetPayLaterAsync
         public async Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request)
         {
+            if (request == null || string.IsNullOrEmpty(request.OrderId))
+                throw new ArgumentException("Order ID is required.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var order = await _orderRepository.GetByIdAsync(request.OrderId);
                 if (order == null)
-                    throw new Exception("Order không tồn tại.");
+                    throw new Exception("Order does not exist.");
 
-                foreach (var detailId in request.VaccineDetailIds)
+                foreach (var detailId in request.VaccineDetailIds ?? new List<string>())
                 {
                     var detail = await _orderVaccineDetailsRepository.GetByIdAsync(detailId);
-                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+                    if (detail != null && detail.OrderId == order.Id)
                     {
                         var vaccine = await _vaccineRepository.GetByIdAsync(detail.VaccineId);
                         if (vaccine != null)
@@ -369,126 +312,79 @@ namespace Services.Services.Orders
                             vaccine.QuantityAvailable += detail.Quantity;
                             await _vaccineRepository.UpdateAsync(vaccine);
                         }
-                        detail.DeletedTime = DateTime.Now;
-                        await _orderVaccineDetailsRepository.UpdateAsync(detail);
+                        await _orderVaccineDetailsRepository.DeleteAsync(detail.Id);
                     }
                 }
 
-                foreach (var detailId in request.PackageDetailIds)
+                foreach (var detailId in request.PackageDetailIds ?? new List<string>())
                 {
                     var detail = await _orderPackageDetailsRepository.GetByIdAsync(detailId);
-                    if (detail != null && detail.OrderId == order.Id && detail.DeletedTime == null)
+                    if (detail != null && detail.OrderId == order.Id)
                     {
-                        detail.DeletedTime = DateTime.Now;
-                        await _orderPackageDetailsRepository.UpdateAsync(detail);
+                        await _orderPackageDetailsRepository.DeleteAsync(detail.Id);
                     }
                 }
 
                 var vaccineDetails = await _orderVaccineDetailsRepository.Entities
-                    .Where(vd => vd.OrderId == order.Id && vd.DeletedTime == null)
+                    .Where(vd => vd.OrderId == order.Id)
                     .ToListAsync();
                 var packageDetails = await _orderPackageDetailsRepository.Entities
-                    .Where(pd => pd.OrderId == order.Id && pd.DeletedTime == null)
+                    .Where(pd => pd.OrderId == order.Id)
                     .ToListAsync();
 
                 order.TotalAmount = vaccineDetails.Sum(vd => vd.Quantity) + packageDetails.Sum(pd => pd.Quantity);
                 order.TotalOrderPrice = vaccineDetails.Sum(vd => vd.TotalPrice) + packageDetails.Sum(pd => pd.TotalPrice);
                 await _orderRepository.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
-                return await GetOrderByIdAsync(order.Id);
+                var updatedOrder = await _orderRepository.Entities
+                    .Where(o => o.Id == order.Id)
+                    .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                    .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                    .FirstOrDefaultAsync();
+
+                return _mapper.Map<OrderResponseDTO>(updatedOrder);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception($"Xóa Order Details thất bại: {ex.Message}");
+                throw new Exception($"Failed to remove order details: {ex.Message}", ex);
             }
         }
 
         public async Task<OrderResponseDTO> SetPayLaterAsync(PayLaterRequestDTO request)
         {
+            if (request == null || string.IsNullOrEmpty(request.OrderId))
+                throw new ArgumentException("Order ID is required.");
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var order = await _orderRepository.GetByIdAsync(request.OrderId);
                 if (order == null)
-                    throw new Exception("Order không tồn tại.");
-
+                    throw new Exception("Order does not exist.");
                 if (order.Status != "Pending")
-                    throw new Exception("Chỉ có thể chuyển sang PayLater từ trạng thái Pending.");
+                    throw new Exception("Can only set PayLater from Pending status.");
 
                 order.Status = "PayLater";
-                order.LastUpdatedTime = DateTime.Now;
-
                 await _orderRepository.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
-                return await GetOrderByIdAsync(order.Id);
+                var updatedOrder = await _orderRepository.Entities
+                    .Where(o => o.Id == order.Id)
+                    .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
+                    .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
+                    .FirstOrDefaultAsync();
+
+                return _mapper.Map<OrderResponseDTO>(updatedOrder);
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception($"Chuyển trạng thái sang PayLater thất bại: {ex.Message}");
+                throw new Exception($"Failed to set pay later: {ex.Message}", ex);
             }
-        }
-
-        public async Task<IEnumerable<OrderResponseDTO>> GetPaidOrdersByParentIdAsync(string parentId)
-        {
-            if (string.IsNullOrEmpty(parentId))
-                throw new ArgumentException("Parent ID cannot be null or empty.");
-
-            // Fetch all ChildrenProfiles for the Parent
-            var childrenProfiles = await _childrenProfileRepository.Entities
-                .Where(cp => cp.AccountId == parentId && cp.DeletedTime == null)
-                .ToListAsync();
-
-            if (!childrenProfiles.Any())
-                return new List<OrderResponseDTO>(); // Return empty list if no profiles exist
-
-            // Fetch all "Paid" Orders for the ChildrenProfiles
-            var profileIds = childrenProfiles.Select(cp => cp.Id).ToList();
-            var orders = await _orderRepository.Entities
-                .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
-                .Include(o => o.OrderPackageDetails).ThenInclude(pd => pd.VaccinePackage)
-                .Where(o => profileIds.Contains(o.ProfileId) && o.Status == "Paid" && o.DeletedTime == null)
-                .ToListAsync();
-
-            // Map to OrderResponseDTO
-            return orders.Select(o => new OrderResponseDTO
-            {
-                OrderId = o.Id,
-                ProfileId = o.ProfileId,
-                PurchaseDate = o.PurchaseDate,
-                TotalAmount = o.TotalAmount,
-                TotalOrderPrice = o.TotalOrderPrice,
-                Status = o.Status,
-                VaccineDetails = o.OrderVaccineDetails
-                    .Where(vd => vd.DeletedTime == null)
-                    .Select(vd => new OrderVaccineDetailResponseDTO
-                    {
-                        OrderVaccineId = vd.Id,
-                        VaccineId = vd.VaccineId,
-                        VaccineName = vd.Vaccine?.Name,
-                        Quantity = vd.Quantity,
-                        TotalPrice = vd.TotalPrice,
-                        Image = vd.Vaccine?.Image
-                    }).ToList(),
-                PackageDetails = o.OrderPackageDetails
-                    .Where(pd => pd.DeletedTime == null)
-                    .Select(pd => new OrderPackageDetailResponseDTO
-                    {
-                        OrderPackageId = pd.Id,
-                        VaccinePackageId = pd.VaccinePackageId,
-                        VaccinePackageName = pd.VaccinePackage?.PackageName,
-                        Description = pd.VaccinePackage?.PackageDescription,
-                        Quantity = pd.Quantity,
-                        TotalPrice = pd.TotalPrice
-                    }).ToList()
-            }).ToList();
         }
     }
 }

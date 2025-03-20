@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using IRepositories.Entity.Accounts;
 using IServices.Interfaces.Accounts;
-using System.Security.Claims;
 using ModelViews.Responses.Auth;
 using ModelViews.Requests.Auth;
+using System.Threading.Tasks;
 
 namespace VaccineScheduleAPI.Controllers
 {
@@ -15,7 +13,6 @@ namespace VaccineScheduleAPI.Controllers
     {
         private readonly IUserProfileService _userProfileService;
         private readonly IAccountUpdateService _accountUpdateService;
-
         private readonly IJwtService _jwtService;
 
         public UsersController(
@@ -32,72 +29,67 @@ namespace VaccineScheduleAPI.Controllers
         [HttpGet("profile")]
         public async Task<ActionResult<ProfileResponseDTO>> GetProfileAsync()
         {
-            var authHeader = Request.Headers["Authorization"].ToString();
-            Console.WriteLine($"Raw Authorization Header: '{authHeader}'");
-
-            if (string.IsNullOrEmpty(authHeader))
-                return Unauthorized(new { Message = "Token is required." });
-
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
-            Console.WriteLine($"Middleware Extracted email: '{email}'");
-            if (string.IsNullOrEmpty(email))
-                return Unauthorized(new { Message = "Invalid token payload." });
-
-            var token = authHeader.Trim();
-            var expired = _jwtService.IsTokenExpired(token);
-            Console.WriteLine($"Token Expired: {expired}, Expiration: {_jwtService.ExtractExpiration(token)}, Now: {DateTime.UtcNow}");
-            if (expired)
-                return Unauthorized(new { Message = "Token has expired." });
-
-            var profileData = await _userProfileService.GetProfileByEmailAsync(email);
-            if (profileData == null)
-                return NotFound(new { Message = "User not found or deleted." });
-
-            var response = new ProfileResponseDTO
+            try
             {
-                AccountId = profileData.AccountId,
-                Username = profileData.Username,
-                Email = profileData.Email ?? "Not provided",
-                Role = profileData.Role,
-                Status = profileData.Status ?? "Active",
-                VaccineCenter = profileData.VaccineCenter,
-                ChildrenProfiles = profileData.ChildrenProfiles
-            };
-            Console.WriteLine($"Final Response DTO: Username={response.Username}, Email={response.Email}, Status={response.Status}, Role={response.Role}");
-            return new JsonResult(response); // Force DTO
+                var profile = await _userProfileService.GetProfileAsync(); // Đẩy logic lấy email và kiểm tra token xuống service
+                if (profile == null)
+                    return NotFound();
+
+                return Ok(profile);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message); // Chỉ catch lỗi HTTP, ném exception khác ra ngoài
+            }
         }
 
         [Authorize(Roles = "Admin, Staff, Parent")]
         [HttpGet("by-email/{email}")]
-        public async Task<ActionResult<Account>> GetUserByEmailAsync(string email)
+        public async Task<ActionResult<ProfileResponseDTO>> GetUserByEmailAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
-                return BadRequest(new { Message = "Email is required." });
+                return BadRequest("Email is required.");
 
-            var user = await _userProfileService.GetUserByEmailAsync(email);
-            if (user == null || user.DeletedTime != null)
-                return NotFound(new { Message = "User not found or deleted." });
-
-            return Ok(user);
-        }
-
-
-        [HttpPut("update-profile")]
-        [Authorize] //will restrict roles later
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateAccountRequestDTO request)
-        {
             try
             {
-                var email = User.FindFirst(ClaimTypes.Email)?.Value;
-                if (string.IsNullOrEmpty(email))
-                    return Unauthorized(new { Message = "Invalid token payload." });
+                var profile = await _userProfileService.GetProfileByEmailAsync(email);
+                if (profile == null)
+                    return NotFound();
 
-                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(email, request);
-                return Ok(updatedProfile);
+                return Ok(profile);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin, Staff, Parent")]
+        [HttpPut("update-profile")]
+        public async Task<ActionResult<ProfileResponseDTO>> UpdateProfile([FromBody] UpdateAccountRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var updatedProfile = await _accountUpdateService.UpdateAccountAsync(request); // Đẩy logic lấy email và kiểm tra token xuống service
+                if (updatedProfile == null)
+                    return NotFound();
+
+                return Ok(updatedProfile);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

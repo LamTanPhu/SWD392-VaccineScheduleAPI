@@ -16,7 +16,7 @@ namespace ModelViews.Requests.VaccinePackage
         public int PackagePrice { get; set; }
 
         [Required]
-        public List<string> VaccineIds { get; set; } // THE LIST OF VACCINE IDS TO CREATE THE PACKAGE
+        public List<VaccineDoseRequestDTO> VaccineDoses { get; set; }
     }
 
 
