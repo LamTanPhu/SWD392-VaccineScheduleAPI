@@ -11,8 +11,10 @@ namespace IServices.Interfaces.Inventory
 {
     public interface IVaccineBatchService
     {
-        Task<VaccineBatch?> GetByBatchNumberAsync(string batchNumber);
-        Task<AddVaccineBatchResponseDTO> AddBatchAsync(AddVaccineBatchRequestDTO request);
+        Task<IEnumerable<VaccineBatchResponseDTO>> GetAllAsync();
+        Task<VaccineBatchResponseDTO?> GetByBatchNumberAsync(string batchNumber);
         Task<IEnumerable<VaccineBatchResponseDTO>> SearchByNameAsync(string name);
+        Task<VaccineBatchResponseDTO> CreateAsync(AddVaccineBatchRequestDTO request);
+        Task DeleteAsync(string id);
     }
 }

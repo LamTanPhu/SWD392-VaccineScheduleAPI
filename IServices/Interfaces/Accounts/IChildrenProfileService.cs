@@ -10,15 +10,9 @@ namespace IServices.Interfaces.Accounts
 {
     public interface IChildrenProfileService
     {
-        Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesAsync();
-        Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllProfilesByAccountIdAsync(string accountId);
-        Task<ChildrenProfileResponseDTO?> GetProfileByIdAsync(string id);
-        //Task AddProfileAsync(ChildrenProfileRequestDTO profileDto);
-        //Task<ChildrenProfileResponseDTO> AddProfileAsync(ChildrenProfileRequestDTO profileDto);
-        //Task UpdateProfileAsync(string id, ChildrenProfileRequestDTO profileDto);
-        Task UpdateProfileAsync(string id, ChildrenProfileCreateUpdateDTO profileDto);
-        Task<ChildrenProfileResponseDTO> AddProfileAsync(string accountId, ChildrenProfileCreateUpdateDTO profileDto);
-
-        Task DeleteProfileAsync(string id);
+        Task<IEnumerable<ChildrenProfileResponseDTO>> GetMyChildrenProfilesAsync(string userEmail);
+        Task<ChildrenProfileResponseDTO> CreateProfileAsync(string userEmail, ChildrenProfileCreateUpdateDTO profileDto);
+        Task UpdateProfileAsync(string id, string userEmail, ChildrenProfileCreateUpdateDTO profileDto);
+        Task DeleteProfileAsync(string id, string userEmail);
     }
 }

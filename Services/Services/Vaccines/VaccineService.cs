@@ -1,16 +1,16 @@
-﻿using IRepositories.Entity.Vaccines;
-using IRepositories.IRepository.Vaccines;
+﻿using AutoMapper;
+using IRepositories.Entity.Vaccines;
 using IRepositories.IRepository;
+using IRepositories.IRepository.Vaccines;
 using IServices.Interfaces.Vaccines;
+using Microsoft.EntityFrameworkCore;
 using ModelViews.Requests.Vaccine;
 using ModelViews.Responses.Vaccine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 
 namespace Services.Services.Vaccines
 {
@@ -18,45 +18,26 @@ namespace Services.Services.Vaccines
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVaccineRepository _repository;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private const string ImgBBApiKey = "bae68497dea95ef8d4911c8d98f34b5c"; // Thay bằng API key của bạn
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IMapper _mapper;
 
-        public VaccineService(IUnitOfWork unitOfWork, IVaccineRepository repository, IHttpClientFactory httpClientFactory)
+        public VaccineService(IUnitOfWork unitOfWork, IVaccineRepository repository, IImageUploadService imageUploadService, IMapper mapper)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            _imageUploadService = imageUploadService ?? throw new ArgumentNullException(nameof(imageUploadService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<IEnumerable<VaccineResponseDTO>> GetAllVaccinesAsync()
         {
             var vaccines = await _repository.Entities
-                .Where(v => v.Status != "0") // Only active vaccines
-                .Include(v => v.Batch) // Include Batch
-                .ThenInclude(b => b.Manufacturer) // Then include Manufacturer
+                .Where(v => v.Status != "0") // Lọc soft delete
+                .Include(v => v.Batch)
+                .ThenInclude(b => b.Manufacturer)
                 .ToListAsync();
 
-            return vaccines.Select(v => new VaccineResponseDTO
-            {
-                Id = v.Id,
-                Name = v.Name,
-                IngredientsDescription = v.IngredientsDescription,
-                UnitOfVolume = v.UnitOfVolume,
-                MinAge = v.MinAge,
-                MaxAge = v.MaxAge,
-                BetweenPeriod = v.BetweenPeriod,
-                QuantityAvailable = v.QuantityAvailable,
-                Price = v.Price,
-                ProductionDate = v.ProductionDate,
-                ExpirationDate = v.ExpirationDate,
-                Status = v.Status,
-                VaccineCategoryId = v.VaccineCategoryId,
-                BatchId = v.BatchId,
-                Image = v.Image,
-                // Map Manufacturer details
-                ManufacturerName = v.Batch?.Manufacturer?.Name,
-                ManufacturerCountry = v.Batch?.Manufacturer?.CountryName
-            }).ToList();
+            return _mapper.Map<IEnumerable<VaccineResponseDTO>>(vaccines);
         }
 
         public async Task<VaccineResponseDTO?> GetVaccineByIdAsync(string id)
@@ -64,137 +45,86 @@ namespace Services.Services.Vaccines
             var vaccine = await _repository.GetByIdAsync(id);
             if (vaccine == null || vaccine.Status == "0") return null;
 
-            return new VaccineResponseDTO
-            {
-                Id = vaccine.Id,
-                Name = vaccine.Name,
-                IngredientsDescription = vaccine.IngredientsDescription,
-                UnitOfVolume = vaccine.UnitOfVolume,
-                MinAge = vaccine.MinAge,
-                MaxAge = vaccine.MaxAge,
-                BetweenPeriod = vaccine.BetweenPeriod,
-                QuantityAvailable = vaccine.QuantityAvailable,
-                Price = vaccine.Price,
-                ProductionDate = vaccine.ProductionDate,
-                ExpirationDate = vaccine.ExpirationDate,
-                Status = vaccine.Status,
-                VaccineCategoryId = vaccine.VaccineCategoryId,
-                BatchId = vaccine.BatchId,
-                Image = vaccine.Image
-            };
+            // Include Batch và Manufacturer nếu cần
+            await _repository.Entities
+                .Where(v => v.Id == id)
+                .Include(v => v.Batch)
+                .ThenInclude(b => b.Manufacturer)
+                .FirstOrDefaultAsync();
+
+            return _mapper.Map<VaccineResponseDTO>(vaccine);
         }
 
         public async Task<VaccineResponseDTO> AddVaccineAsync(VaccineRequestDTO vaccineDto)
         {
-            string imageUrl = vaccineDto.Image != null ? await UploadImageToImgBB(vaccineDto.Image) : null;
-
-            var vaccine = new Vaccine
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                Id = Guid.NewGuid().ToString(),
-                Name = vaccineDto.Name,
-                IngredientsDescription = vaccineDto.IngredientsDescription,
-                UnitOfVolume = vaccineDto.UnitOfVolume,
-                MinAge = vaccineDto.MinAge,
-                MaxAge = vaccineDto.MaxAge,
-                BetweenPeriod = vaccineDto.BetweenPeriod,
-                QuantityAvailable = vaccineDto.QuantityAvailable,
-                Price = vaccineDto.Price,
-                ProductionDate = vaccineDto.ProductionDate,
-                ExpirationDate = vaccineDto.ExpirationDate,
-                Status = "1", // Mặc định active khi tạo mới
-                VaccineCategoryId = vaccineDto.VaccineCategoryId,
-                BatchId = vaccineDto.BatchId,
-                Image = imageUrl
-            };
+                string imageUrl = vaccineDto.Image != null ? await _imageUploadService.UploadImageAsync(vaccineDto.Image) : null;
 
-            await _repository.InsertAsync(vaccine);
-            await _unitOfWork.SaveAsync();
+                var vaccine = _mapper.Map<Vaccine>(vaccineDto);
+                vaccine.Status = "1"; 
+                vaccine.Image = imageUrl;
 
-            return new VaccineResponseDTO
+                await _repository.InsertAsync(vaccine);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<VaccineResponseDTO>(vaccine);
+            }
+            catch (Exception ex)
             {
-                Id = vaccine.Id,
-                Name = vaccine.Name,
-                IngredientsDescription = vaccine.IngredientsDescription,
-                UnitOfVolume = vaccine.UnitOfVolume,
-                MinAge = vaccine.MinAge,
-                MaxAge = vaccine.MaxAge,
-                BetweenPeriod = vaccine.BetweenPeriod,
-                QuantityAvailable = vaccine.QuantityAvailable,
-                Price = vaccine.Price,
-                ProductionDate = vaccine.ProductionDate,
-                ExpirationDate = vaccine.ExpirationDate,
-                Status = vaccine.Status,
-                VaccineCategoryId = vaccine.VaccineCategoryId,
-                BatchId = vaccine.BatchId,
-                Image = vaccine.Image
-            };
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to add vaccine.", ex);
+            }
         }
 
-        public async Task UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto)
+        public async Task<VaccineResponseDTO?> UpdateVaccineAsync(string id, VaccineRequestDTO vaccineDto)
         {
-            var existingVaccine = await _repository.GetByIdAsync(id);
-            if (existingVaccine == null || existingVaccine.Status == "0")
-                throw new Exception("Vaccine not found.");
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var existingVaccine = await _repository.GetByIdAsync(id);
+                if (existingVaccine == null || existingVaccine.Status == "0")
+                    return null; 
 
-            string imageUrl = vaccineDto.Image != null ? await UploadImageToImgBB(vaccineDto.Image) : existingVaccine.Image;
+                string imageUrl = vaccineDto.Image != null ? await _imageUploadService.UploadImageAsync(vaccineDto.Image) : existingVaccine.Image;
 
-            existingVaccine.Name = vaccineDto.Name;
-            existingVaccine.IngredientsDescription = vaccineDto.IngredientsDescription;
-            existingVaccine.UnitOfVolume = vaccineDto.UnitOfVolume;
-            existingVaccine.MinAge = vaccineDto.MinAge;
-            existingVaccine.MaxAge = vaccineDto.MaxAge;
-            existingVaccine.BetweenPeriod = vaccineDto.BetweenPeriod;
-            existingVaccine.QuantityAvailable = vaccineDto.QuantityAvailable;
-            existingVaccine.Price = vaccineDto.Price;
-            existingVaccine.ProductionDate = vaccineDto.ProductionDate;
-            existingVaccine.ExpirationDate = vaccineDto.ExpirationDate;
-            existingVaccine.VaccineCategoryId = vaccineDto.VaccineCategoryId;
-            existingVaccine.BatchId = vaccineDto.BatchId;
-            existingVaccine.Image = imageUrl;
+                _mapper.Map(vaccineDto, existingVaccine);
+                existingVaccine.Image = imageUrl;
 
-            await _repository.UpdateAsync(existingVaccine);
-            await _unitOfWork.SaveAsync();
+                await _repository.UpdateAsync(existingVaccine);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return _mapper.Map<VaccineResponseDTO>(existingVaccine);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to update vaccine: " + ex.Message, ex);
+            }
         }
 
         public async Task DeleteVaccineAsync(string id)
         {
-            var vaccine = await _repository.GetByIdAsync(id);
-            if (vaccine == null || vaccine.Status == "0")
-                throw new Exception("Vaccine not found.");
-
-            vaccine.Status = "0"; // Soft delete
-
-            await _repository.UpdateAsync(vaccine);
-            await _unitOfWork.SaveAsync();
-        }
-
-        private async Task<string> UploadImageToImgBB(IFormFile image)
-        {
-            if (image == null || image.Length == 0)
-                throw new Exception("Invalid image file.");
-
-            using var memoryStream = new MemoryStream();
-            await image.CopyToAsync(memoryStream);
-            byte[] imageBytes = memoryStream.ToArray();
-            string base64Image = Convert.ToBase64String(imageBytes);
-
-            using var client = _httpClientFactory.CreateClient();
-            using var formData = new MultipartFormDataContent
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                { new StringContent(ImgBBApiKey), "key" },
-                { new StringContent(base64Image), "image" }
-            };
+                var vaccine = await _repository.GetByIdAsync(id);
+                if (vaccine == null || vaccine.Status == "0")
+                    throw new Exception("Vaccine not found.");
 
-            var response = await client.PostAsync("https://api.imgbb.com/1/upload", formData);
-            var responseBody = await response.Content.ReadAsStringAsync();
-
-            using var jsonDoc = JsonDocument.Parse(responseBody);
-            var root = jsonDoc.RootElement;
-
-            if (!root.GetProperty("success").GetBoolean())
-                throw new Exception("Image upload failed.");
-
-            return root.GetProperty("data").GetProperty("url").GetString();
+                vaccine.Status = "0";
+                await _repository.UpdateAsync(vaccine);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to delete vaccine.", ex);
+            }
         }
     }
 }

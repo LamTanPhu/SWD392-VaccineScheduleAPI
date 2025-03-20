@@ -15,6 +15,7 @@ using IServices.Interfaces.Schedules;
 using Services.Services.Schedules;
 using IServices.Interfaces.Orders;
 using Services.Services.Orders;
+using ModelViews.Config;
 
 namespace VaccineScheduleAPI
 {
@@ -25,6 +26,7 @@ namespace VaccineScheduleAPI
             services.AddDatabaseContext(configuration); // Call the repository layer's method
             services.AddRepositories();                 // Registers Repositories from Services Project
             services.AddServices(configuration);        // Registers Services (API-Specific)
+
         }
 
         private static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -33,7 +35,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IVaccinePackageService, VaccinePackageService>();
-            services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
+            //services.AddScoped<IVaccinePackageDetailsService, VaccinePackageDetailsService>();
             services.AddScoped<IVaccineService, VaccineService>();
             services.AddScoped<IManufacturerService, ManufacturerService>();
             services.AddScoped<IVaccineBatchService, VaccineBatchService>();
@@ -53,13 +55,19 @@ namespace VaccineScheduleAPI
             services.AddScoped<IAccountUpdateService, AccountUpdateService>();
             services.AddScoped<IVaccineReactionService, VaccineReactionService>();
             services.AddScoped<IVaccineHistoryService, VaccineHistoryService>();
-
+            services.AddScoped<IImageUploadService, ImageUploadService>();
 
             // Register Email Settings
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
             // Register Email Service
             services.AddTransient<IEmailService, EmailService>();
+
+            //Send forgot password configuaration for Email
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+
+            //Register Configuaration for VNPay
+            services.Configure<VNPayConfig>(configuration.GetSection("VNPay"));
         }
     }
 }

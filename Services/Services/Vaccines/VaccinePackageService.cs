@@ -30,7 +30,7 @@
         public async Task<IEnumerable<VaccinePackageResponseDTO>> GetAllPackagesAsync()
         {
             var packages = await _vaccinePackageRepository.Entities
-                .Where(p => p.PackageStatus) // only active packages
+                .Where(p => p.PackageStatus)
                 .Include(p => p.PackageDetails)
                 .ThenInclude(pd => pd.Vaccine)
                 .ToListAsync();
@@ -99,6 +99,7 @@
             };
         }
 
+        // Phương thức đã sửa: AddPackageAsync
         public async Task<VaccinePackageResponseDTO> AddPackageAsync(VaccinePackageRequestDTO packageDto)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -109,7 +110,8 @@
                     Id = Guid.NewGuid().ToString(),
                     PackageName = packageDto.PackageName,
                     PackageDescription = packageDto.PackageDescription,
-                    PackageStatus = true // Mặc định active
+                    PackageStatus = true,
+                    PackagePrice = packageDto.PackagePrice // Giả định DTO có PackagePrice
                 };
 
                 await _vaccinePackageRepository.InsertAsync(package);
@@ -124,8 +126,8 @@
                     {
                         Id = Guid.NewGuid().ToString(),
                         VaccineId = vaccineId,
-                        VaccinePackageId = package.Id,
-                        PackagePrice = vaccine.Price // Giá từ Vaccine
+                        VaccinePackageId = package.Id
+                        // Loại bỏ PackagePrice vì nó không còn trong VaccinePackageDetail
                     };
                     await _vaccinePackageDetailRepository.InsertAsync(packageDetail);
                 }
@@ -172,6 +174,7 @@
             }
         }
 
+        // Phương thức đã sửa: UpdatePackageAsync
         public async Task UpdatePackageAsync(string id, VaccinePackageRequestDTO packageDto)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -183,15 +186,14 @@
 
                 existingPackage.PackageName = packageDto.PackageName;
                 existingPackage.PackageDescription = packageDto.PackageDescription;
+                existingPackage.PackagePrice = packageDto.PackagePrice; // Giả định DTO có PackagePrice
 
-                // Xóa tất cả VaccinePackageDetail cũ
                 var oldDetails = await _vaccinePackageDetailRepository.Entities
                     .Where(pd => pd.VaccinePackageId == id)
                     .ToListAsync();
                 foreach (var detail in oldDetails)
                     await _vaccinePackageDetailRepository.DeleteAsync(detail.Id);
 
-                // Thêm lại các Vaccine mới từ DTO
                 foreach (var vaccineId in packageDto.VaccineIds)
                 {
                     var vaccine = await _vaccineRepository.GetByIdAsync(vaccineId);
@@ -202,8 +204,8 @@
                     {
                         Id = Guid.NewGuid().ToString(),
                         VaccineId = vaccineId,
-                        VaccinePackageId = id,
-                        PackagePrice = vaccine.Price
+                        VaccinePackageId = id
+                        // Loại bỏ PackagePrice
                     };
                     await _vaccinePackageDetailRepository.InsertAsync(packageDetail);
                 }
@@ -219,6 +221,7 @@
             }
         }
 
+        // Phương thức đã sửa: AddVaccineToPackageAsync
         public async Task AddVaccineToPackageAsync(string packageId, VaccinePackageUpdateRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -241,8 +244,8 @@
                 {
                     Id = Guid.NewGuid().ToString(),
                     VaccineId = request.VaccineId,
-                    VaccinePackageId = packageId,
-                    PackagePrice = vaccine.Price
+                    VaccinePackageId = packageId
+                    // Loại bỏ PackagePrice
                 };
                 await _vaccinePackageDetailRepository.InsertAsync(packageDetail);
 
@@ -256,6 +259,7 @@
             }
         }
 
+        // Các phương thức không thay đổi: RemoveVaccineFromPackageAsync, DeletePackageAsync, GetAllVaccinesAndPackagesAsync
         public async Task RemoveVaccineFromPackageAsync(string packageId, VaccinePackageUpdateRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -290,7 +294,7 @@
                 if (package == null || !package.PackageStatus)
                     throw new Exception("Vaccine package not found or inactive.");
 
-                package.PackageStatus = false; // Soft delete
+                package.PackageStatus = false;
                 await _vaccinePackageRepository.UpdateAsync(package);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();

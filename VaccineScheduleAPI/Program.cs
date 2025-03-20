@@ -13,11 +13,6 @@ using Services.Services.Accounts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Send forgot password configuaration for Email
-builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-
-//Register Configuaration for VNPay
-builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("VNPay"));
 
 // Register HttpClient 
 builder.Services.AddHttpClient();

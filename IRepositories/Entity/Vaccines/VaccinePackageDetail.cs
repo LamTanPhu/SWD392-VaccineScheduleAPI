@@ -16,7 +16,8 @@ namespace IRepositories.Entity.Vaccines
         public string VaccineId { get; set; }
         [ForeignKey("VaccinePackage")]
         public string VaccinePackageId { get; set; }
-        public int PackagePrice { get; set; }
+
+        public int doseNumber { get; set; }
         // Navigation properties
         public virtual Vaccine Vaccine { get; set; }
         public virtual VaccinePackage VaccinePackage { get; set; }

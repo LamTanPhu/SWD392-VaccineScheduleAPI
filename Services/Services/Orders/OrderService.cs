@@ -45,6 +45,7 @@ namespace Services.Services.Orders
             _vaccineCenterRepository = vaccineCenterRepository ?? throw new ArgumentNullException(nameof(vaccineCenterRepository));
         }
 
+        // Các phương thức không thay đổi: GetAllOrdersAsync, GetOrderByIdAsync, GetOrdersByParentIdAsync
         public async Task<IEnumerable<OrderResponseDTO>> GetAllOrdersAsync()
         {
             var orders = await _orderRepository.Entities
@@ -133,15 +134,13 @@ namespace Services.Services.Orders
             if (string.IsNullOrEmpty(parentId))
                 throw new ArgumentException("Parent ID cannot be null or empty.");
 
-            // Lấy tất cả ChildrenProfiles của Parent
             var childrenProfiles = await _childrenProfileRepository.Entities
                 .Where(cp => cp.AccountId == parentId && cp.DeletedTime == null)
                 .ToListAsync();
 
             if (!childrenProfiles.Any())
-                return new List<OrderResponseDTO>(); // Trả về danh sách rỗng nếu không có profile nào
+                return new List<OrderResponseDTO>();
 
-            // Lấy tất cả Order của các ChildrenProfiles
             var profileIds = childrenProfiles.Select(cp => cp.Id).ToList();
             var orders = await _orderRepository.Entities
                 .Include(o => o.OrderVaccineDetails).ThenInclude(vd => vd.Vaccine)
@@ -149,7 +148,6 @@ namespace Services.Services.Orders
                 .Where(o => profileIds.Contains(o.ProfileId) && o.DeletedTime == null)
                 .ToListAsync();
 
-            // Ánh xạ sang OrderResponseDTO
             return orders.Select(o => new OrderResponseDTO
             {
                 OrderId = o.Id,
@@ -183,8 +181,7 @@ namespace Services.Services.Orders
             }).ToList();
         }
 
-
-
+        // Phương thức đã sửa: CreateOrderAsync
         public async Task<OrderResponseDTO> CreateOrderAsync(OrderRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -241,9 +238,8 @@ namespace Services.Services.Orders
                     if (package == null)
                         throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
 
-                    var packagePrice = await _vaccinePackageDetailRepository.Entities
-                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
-                        .SumAsync(d => d.PackagePrice);
+                    // Sửa: Lấy PackagePrice trực tiếp từ VaccinePackage thay vì VaccinePackageDetail
+                    var packagePrice = package.PackagePrice;
 
                     var orderPackageDetail = new OrderPackageDetails
                     {
@@ -276,6 +272,7 @@ namespace Services.Services.Orders
             }
         }
 
+        // Phương thức đã sửa: AddOrderDetailsAsync
         public async Task<OrderResponseDTO> AddOrderDetailsAsync(AddOrderDetailsRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -313,9 +310,8 @@ namespace Services.Services.Orders
                     if (package == null)
                         throw new Exception($"Không tìm thấy VaccinePackage với Id: {packageItem.VaccinePackageId}");
 
-                    var packagePrice = await _vaccinePackageDetailRepository.Entities
-                        .Where(d => d.VaccinePackageId == packageItem.VaccinePackageId)
-                        .SumAsync(d => d.PackagePrice);
+                    // Sửa: Lấy PackagePrice trực tiếp từ VaccinePackage thay vì VaccinePackageDetail
+                    var packagePrice = package.PackagePrice;
 
                     var orderPackageDetail = new OrderPackageDetails
                     {
@@ -352,6 +348,7 @@ namespace Services.Services.Orders
             }
         }
 
+        // Các phương thức không thay đổi: RemoveOrderDetailsAsync, SetPayLaterAsync
         public async Task<OrderResponseDTO> RemoveOrderDetailsAsync(RemoveOrderDetailsRequestDTO request)
         {
             await _unitOfWork.BeginTransactionAsync();

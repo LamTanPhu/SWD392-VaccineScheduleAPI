@@ -14,38 +14,46 @@ namespace VaccineScheduleAPI.Controllers
 
         public VaccineCategoryController(IVaccineCategoryService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VaccineCategoryResponseDTO>>> GetAll()
         {
-            return Ok(await _service.GetAllCategoriesAsync());
+            var categories = await _service.GetAllAsync();
+            return Ok(categories);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<VaccineCategoryResponseDTO>> GetById(string id)
         {
-            var category = await _service.GetCategoryByIdAsync(id);
-            if (category == null) return NotFound();
+            var category = await _service.GetByIdAsync(id);
+            if (category == null)
+                return NotFound($"Vaccine category with ID {id} not found.");
             return Ok(category);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult> Create(VaccineCategoryRequestDTO categoryDto)
+        public async Task<ActionResult<VaccineCategoryResponseDTO>> Create([FromBody] VaccineCategoryRequestDTO categoryDto)
         {
-            await _service.AddCategoryAsync(categoryDto);
-            return CreatedAtAction(nameof(GetById), new { id = categoryDto.CategoryName }, categoryDto);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdCategory = await _service.CreateAsync(categoryDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdCategory.Id }, createdCategory);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(string id, VaccineCategoryRequestDTO categoryDto)
+        public async Task<ActionResult> Update(string id, [FromBody] VaccineCategoryRequestDTO categoryDto)
         {
-            await _service.UpdateCategoryAsync(id, categoryDto);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _service.UpdateAsync(id, categoryDto);
             return NoContent();
         }
 
@@ -53,7 +61,7 @@ namespace VaccineScheduleAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            await _service.DeleteCategoryAsync(id);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
     }
