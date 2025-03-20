@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using IRepositories.Entity.Accounts;
 using IRepositories.Entity.Inventory;
+using IRepositories.Entity.Orders;
 using IRepositories.Entity.Vaccines;
 using ModelViews.Requests.Auth;
 using ModelViews.Requests.ChildrenProfile;
 using ModelViews.Requests.Manufacturer;
+using ModelViews.Requests.Order;
 using ModelViews.Requests.Vaccine;
 using ModelViews.Requests.VaccineBatch;
 using ModelViews.Requests.VaccineCategory;
@@ -13,6 +15,7 @@ using ModelViews.Requests.VaccinePackage;
 using ModelViews.Responses.Auth;
 using ModelViews.Responses.ChildrenProfile;
 using ModelViews.Responses.Manufacturer;
+using ModelViews.Responses.Order;
 using ModelViews.Responses.Vaccine;
 using ModelViews.Responses.VaccineBatch;
 using ModelViews.Responses.VaccineCategory;
@@ -110,6 +113,27 @@ namespace IServices.Mapper
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email ?? "Not provided"))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status ?? "1"));
+            // Order
+            CreateMap<OrderRequestDTO, Order>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.PurchaseDate, opt => opt.Ignore());
+            CreateMap<Order, OrderResponseDTO>()
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.VaccineDetails, opt => opt.MapFrom(src => src.OrderVaccineDetails))
+                .ForMember(dest => dest.PackageDetails, opt => opt.MapFrom(src => src.OrderPackageDetails));
+
+            // OrderVaccineDetails
+            CreateMap<OrderVaccineDetails, OrderVaccineDetailResponseDTO>()
+                .ForMember(dest => dest.OrderVaccineId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.VaccineName, opt => opt.MapFrom(src => src.Vaccine.Name))
+                .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Vaccine.Image));
+
+            // OrderPackageDetails
+            CreateMap<OrderPackageDetails, OrderPackageDetailResponseDTO>()
+                .ForMember(dest => dest.OrderPackageId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.VaccinePackageName, opt => opt.MapFrom(src => src.VaccinePackage.PackageName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.VaccinePackage.PackageDescription));
 
         }
     }
