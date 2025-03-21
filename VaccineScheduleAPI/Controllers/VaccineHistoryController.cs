@@ -20,7 +20,7 @@ namespace VaccineScheduleAPI.Controllers
 
         [HttpPost("sendDocument")]
         [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Staff và Admin
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineDocument([FromBody] AddVaccineHistoryRequestDTO request)
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineDocument([FromBody] CreateVaccineHistoryRequestDTO request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });

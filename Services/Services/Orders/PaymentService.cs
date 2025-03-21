@@ -110,7 +110,6 @@ namespace Services.Services.Orders
 
                 var payment = new Payment
                 {
-                    Id = Guid.NewGuid().ToString(),
                     OrderId = response.OrderId,
                     TransactionId = response.TransactionId,
                     PaymentName = "VNPay",
@@ -236,21 +235,21 @@ namespace Services.Services.Orders
         public async Task<IEnumerable<PaymentDetailsResponseDTO>> GetAllPaymentDetailsAsync()
         {
             var payments = await _paymentRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<PaymentDetailsResponseDTO>>(payments); // Sử dụng AutoMapper
+            return _mapper.Map<IEnumerable<PaymentDetailsResponseDTO>>(payments); 
         }
 
         public async Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByNameAsync(string name)
         {
             var payment = await _paymentRepository.GetByPaymentnameAsync(name);
             if (payment == null) return null;
-            return _mapper.Map<PaymentDetailsResponseDTO>(payment); // Sử dụng AutoMapper
+            return _mapper.Map<PaymentDetailsResponseDTO>(payment); 
         }
 
         public async Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByIdAsync(string id)
         {
             var payment = await _paymentRepository.GetByIdAsync(id);
             if (payment == null) return null;
-            return _mapper.Map<PaymentDetailsResponseDTO>(payment); // Sử dụng AutoMapper
+            return _mapper.Map<PaymentDetailsResponseDTO>(payment); 
         }
 
         public async Task<PaymentDetailsResponseDTO> PayAtFacilityAsync(PayAtFacilityRequestDTO request)
@@ -258,7 +257,7 @@ namespace Services.Services.Orders
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Kiểm tra Order
+                
                 var order = await _orderRepository.GetByIdAsync(request.OrderId);
                 if (order == null)
                     throw new Exception("Order không tồn tại.");
@@ -266,15 +265,14 @@ namespace Services.Services.Orders
                 if (order.Status != "PayLater")
                     throw new Exception("Order phải ở trạng thái PayLater để thanh toán tại cơ sở.");
 
-                // Cập nhật trạng thái Order
+
                 order.Status = "Paid";
                 order.LastUpdatedTime = DateTime.Now;
                 await _orderRepository.UpdateAsync(order);
 
-                // Tạo bản ghi Payment
+
                 var payment = new Payment
                 {
-                    Id = Guid.NewGuid().ToString(),
                     OrderId = order.Id,
                     TransactionId = $"FACILITY-{Guid.NewGuid().ToString()}",
                     PaymentName = "Thanh toán tại cơ sở",
