@@ -10,6 +10,7 @@ namespace ModelViews.Responses.Auth
 {
     public class AccountResponseDTO
     {
+        public string AccountId { get; set; }
         public string VaccineCenterId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }

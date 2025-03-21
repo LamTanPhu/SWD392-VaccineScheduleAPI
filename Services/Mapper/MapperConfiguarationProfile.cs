@@ -157,8 +157,8 @@ namespace IServices.Mapper
             CreateMap<VaccineHistory, VaccineHistoryResponseDTO>();
 
             //Account
-            CreateMap<Account, AccountResponseDTO>();
-
+            CreateMap<Account, AccountResponseDTO>()
+                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Id));
         }
     }
 }
