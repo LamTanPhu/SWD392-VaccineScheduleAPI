@@ -6,6 +6,7 @@ using IRepositories.Entity.Schedules;
 using IRepositories.Entity.Vaccines;
 using ModelViews.Requests.Auth;
 using ModelViews.Requests.ChildrenProfile;
+using ModelViews.Requests.History;
 using ModelViews.Requests.Manufacturer;
 using ModelViews.Requests.Order;
 using ModelViews.Requests.Vaccine;
@@ -22,6 +23,7 @@ using ModelViews.Responses.Vaccine;
 using ModelViews.Responses.VaccineBatch;
 using ModelViews.Responses.VaccineCategory;
 using ModelViews.Responses.VaccineCenter;
+using ModelViews.Responses.VaccineHistory;
 using ModelViews.Responses.VaccinePackage;
 using System;
 using System.Collections.Generic;
@@ -126,6 +128,11 @@ namespace IServices.Mapper
 
             // Feedback
             CreateMap<Feedback, FeedbackResponseDTO>();
+
+            //Vaccine History
+            CreateMap<CreateVaccineHistoryRequestDTO, VaccineHistory>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore()); // Id sẽ được tạo tự động trong BaseEntity
+            CreateMap<VaccineHistory, VaccineHistoryResponseDTO>();
         }
     }
 }

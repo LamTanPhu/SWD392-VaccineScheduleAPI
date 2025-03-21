@@ -1,4 +1,5 @@
-﻿using ModelViews.Requests.VaccineHistory;
+﻿using ModelViews.Requests.History;
+using ModelViews.Requests.VaccineHistory;
 using ModelViews.Responses.VaccineHistory;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,10 @@ namespace IServices.Interfaces.Schedules
 {
     public interface IVaccineHistoryService
     {
-        Task<CreateVaccineHistoryResponseDTO> AddVaccineHistoryAsync(AddVaccineHistoryRequestDTO request);
-        Task<VaccineHistoryResponseDTO> GetVaccineHistoryByIdAsync(string id);
         Task<IEnumerable<VaccineHistoryResponseDTO>> GetAllVaccineHistoriesAsync();
-        Task<VaccineHistoryResponseDTO> UpdateVaccineHistoryAsync(string id, UpdateVaccineHistoryRequestDTO request);
-        Task<bool> DeleteVaccineHistoryAsync(string id);
+        Task<VaccineHistoryResponseDTO?> GetVaccineHistoryByIdAsync(string id);
+        Task<VaccineHistoryResponseDTO> AddVaccineHistoryAsync(CreateVaccineHistoryRequestDTO vaccineHistoryDto);
+        Task<VaccineHistoryResponseDTO?> UpdateVaccineHistoryAsync(string id, CreateVaccineHistoryRequestDTO vaccineHistoryDto);
+
     }
 }
