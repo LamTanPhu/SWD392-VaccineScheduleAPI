@@ -6,9 +6,8 @@ using ModelViews.Requests.Feedback;
 using ModelViews.Responses.Feedback;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using AutoMapper; // Thêm namespace AutoMapper
 
 namespace Services.Services.Schedules
 {
@@ -16,38 +15,26 @@ namespace Services.Services.Schedules
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFeedbackRepository _repository;
+        private readonly IMapper _mapper; 
 
-        public FeedbackService(IUnitOfWork unitOfWork, IFeedbackRepository repository)
+        public FeedbackService(IUnitOfWork unitOfWork, IFeedbackRepository repository, IMapper mapper)
         {
-            _unitOfWork = unitOfWork;
-            _repository = repository;
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<IEnumerable<FeedbackResponseDTO>> GetAllFeedbacksAsync()
         {
             var feedbacks = await _repository.GetAllAsync();
-            return feedbacks.Select(f => new FeedbackResponseDTO
-            {
-                Id = f.Id,
-                OrderId = f.OrderId,
-                Rating = f.Rating,
-                Comment = f.Comment,
-                Status = f.Status
-            }).ToList();
+            return _mapper.Map<IEnumerable<FeedbackResponseDTO>>(feedbacks); 
         }
 
         public async Task<FeedbackResponseDTO?> GetFeedbackByIdAsync(string id)
         {
             var feedback = await _repository.GetByIdAsync(id);
             if (feedback == null) return null;
-            return new FeedbackResponseDTO
-            {
-                Id = feedback.Id,
-                OrderId = feedback.OrderId,
-                Rating = feedback.Rating,
-                Comment = feedback.Comment,
-                Status = feedback.Status
-            };
+            return _mapper.Map<FeedbackResponseDTO>(feedback); // Sử dụng AutoMapper
         }
 
         public async Task AddFeedbackAsync(FeedbackRequestDTO feedbackDto)

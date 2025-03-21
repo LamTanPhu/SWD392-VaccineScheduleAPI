@@ -1,79 +1,100 @@
 ﻿using IServices.Interfaces.Schedules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ModelViews.Requests.History;
 using ModelViews.Requests.VaccineHistory;
 using ModelViews.Responses.VaccineHistory;
 using System.Security.Claims;
 
 namespace VaccineScheduleAPI.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class VaccineHistoryController : ControllerBase
     {
-        private readonly IVaccineHistoryService _vaccineHistoryService;
+        private readonly IVaccineHistoryService _service;
 
-        public VaccineHistoryController(IVaccineHistoryService vaccineHistoryService)
+        public VaccineHistoryController(IVaccineHistoryService service)
         {
-            _vaccineHistoryService = vaccineHistoryService ?? throw new ArgumentNullException(nameof(vaccineHistoryService));
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
-        [HttpPost("sendDocument")]
-        [Authorize(Roles = "Parent, Admin")] // Giới hạn quyền cho Staff và Admin
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineDocument([FromBody] AddVaccineHistoryRequestDTO request)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetAll()
         {
-            if (!ModelState.IsValid)
-                return BadRequest(new { Message = "Invalid request data.", Errors = ModelState });
-            var response = await _vaccineHistoryService.AddVaccineHistoryAsync(request);
-            return Ok(response);
-
+            var histories = await _service.GetAllVaccineHistoriesAsync();
+            return Ok(histories);
         }
 
-        //--------------------------------------------------------------------------------------
-
-        //[Authorize(Roles = "Parent, Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> GetVaccineHistoryById(string id)
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> GetById(string id)
         {
-            var response = await _vaccineHistoryService.GetVaccineHistoryByIdAsync(id);
-            if (response == null)
-                return NotFound("Không tìm thấy lịch sử vaccine.");
-
-            return Ok(response);
+            var history = await _service.GetVaccineHistoryByIdAsync(id);
+            if (history == null) return NotFound();
+            return Ok(history);
         }
 
-        //[Authorize(Roles = "Parent, Admin")]
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetAllVaccineHistories()
-        {
-            var response = await _vaccineHistoryService.GetAllVaccineHistoriesAsync();
-            return Ok(response);
-        }
-
-        //[Authorize(Roles = "Parent, Admin")]
-        [HttpPut("update/{id}")]
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> UpdateVaccineHistory(string id, [FromBody] UpdateVaccineHistoryRequestDTO request)
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> Create([FromBody] CreateVaccineHistoryRequestDTO vaccineHistoryDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var response = await _vaccineHistoryService.UpdateVaccineHistoryAsync(id, request);
-            if (response == null)
-                return NotFound("Không tìm thấy lịch sử vaccine để cập nhật.");
-
-            return Ok(response);
+            var createdHistory = await _service.AddVaccineHistoryAsync(vaccineHistoryDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdHistory.Id }, createdHistory);
         }
 
-        //[Authorize(Roles = "Parent, Admin")]
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> DeleteVaccineHistory(string id)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> Update(string id, [FromBody] CreateVaccineHistoryRequestDTO vaccineHistoryDto)
         {
-            var success = await _vaccineHistoryService.DeleteVaccineHistoryAsync(id);
-            if (!success)
-                return NotFound("Không tìm thấy lịch sử vaccine để xóa.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return NoContent();
+            var updatedHistory = await _service.UpdateVaccineHistoryAsync(id, vaccineHistoryDto);
+            if (updatedHistory == null)
+                return NotFound();
+
+            return Ok(updatedHistory);
+        }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("send-certificate")]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineCertificate([FromForm] SendVaccineCertificateRequestDTO certificateDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdCertificate = await _service.SendVaccineCertificateAsync(certificateDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdCertificate.Id }, createdCertificate);
+        }
+
+        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xem được danh sách chưa xác thực
+        [HttpGet("pending-certificates")]
+        public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetPendingCertificates()
+        {
+            var pendingCertificates = await _service.GetPendingCertificatesAsync();
+            return Ok(pendingCertificates);
+        }
+
+        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xác thực được
+        [HttpPut("verify-certificate/{id}")]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> VerifyCertificate(string id, [FromQuery] bool isAccepted, [FromBody] UpdateDocumentVaccineHistoryRequestDTO vaccineHistoryDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var verifiedHistory = await _service.VerifyCertificateAsync(id, vaccineHistoryDto, isAccepted);
+            if (verifiedHistory == null)
+                return NotFound();
+
+            return Ok(verifiedHistory);
         }
     }
+
+
 }
 

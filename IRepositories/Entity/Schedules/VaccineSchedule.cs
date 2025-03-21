@@ -21,7 +21,7 @@ namespace IRepositories.Entity.Schedules
         public DateTime AppointmentDate { get; set; }
         public DateTime? ActualDate { get; set; }
         public string? AdministeredBy { get; set; }
-        public int Status { get; set; }
+        public int Status { get; set; } //0:Delete, 1:Confimed, 2:Arrived
 
         // Navigation properties
         [ForeignKey("ProfileId")]

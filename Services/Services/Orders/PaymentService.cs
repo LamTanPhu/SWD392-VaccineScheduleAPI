@@ -22,6 +22,7 @@ using QRCoder;
 using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
+using AutoMapper;
 
 namespace Services.Services.Orders
 {
@@ -32,14 +33,20 @@ namespace Services.Services.Orders
         private readonly VNPayConfig _config;
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly IMapper _mapper; 
 
-        public PaymentService(IUnitOfWork unitOfWork, IOptions<VNPayConfig> config, IPaymentRepository paymentRepository, IOrderRepository orderRepository)
+        public PaymentService(
+            IUnitOfWork unitOfWork,
+            IOptions<VNPayConfig> config,
+            IPaymentRepository paymentRepository,
+            IOrderRepository orderRepository,
+            IMapper mapper) 
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _config = config.Value ?? throw new ArgumentNullException(nameof(config));
             _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper)); // Kiểm tra null
         }
 
         public async Task<VNPayPaymentResponseDTO> CreatePaymentUrlAsync(VNPayPaymentRequestDTO request)
@@ -103,7 +110,6 @@ namespace Services.Services.Orders
 
                 var payment = new Payment
                 {
-                    Id = Guid.NewGuid().ToString(),
                     OrderId = response.OrderId,
                     TransactionId = response.TransactionId,
                     PaymentName = "VNPay",
@@ -229,50 +235,21 @@ namespace Services.Services.Orders
         public async Task<IEnumerable<PaymentDetailsResponseDTO>> GetAllPaymentDetailsAsync()
         {
             var payments = await _paymentRepository.GetAllAsync();
-            return payments.Select(p => new PaymentDetailsResponseDTO
-            {
-                PaymentId = p.Id,
-                OrderId = p.OrderId,
-                TransactionId = p.TransactionId,
-                PaymentName = p.PaymentName,
-                PaymentMethod = p.PaymentMethod,
-                PaymentDate = p.PaymentDate,
-                PaymentStatus = p.PaymentStatus,
-                PayAmount = p.PayAmount
-            }).ToList();
+            return _mapper.Map<IEnumerable<PaymentDetailsResponseDTO>>(payments); 
         }
 
         public async Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByNameAsync(string name)
         {
             var payment = await _paymentRepository.GetByPaymentnameAsync(name);
             if (payment == null) return null;
-            return new PaymentDetailsResponseDTO
-            {
-                PaymentId = payment.Id,
-                OrderId = payment.OrderId,
-                TransactionId = payment.TransactionId,
-                PaymentName = payment.PaymentName,
-                PaymentMethod = payment.PaymentMethod,
-                PaymentDate = payment.PaymentDate,
-                PaymentStatus = payment.PaymentStatus,
-                PayAmount = payment.PayAmount,
-            };
+            return _mapper.Map<PaymentDetailsResponseDTO>(payment); 
         }
+
         public async Task<PaymentDetailsResponseDTO?> GetPaymentDetailsByIdAsync(string id)
         {
-            var payment = await _paymentRepository.GetByIdAsync(id);    
+            var payment = await _paymentRepository.GetByIdAsync(id);
             if (payment == null) return null;
-            return new PaymentDetailsResponseDTO
-            {
-                PaymentId = payment.Id,
-                OrderId = payment.OrderId,
-                TransactionId = payment.TransactionId,
-                PaymentName = payment.PaymentName,
-                PaymentMethod = payment.PaymentMethod,
-                PaymentDate = payment.PaymentDate,
-                PaymentStatus = payment.PaymentStatus,
-                PayAmount = payment.PayAmount,
-            };
+            return _mapper.Map<PaymentDetailsResponseDTO>(payment); 
         }
 
         public async Task<PaymentDetailsResponseDTO> PayAtFacilityAsync(PayAtFacilityRequestDTO request)
@@ -280,7 +257,7 @@ namespace Services.Services.Orders
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // Kiểm tra Order
+                
                 var order = await _orderRepository.GetByIdAsync(request.OrderId);
                 if (order == null)
                     throw new Exception("Order không tồn tại.");
@@ -288,17 +265,16 @@ namespace Services.Services.Orders
                 if (order.Status != "PayLater")
                     throw new Exception("Order phải ở trạng thái PayLater để thanh toán tại cơ sở.");
 
-                // Cập nhật trạng thái Order
+
                 order.Status = "Paid";
-                order.LastUpdatedTime = DateTime.Now; // Nếu có trường này
+                order.LastUpdatedTime = DateTime.Now;
                 await _orderRepository.UpdateAsync(order);
 
-                // Tạo bản ghi Payment
+
                 var payment = new Payment
                 {
-                    Id = Guid.NewGuid().ToString(),
                     OrderId = order.Id,
-                    TransactionId = $"FACILITY-{Guid.NewGuid().ToString()}", // Mã giao dịch giả lập
+                    TransactionId = $"FACILITY-{Guid.NewGuid().ToString()}",
                     PaymentName = "Thanh toán tại cơ sở",
                     PaymentMethod = request.PaymentMethod,
                     PaymentDate = DateTime.Now,
@@ -313,18 +289,8 @@ namespace Services.Services.Orders
 
                 await _unitOfWork.CommitTransactionAsync();
 
-                // Trả về thông tin Payment
-                return new PaymentDetailsResponseDTO
-                {
-                    PaymentId = payment.Id,
-                    OrderId = payment.OrderId,
-                    TransactionId = payment.TransactionId,
-                    PaymentName = payment.PaymentName,
-                    PaymentMethod = payment.PaymentMethod,
-                    PaymentDate = payment.PaymentDate,
-                    PaymentStatus = payment.PaymentStatus,
-                    PayAmount = payment.PayAmount
-                };
+                // Trả về thông tin Payment bằng AutoMapper
+                return _mapper.Map<PaymentDetailsResponseDTO>(payment);
             }
             catch (Exception ex)
             {
@@ -332,7 +298,8 @@ namespace Services.Services.Orders
                 throw new Exception($"Thanh toán tại cơ sở thất bại: {ex.Message}");
             }
         }
-       
+
+
     }
 
 }

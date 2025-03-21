@@ -1,18 +1,18 @@
-﻿namespace Services.Services.Schedules
-{
-    using IRepositories.IRepository;
-    using IRepositories.IRepository.Schedules;
-    using IRepositories.IRepository.Orders;
-    using IRepositories.IRepository.Accounts;
-    using IRepositories.Entity.Schedules;
-    using IServices.Interfaces.Schedules;
-    using ModelViews.Requests.Schedule;
-    using ModelViews.Responses.Schedule;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using IRepositories.IRepository;
+using IRepositories.IRepository.Schedules;
+using IRepositories.IRepository.Orders;
+using IRepositories.IRepository.Accounts;
+using IRepositories.Entity.Schedules;
+using IServices.Interfaces.Schedules;
+using ModelViews.Requests.Schedule;
+using ModelViews.Responses.Schedule;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Services.Services.Schedules
+{
     public class VaccinationScheduleService : IVaccinationScheduleService
     {
         private readonly IUnitOfWork _unitOfWork;
