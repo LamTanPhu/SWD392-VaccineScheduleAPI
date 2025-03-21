@@ -12,7 +12,7 @@ using Repositories.Context;
 namespace Repositories.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250319105815_InitialCreate")]
+    [Migration("20250320165342_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
