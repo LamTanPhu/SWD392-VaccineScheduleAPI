@@ -18,7 +18,9 @@ namespace IServices.Interfaces.Accounts
         Task<Account?> GetUserByEmailAsync(string email); 
         Task UpdateUserAsync(Account user);
         Task<Account?> GetByUsernameOrEmailAsync(string usernameOrEmail);
+        Task<IEnumerable<AccountResponseDTO>> GetAllAccountsAsync(); // Cập nhật trả về DTO
+        Task<AccountResponseDTO?> GetAccountByIdAsync(string id); // Thêm Get by ID
+        Task<bool> SoftDeleteAccountAsync(string id); // Thêm Soft Delete
 
-        
     }
 }

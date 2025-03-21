@@ -1,4 +1,5 @@
-﻿using BCrypt.Net;
+﻿using AutoMapper;
+using BCrypt.Net;
 using IRepositories.Entity.Accounts;
 using IRepositories.Enum;
 using IRepositories.IRepository;
@@ -16,18 +17,44 @@ namespace Services.Services.Accounts
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IJwtService _jwtService;
-        private readonly IFirebaseAuthService _firebaseAuthService; // New dependency for Firebase token validation
-        
+        private readonly IFirebaseAuthService _firebaseAuthService;
+        private readonly IMapper _mapper; 
 
-        public AccountService(IAccountRepository accountRepository, IJwtService jwtService, IFirebaseAuthService firebaseAuthService, IUnitOfWork unitOfWork)
+        public AccountService(
+            IAccountRepository accountRepository,
+            IJwtService jwtService,
+            IFirebaseAuthService firebaseAuthService,
+            IMapper mapper) 
         {
             _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _firebaseAuthService = firebaseAuthService ?? throw new ArgumentNullException(nameof(firebaseAuthService));
-            
-
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        }
+        public async Task<IEnumerable<AccountResponseDTO>> GetAllAccountsAsync()
+        {
+            var accounts = await _accountRepository.GetAllAsync();
+            var activeAccounts = accounts.Where(a => a.DeletedTime == null);
+            return _mapper.Map<IEnumerable<AccountResponseDTO>>(activeAccounts);
         }
 
+        public async Task<AccountResponseDTO?> GetAccountByIdAsync(string id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null || account.DeletedTime != null)
+                return null;
+            return _mapper.Map<AccountResponseDTO>(account);
+        }
+
+        public async Task<bool> SoftDeleteAccountAsync(string id)
+        {
+            var account = await _accountRepository.GetByIdAsync(id);
+            if (account == null)
+                return false;
+            account.Status = "0"; 
+            await _accountRepository.UpdateAsync(account);
+            return true;
+        }
         public async Task<Account?> GetByUsernameAsync(string username)
         {
             return await _accountRepository.GetByUsernameAsync(username);

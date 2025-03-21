@@ -155,6 +155,10 @@ namespace IServices.Mapper
                 .ForMember(dest => dest.VerifiedStatus, opt => opt.Ignore()); 
 
             CreateMap<VaccineHistory, VaccineHistoryResponseDTO>();
+
+            //Account
+            CreateMap<Account, AccountResponseDTO>();
+
         }
     }
 }
