@@ -94,7 +94,7 @@
                         scheduleItem.OrderPackageDetailsId,
                         scheduleItem.DoseNumber);
                     if (exists)
-                        throw new Exception($"Schedule already exists for Dose {scheduleItem.DoseNumber}.");
+                        throw new Exception($"Schedule already exists for Dose {scheduleItem.DoseNumber}.");//this is where the problem is
 
                     var schedule = new VaccinationSchedule
                     {

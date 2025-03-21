@@ -18,8 +18,9 @@ namespace Repositories.Repository.Schedules
             return await _context.VaccinationSchedules
                 .AnyAsync(s => s.ProfileId == profileId &&
                                s.DoseNumber == doseNumber &&
-                               (s.OrderVaccineDetailsId == orderVaccineDetailsId ||
-                                s.OrderPackageDetailsId == orderPackageDetailsId));
+                               s.Status != 0 && // Ensure the schedule is active
+                               ((orderVaccineDetailsId != null && s.OrderVaccineDetailsId == orderVaccineDetailsId) ||
+                                (orderPackageDetailsId != null && s.OrderPackageDetailsId == orderPackageDetailsId)));
         }
 
     }
