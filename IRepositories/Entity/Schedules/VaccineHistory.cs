@@ -21,9 +21,9 @@ namespace IRepositories.Entity.Schedules
         public string? AdministeredBy { get; set; }
         public string? DocumentationProvided { get; set; }
         public string Notes { get; set; }
-        public int VerifiedStatus { get; set; } //1:Accept, 2:Deny 
+        public int VerifiedStatus { get; set; } //0:InProgress, 1:Accept, 2:Deny 
 
-        public int VaccinedStatus { get; set; } //0:Null, 1:InProgress, 2:Completed
+        public int VaccinedStatus { get; set; } //0:Null (Not need for case send Document), 1:InProgress, 2:Completed
 
         public int DosedNumber { get; set; }  
 

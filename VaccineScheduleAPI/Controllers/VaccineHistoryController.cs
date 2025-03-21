@@ -8,6 +8,7 @@ using System.Security.Claims;
 
 namespace VaccineScheduleAPI.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class VaccineHistoryController : ControllerBase
@@ -59,6 +60,41 @@ namespace VaccineScheduleAPI.Controllers
 
             return Ok(updatedHistory);
         }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpPost("send-certificate")]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> SendVaccineCertificate([FromForm] SendVaccineCertificateRequestDTO certificateDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var createdCertificate = await _service.SendVaccineCertificateAsync(certificateDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdCertificate.Id }, createdCertificate);
+        }
+
+        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xem được danh sách chưa xác thực
+        [HttpGet("pending-certificates")]
+        public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetPendingCertificates()
+        {
+            var pendingCertificates = await _service.GetPendingCertificatesAsync();
+            return Ok(pendingCertificates);
+        }
+
+        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xác thực được
+        [HttpPut("verify-certificate/{id}")]
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> VerifyCertificate(string id, [FromQuery] bool isAccepted, [FromBody] CreateVaccineHistoryRequestDTO vaccineHistoryDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var verifiedHistory = await _service.VerifyCertificateAsync(id, vaccineHistoryDto, isAccepted);
+            if (verifiedHistory == null)
+                return NotFound();
+
+            return Ok(verifiedHistory);
+        }
     }
+
+
 }
 

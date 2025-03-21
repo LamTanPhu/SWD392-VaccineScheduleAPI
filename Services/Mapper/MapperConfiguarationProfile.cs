@@ -13,6 +13,7 @@ using ModelViews.Requests.Vaccine;
 using ModelViews.Requests.VaccineBatch;
 using ModelViews.Requests.VaccineCategory;
 using ModelViews.Requests.VaccineCenter;
+using ModelViews.Requests.VaccineHistory;
 using ModelViews.Requests.VaccinePackage;
 using ModelViews.Responses.Auth;
 using ModelViews.Responses.ChildrenProfile;
@@ -129,9 +130,23 @@ namespace IServices.Mapper
             // Feedback
             CreateMap<Feedback, FeedbackResponseDTO>();
 
-            //Vaccine History
+            // VaccineHistory
             CreateMap<CreateVaccineHistoryRequestDTO, VaccineHistory>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore()); // Id sẽ được tạo tự động trong BaseEntity
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.AccountId, opt => opt.Ignore())
+                .ForMember(dest => dest.VerifiedStatus, opt => opt.Ignore());
+
+            CreateMap<SendVaccineCertificateRequestDTO, VaccineHistory>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.AccountId, opt => opt.Ignore())
+                .ForMember(dest => dest.DocumentationProvided, opt => opt.Ignore()) 
+                .ForMember(dest => dest.VaccinedStatus, opt => opt.Ignore())
+                .ForMember(dest => dest.VaccineId, opt => opt.Ignore())
+                .ForMember(dest => dest.CenterId, opt => opt.Ignore())
+                .ForMember(dest => dest.AdministeredDate, opt => opt.Ignore())
+                .ForMember(dest => dest.AdministeredBy, opt => opt.Ignore())
+                .ForMember(dest => dest.DosedNumber, opt => opt.Ignore());
+
             CreateMap<VaccineHistory, VaccineHistoryResponseDTO>();
         }
     }
