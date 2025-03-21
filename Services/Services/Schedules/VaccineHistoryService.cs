@@ -148,11 +148,11 @@ namespace Services.Services.Schedules
         public async Task<IEnumerable<VaccineHistoryResponseDTO>> GetPendingCertificatesAsync()
         {
             var histories = await _vaccineHistoryRepository.GetAllAsync();
-            var pendingHistories = histories.Where(h => h.VerifiedStatus == 0);
+            var pendingHistories = histories.Where(h => h.VerifiedStatus == 0 || h.VerifiedStatus == 2);
             return _mapper.Map<IEnumerable<VaccineHistoryResponseDTO>>(pendingHistories);
         }
 
-        public async Task<VaccineHistoryResponseDTO?> VerifyCertificateAsync(string id, CreateVaccineHistoryRequestDTO vaccineHistoryDto, bool isAccepted)
+        public async Task<VaccineHistoryResponseDTO?> VerifyCertificateAsync(string id, UpdateDocumentVaccineHistoryRequestDTO vaccineHistoryDto, bool isAccepted)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -166,17 +166,15 @@ namespace Services.Services.Schedules
 
                 if (isAccepted)
                 {
-                    var profile = await _childrenProfileRepository.GetByIdAsync(vaccineHistoryDto.ProfileId);
-                    if (profile == null)
-                        throw new Exception($"ChildrenProfile with ID {vaccineHistoryDto.ProfileId} not found.");
-
                     _mapper.Map(vaccineHistoryDto, existingHistory);
-                    existingHistory.AccountId = profile.AccountId;
                     existingHistory.VerifiedStatus = 1; // Accept
+                                                        
                 }
                 else
                 {
                     existingHistory.VerifiedStatus = 2; // Deny
+                    if (!string.IsNullOrEmpty(vaccineHistoryDto.Notes))
+                        existingHistory.Notes = vaccineHistoryDto.Notes; // Cập nhật lý do từ chối nếu có
                 }
 
                 await _vaccineHistoryRepository.UpdateAsync(existingHistory);
@@ -191,5 +189,6 @@ namespace Services.Services.Schedules
                 throw new Exception("Failed to verify vaccine certificate: " + ex.Message, ex);
             }
         }
+
     }
 }

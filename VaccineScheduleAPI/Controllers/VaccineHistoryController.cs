@@ -82,7 +82,7 @@ namespace VaccineScheduleAPI.Controllers
 
         [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xác thực được
         [HttpPut("verify-certificate/{id}")]
-        public async Task<ActionResult<VaccineHistoryResponseDTO>> VerifyCertificate(string id, [FromQuery] bool isAccepted, [FromBody] CreateVaccineHistoryRequestDTO vaccineHistoryDto)
+        public async Task<ActionResult<VaccineHistoryResponseDTO>> VerifyCertificate(string id, [FromQuery] bool isAccepted, [FromBody] UpdateDocumentVaccineHistoryRequestDTO vaccineHistoryDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

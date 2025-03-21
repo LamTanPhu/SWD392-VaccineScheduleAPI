@@ -139,13 +139,20 @@ namespace IServices.Mapper
             CreateMap<SendVaccineCertificateRequestDTO, VaccineHistory>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.AccountId, opt => opt.Ignore())
-                .ForMember(dest => dest.DocumentationProvided, opt => opt.Ignore()) 
+                .ForMember(dest => dest.DocumentationProvided, opt => opt.Ignore())
                 .ForMember(dest => dest.VaccinedStatus, opt => opt.Ignore())
                 .ForMember(dest => dest.VaccineId, opt => opt.Ignore())
                 .ForMember(dest => dest.CenterId, opt => opt.Ignore())
                 .ForMember(dest => dest.AdministeredDate, opt => opt.Ignore())
                 .ForMember(dest => dest.AdministeredBy, opt => opt.Ignore())
                 .ForMember(dest => dest.DosedNumber, opt => opt.Ignore());
+
+            CreateMap<UpdateDocumentVaccineHistoryRequestDTO, VaccineHistory>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) 
+                .ForMember(dest => dest.ProfileId, opt => opt.Ignore()) 
+                .ForMember(dest => dest.AccountId, opt => opt.Ignore()) 
+                .ForMember(dest => dest.DocumentationProvided, opt => opt.Ignore()) 
+                .ForMember(dest => dest.VerifiedStatus, opt => opt.Ignore()); 
 
             CreateMap<VaccineHistory, VaccineHistoryResponseDTO>();
         }

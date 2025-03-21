@@ -17,7 +17,7 @@ namespace IServices.Interfaces.Schedules
         Task<VaccineHistoryResponseDTO?> UpdateVaccineHistoryAsync(string id, CreateVaccineHistoryRequestDTO vaccineHistoryDto);
         Task<VaccineHistoryResponseDTO> SendVaccineCertificateAsync(SendVaccineCertificateRequestDTO certificateDto);
         Task<IEnumerable<VaccineHistoryResponseDTO>> GetPendingCertificatesAsync();
-        Task<VaccineHistoryResponseDTO?> VerifyCertificateAsync(string id, CreateVaccineHistoryRequestDTO vaccineHistoryDto, bool isAccepted);
+        Task<VaccineHistoryResponseDTO?> VerifyCertificateAsync(string id, UpdateDocumentVaccineHistoryRequestDTO vaccineHistoryDto, bool isAccepted);
 
     }
 }
