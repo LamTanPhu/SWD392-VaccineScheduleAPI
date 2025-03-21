@@ -10,7 +10,6 @@ namespace ModelViews.Requests.History
     {
         public string VaccineId { get; set; }
         public string ProfileId { get; set; }
-        public string AccountId { get; set; }
         public string CenterId { get; set; }
         public DateTime AdministeredDate { get; set; }
         public string AdministeredBy { get; set; }
