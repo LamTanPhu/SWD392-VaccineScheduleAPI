@@ -31,9 +31,6 @@ namespace IRepositories.Entity.Accounts
         public string PhoneNumber { get; set; }
 
         public string ImageProfile {  get; set; }
-        // Add OTP properties
-        //public string? OTP { get; set; }
-        //public DateTime? OTPExpired { get; set; }
 
         public string Status { get; set; }
 
