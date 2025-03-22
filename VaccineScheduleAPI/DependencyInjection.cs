@@ -16,6 +16,8 @@ using Services.Services.Schedules;
 using IServices.Interfaces.Orders;
 using Services.Services.Orders;
 using ModelViews.Config;
+using IServices.Interfaces.Dashboard;
+using Services.Services.Dashboard;
 
 namespace VaccineScheduleAPI
 {
@@ -56,6 +58,7 @@ namespace VaccineScheduleAPI
             services.AddScoped<IVaccineReactionService, VaccineReactionService>();
             services.AddScoped<IVaccineHistoryService, VaccineHistoryService>();
             services.AddScoped<IImageUploadService, ImageUploadService>();
+            services.AddScoped<IDashboardService,DashboardService>();
 
             services.AddHttpContextAccessor();
             // Register Email Settings
