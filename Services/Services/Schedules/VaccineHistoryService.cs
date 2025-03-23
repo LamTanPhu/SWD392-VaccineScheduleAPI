@@ -7,7 +7,7 @@ using IRepositories.IRepository.Accounts;
 using IRepositories.IRepository.Schedules;
 using IRepositories.IRepository.Vaccines;
 using IServices.Interfaces.Schedules;
-using IServices.Interfaces.Vaccines; // Thêm để dùng IImageUploadService
+using IServices.Interfaces.Vaccines;
 using ModelViews.Requests.History;
 using ModelViews.Requests.VaccineHistory;
 using ModelViews.Responses.VaccineHistory;
@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace Services.Services.Schedules
 {
@@ -25,27 +27,42 @@ namespace Services.Services.Schedules
         private readonly IUnitOfWork _unitOfWork;
         private readonly IVaccineHistoryRepository _vaccineHistoryRepository;
         private readonly IChildrenProfileRepository _childrenProfileRepository;
-        private readonly IImageUploadService _imageUploadService; // Thêm service upload ảnh
+        private readonly IImageUploadService _imageUploadService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor; // Add for role-based filtering
 
         public VaccineHistoryService(
             IUnitOfWork unitOfWork,
             IVaccineHistoryRepository repository,
             IChildrenProfileRepository childrenProfileRepository,
             IImageUploadService imageUploadService,
-            IMapper mapper)
+            IMapper mapper,
+            IHttpContextAccessor httpContextAccessor) // Add IHttpContextAccessor
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _vaccineHistoryRepository = repository ?? throw new ArgumentNullException(nameof(repository));
             _childrenProfileRepository = childrenProfileRepository ?? throw new ArgumentNullException(nameof(childrenProfileRepository));
             _imageUploadService = imageUploadService ?? throw new ArgumentNullException(nameof(imageUploadService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<IEnumerable<VaccineHistoryResponseDTO>> GetAllVaccineHistoriesAsync()
         {
             var histories = await _vaccineHistoryRepository.GetAllAsync();
             var verifiedHistories = histories.Where(h => h.VerifiedStatus == 1);
+
+            // Apply role-based filtering for parents
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user != null && user.IsInRole("Parent"))
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    verifiedHistories = verifiedHistories.Where(h => h.AccountId == userId);
+                }
+            }
+
             return _mapper.Map<IEnumerable<VaccineHistoryResponseDTO>>(verifiedHistories);
         }
 
@@ -120,17 +137,16 @@ namespace Services.Services.Schedules
                 if (profile == null)
                     throw new Exception($"ChildrenProfile with ID {certificateDto.ProfileId} not found.");
 
-                // Upload file ảnh nếu có
                 string? docUrl = certificateDto.DocumentationProvided != null
-                    ? await _imageUploadService.UploadImageAsync(certificateDto.DocumentationProvided): null;
+                    ? await _imageUploadService.UploadImageAsync(certificateDto.DocumentationProvided) : null;
 
                 var vaccineHistory = _mapper.Map<VaccineHistory>(certificateDto);
                 vaccineHistory.AccountId = profile.AccountId;
-                vaccineHistory.DocumentationProvided = docUrl; // Gán URL sau khi upload
-                vaccineHistory.VerifiedStatus = certificateDto.VerifiedStatus; // 0: Chờ xác thực
-                vaccineHistory.VaccinedStatus = 0; // Không cần trạng thái tiêm khi gửi chứng nhận
-                vaccineHistory.DosedNumber = 0; // Mặc định 0
-                vaccineHistory.AdministeredDate = DateTime.Now; // Gán mặc định
+                vaccineHistory.DocumentationProvided = docUrl;
+                vaccineHistory.VerifiedStatus = certificateDto.VerifiedStatus;
+                vaccineHistory.VaccinedStatus = 0;
+                vaccineHistory.DosedNumber = 0;
+                vaccineHistory.AdministeredDate = DateTime.Now;
 
                 await _vaccineHistoryRepository.InsertAsync(vaccineHistory);
                 await _unitOfWork.SaveAsync();
@@ -167,14 +183,13 @@ namespace Services.Services.Schedules
                 if (isAccepted)
                 {
                     _mapper.Map(vaccineHistoryDto, existingHistory);
-                    existingHistory.VerifiedStatus = 1; // Accept
-                                                        
+                    existingHistory.VerifiedStatus = 1;
                 }
                 else
                 {
-                    existingHistory.VerifiedStatus = 2; // Deny
+                    existingHistory.VerifiedStatus = 2;
                     if (!string.IsNullOrEmpty(vaccineHistoryDto.Notes))
-                        existingHistory.Notes = vaccineHistoryDto.Notes; // Cập nhật lý do từ chối nếu có
+                        existingHistory.Notes = vaccineHistoryDto.Notes;
                 }
 
                 await _vaccineHistoryRepository.UpdateAsync(existingHistory);
@@ -190,5 +205,23 @@ namespace Services.Services.Schedules
             }
         }
 
+        public async Task<IEnumerable<VaccineHistoryResponseDTO>> GetVaccineHistoriesByChildIdAsync(string childId)
+        {
+            var histories = await _vaccineHistoryRepository.GetByChildIdAsync(childId);
+            var verifiedHistories = histories.Where(h => h.VerifiedStatus == 1);
+
+            // Apply role-based filtering for parents
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user != null && user.IsInRole("Parent"))
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    verifiedHistories = verifiedHistories.Where(h => h.AccountId == userId);
+                }
+            }
+
+            return _mapper.Map<IEnumerable<VaccineHistoryResponseDTO>>(verifiedHistories);
+        }
     }
 }

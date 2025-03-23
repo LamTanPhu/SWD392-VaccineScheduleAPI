@@ -11,7 +11,6 @@ using IRepositories.IRepository.Schedules;
 
 namespace Repositories.Repository.Schedules
 {
-
     public class VaccineHistoryRepository : GenericRepository<VaccineHistory>, IVaccineHistoryRepository
     {
         public VaccineHistoryRepository(DatabaseContext context) : base(context) { }
@@ -29,6 +28,11 @@ namespace Repositories.Repository.Schedules
         public async Task<IEnumerable<VaccineHistory>> SearchByCenterIdAsync(string centerId)
         {
             return await _dbSet.Where(vh => vh.CenterId == centerId).ToListAsync();
+        }
+
+        public async Task<IEnumerable<VaccineHistory>> GetByChildIdAsync(string childId)
+        {
+            return await _dbSet.Where(vh => vh.ProfileId == childId).ToListAsync();
         }
     }
 }

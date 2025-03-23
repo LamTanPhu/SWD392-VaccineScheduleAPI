@@ -123,5 +123,13 @@ namespace Services.Services.Accounts
                 throw new Exception("Failed to delete children profile: " + ex.Message, ex);
             }
         }
+
+        // New method implementation for fetching all children profiles (admin access)
+        public async Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllChildrenProfilesAsync()
+        {
+            var profiles = await _childrenProfileRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ChildrenProfileResponseDTO>>(
+                profiles.Where(p => p.Status != "0"));
+        }
     }
 }
