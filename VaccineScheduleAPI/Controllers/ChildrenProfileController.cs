@@ -30,6 +30,14 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(profiles);
         }
 
+        [Authorize(Roles = "Admin, Parent, Staff")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ChildrenProfileResponseDTO>>> GetAllChildrenProfiles()
+        {
+            var profiles = await _childrenProfileService.GetAllChildrenProfilesAsync();
+            return Ok(profiles);
+        }
+
         [Authorize(Roles = "Parent")]
         [HttpPost]
         public async Task<ActionResult<ChildrenProfileResponseDTO>> Create([FromBody] ChildrenProfileCreateUpdateDTO profileDto)

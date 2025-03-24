@@ -8,7 +8,6 @@ using System.Security.Claims;
 
 namespace VaccineScheduleAPI.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class VaccineHistoryController : ControllerBase
@@ -21,6 +20,7 @@ namespace VaccineScheduleAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetAll()
         {
             var histories = await _service.GetAllVaccineHistoriesAsync();
@@ -72,7 +72,7 @@ namespace VaccineScheduleAPI.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdCertificate.Id }, createdCertificate);
         }
 
-        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xem được danh sách chưa xác thực
+        [Authorize(Roles = "Admin, Staff")]
         [HttpGet("pending-certificates")]
         public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetPendingCertificates()
         {
@@ -80,7 +80,7 @@ namespace VaccineScheduleAPI.Controllers
             return Ok(pendingCertificates);
         }
 
-        [Authorize(Roles = "Admin, Staff")] // Chỉ Admin hoặc Staff xác thực được
+        [Authorize(Roles = "Admin, Staff")]
         [HttpPut("verify-certificate/{id}")]
         public async Task<ActionResult<VaccineHistoryResponseDTO>> VerifyCertificate(string id, [FromQuery] bool isAccepted, [FromBody] UpdateDocumentVaccineHistoryRequestDTO vaccineHistoryDto)
         {
@@ -93,8 +93,13 @@ namespace VaccineScheduleAPI.Controllers
 
             return Ok(verifiedHistory);
         }
+
+        [Authorize(Roles = "Admin, Parent")]
+        [HttpGet("child/{childId}")]
+        public async Task<ActionResult<IEnumerable<VaccineHistoryResponseDTO>>> GetByChildId(string childId)
+        {
+            var histories = await _service.GetVaccineHistoriesByChildIdAsync(childId);
+            return Ok(histories);
+        }
     }
-
-
 }
-

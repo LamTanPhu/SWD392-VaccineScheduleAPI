@@ -14,5 +14,7 @@ namespace IServices.Interfaces.Accounts
         Task<ChildrenProfileResponseDTO> CreateProfileAsync(string userEmail, ChildrenProfileCreateUpdateDTO profileDto);
         Task UpdateProfileAsync(string id, string userEmail, ChildrenProfileCreateUpdateDTO profileDto);
         Task DeleteProfileAsync(string id, string userEmail);
+        // New method for admins to fetch all children profiles
+        Task<IEnumerable<ChildrenProfileResponseDTO>> GetAllChildrenProfilesAsync();
     }
 }
