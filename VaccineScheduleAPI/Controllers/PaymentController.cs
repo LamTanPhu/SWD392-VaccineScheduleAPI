@@ -79,17 +79,21 @@ namespace VaccineScheduleAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("vnpay-return")]
-        public async Task<ActionResult<VNPayReturnResponseDTO>> HandleVNPayReturn()
+        public async Task<IActionResult> HandleVNPayReturn()
         {
             try
             {
                 var query = HttpContext.Request.Query;
                 var response = await _paymentService.HandlePaymentReturnAsync(query);
-                return Ok(response);
+                //return Ok(response);
+                // Redirect to the frontend schedule page
+                return Redirect("http://localhost:5173/schedule");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                //return StatusCode(500, $"Internal server error: {ex.Message}");
+                // Optionally, you can log the error or handle it differently
+                return Redirect("http://localhost:5173/schedule");
             }
         }
 
